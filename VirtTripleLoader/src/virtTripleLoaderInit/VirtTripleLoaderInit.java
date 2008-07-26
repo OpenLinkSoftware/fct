@@ -45,12 +45,18 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.rio.ntriples.NTriplesParser;
+import org.openrdf.rio.helpers.RDFHandlerBase;
+import org.openrdf.rio.RDFHandlerException;
 
 import org.openrdf.rio.ntriples.NTriplesWriter;
 
 import com.sun.org.apache.xalan.internal.xsltc.cmdline.getopt.GetOpt;
 
 import virtuoso.jdbc3.*;
+
+
+
 
 public class VirtTripleLoaderInit {
 
@@ -61,7 +67,7 @@ public class VirtTripleLoaderInit {
 	private static final Integer myBuild = 0;
 	private static final String myCopyright = "Copyright (c) 2008 OpenLink Software";
 
-	private static final String virtConnectUrlDef = "jdbc:virtuoso://localhost:1111";
+	private static final String virtConnectUrlDef = "jdbc:virtuoso://neo:1111";
 	private static final String virtUserDef = "dba";
 	private static final String virtPwdFileDef = "virt_secret";
 	private static final String virtPwdDef = "dba";
@@ -70,17 +76,18 @@ public class VirtTripleLoaderInit {
 	private String virtUser;
 	private String virtPwd;
 	private String virtPwdFileName;
-	
+
 	// TODO: (ghard) Should be cmdline argument
-	
+
 	private static Connection virtConnection;
 	private static PreparedStatement ldAddStmt;
-	
+
 	private static Logger l;
 	private GetOpt g;
 	private static WarcBlockWriter w;
 	private static String curFile;
-	
+
+
 	private class WarcBlockWriter {
 		private Integer fileNo = 0;
 		private String fileFormat = "triples_%06d.nt";
@@ -89,25 +96,43 @@ public class VirtTripleLoaderInit {
 		private byte[] buf = new byte[2048];
 		private int bytesRead;
 		private int bytesInFile;
-		
+
 		public String write(MeasurableInputStream _block) throws IOException {
 			bytesInFile = 0;
 			curFile = String.format(fileFormat, fileNo++);
 			outStream = new FileOutputStream(curFile);
-
+/*
 			while ((bytesRead = _block.read (buf)) != -1) {
 				bytesInFile += bytesRead;
 				outStream.write(buf);
 			}
-			
+*/
+			int in_url = 0;
+			int c = 0;
+			while ((c = _block.read()) != -1) {
+
+				bytesInFile ++;
+/*			    	if (c == 60) {
+				    in_url = 1;
+				}
+			    	if (c == 62 && in_url==1) {
+				    in_url = 0;
+				}
+				if (in_url==1 && c==32) {
+				    c=95;
+				}*/
+				outStream.write(c);
+
+			}
+
 			l.output("Wrote " + bytesInFile + " in " + curFile);
 
 			outStream.flush();
 			outStream.close();
 			_block.close();
 			return (curFile);
-			
-		}		
+
+		}
 	}
 
 	public VirtTripleLoaderInit() {
@@ -117,7 +142,7 @@ public class VirtTripleLoaderInit {
 		virtConnectUrl = System.getenv("JDBC_DS");
 		virtUser = System.getenv("VIRT_USER");
 		virtPwdFileName = System.getenv("VIRT_SECRET");
-		
+
 		if (virtConnectUrl == "")
 			virtConnectUrl = virtConnectUrlDef;
 
@@ -131,13 +156,18 @@ public class VirtTripleLoaderInit {
 
 		try {
 			Class.forName("virtuoso.jdbc3.Driver");
-			
+
 //			 TODO: Use file to store secret. Check file perms and refuse to work if not restrictive enough
 
-			
-			
-			virtConnection = 
+			virtPwd="Ikpomwosa";
+			System.out.println (virtConnectUrl);
+			System.out.println (virtUser);
+			System.out.println (virtPwd);
+
+			virtConnection =
 				DriverManager.getConnection(virtConnectUrl,virtUser,virtPwd);
+
+			System.out.println (virtConnection);
 
 			ldAddStmt = virtConnection.prepareStatement("ld_add (?,?)");
 
@@ -157,7 +187,7 @@ public class VirtTripleLoaderInit {
 		System.out.printf("%s %d.%d.%04d\n", myName, myMajorVer, myMinorVer, myBuild);
 		System.out.println(myCopyright);
 	}
-	
+
 	public static class TrueFilter extends Filter<BURL> {
 		@Override
 		public boolean accept(BURL x) {
@@ -169,15 +199,15 @@ public class VirtTripleLoaderInit {
 			return "true";
 		}
 	}
-		
+
 	/**
 	 * @param args
 	 * @throws FileNotFoundException
 	 * @author ghard
 	 */
-	
-	public static void main(String[] args) throws FileNotFoundException {		
-	
+
+	public static void main(String[] args) throws FileNotFoundException {
+
 		VirtTripleLoaderInit vtl = new VirtTripleLoaderInit ();
 
 		if (args.length < 1 || args.length > 2) {
@@ -185,18 +215,18 @@ public class VirtTripleLoaderInit {
 			l.error("WX0002: Invalid number of arguments. Exiting.");
 			System.exit(-1);
 		}
-		
+
 		if (args.length == 2) {
-			
+
 		}
-		
+
 		String inFile = args[0];
-		
+
 		l.output("START " + inFile);
-		
-		final FastBufferedInputStream in = 
+
+		final FastBufferedInputStream in =
 			new FastBufferedInputStream(new FileInputStream (new File(inFile)));
-		
+
 		GZWarcRecord record = new GZWarcRecord();
 		Filter<WarcRecord> filter = Filters.adaptFilterBURL2WarcRecord (new TrueFilter());
 		WarcFilteredIterator it = new WarcFilteredIterator(in, record, filter);
@@ -208,7 +238,7 @@ public class VirtTripleLoaderInit {
 		ValueFactory vf = mdGraph.getValueFactory();
 		String dcNS = "http://purl.org/dc/elements/1.1/";
 		DatatypeFactory dtf = null;
-		
+
 		try {
 			dtf = DatatypeFactory.newInstance();
 		} catch (DatatypeConfigurationException e1) {
@@ -217,14 +247,17 @@ public class VirtTripleLoaderInit {
 		}
 
 		GregorianCalendar c = new GregorianCalendar ();
-		
+
 		try {
 			int cnt = 0;
 
-
-			while (cnt < 1 && it.hasNext()) {
+//			while (cnt < 1000 && it.hasNext()) {
+			while (it.hasNext()) {
 
 				WarcRecord nextRecord = it.next();
+
+				l.output ("cnt " + cnt);
+				l.output ("nextRecord " + nextRecord);
 
 				//Get the HttpResponse
 				try {
@@ -236,14 +269,14 @@ public class VirtTripleLoaderInit {
 						System.out.println("contentType: " + nextRecord.header.contentType);
 						System.out.println(" dataLength: " + nextRecord.header.dataLength);
 						System.out.println("actual data: " + nextRecord.block.length());
-						System.out.println("    missing: " + 
+						System.out.println("    missing: " +
 								(nextRecord.header.dataLength - nextRecord.block.length()) + "b");
 					}
 					l.output(nextRecord.header.subjectUri.toString());
-				
+
 					URI s, p, o;
 					Literal lit;
-	
+
 					s = vf.createURI(nextRecord.header.subjectUri.toString());
 					p = vf.createURI(dcNS, "source");
 					lit = vf.createLiteral(inFile);
@@ -255,12 +288,13 @@ public class VirtTripleLoaderInit {
 
 					p = vf.createURI(dcNS, "date");
 					lit = vf.createLiteral(xc);
-					
+
 					mdGraph.add(s,p,lit);
 
 //					p = vf.createURI("http://")
-					
+
 					curFile = w.write(response.contentAsStream());
+					l.output ("curFile " + curFile);
 
 					try {
 						ldAddStmt.setString(1, curFile);
@@ -271,31 +305,34 @@ public class VirtTripleLoaderInit {
 						l.error(e);
 						l.error("WX0003: Insert to loader table failed. Exiting.");
 						System.exit(-1);
-					}					
-				} 
+					}
+				}
 				catch (IOException e) {
 					e.printStackTrace();
 					continue;
 				}
 				cnt++;
 			}
-		} 
+		}
+
+
 		catch (RuntimeException re) {
 			l.error ("WX0004 Unexpected Runtime Error Thrown.");
 			l.error (re.toString());
 			re.printStackTrace();
 			System.exit (-1);
 		}
-		
+				l.output ("Finish loop ");
+
 		Iterator<Statement> iter = mdGraph.iterator();
 		Integer _stmtcnt = 0;
 		String mdFile = String.format("%s.md.nt", inFile);
-		
+
 		FileOutputStream outStream = new FileOutputStream(mdFile);
 		NTriplesWriter ntw = new NTriplesWriter (outStream);
-		
+
 		ntw.handleNamespace ("dc", dcNS);
-		
+
 		try {
 			ntw.startRDF();
 			while (iter.hasNext()) {
