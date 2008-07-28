@@ -159,7 +159,6 @@ public class VirtTripleLoaderInit {
 
 //			 TODO: Use file to store secret. Check file perms and refuse to work if not restrictive enough
 
-			virtPwd="Ikpomwosa";
 			System.out.println (virtConnectUrl);
 			System.out.println (virtUser);
 			System.out.println (virtPwd);
