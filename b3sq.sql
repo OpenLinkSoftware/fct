@@ -1,0 +1,217 @@
+
+
+- Which graphs have text pattern x?
+sparql select count (*) where { ?s ?p ?o . filter (bif:contains (?o, "paris")) }; 
+
+sparql select distinct ?g where graph (?g) { ?s ?p ?o . filter (bif:contains (?o, "paris and moonlight")) };
+
+-- what kinds of things have conspiracy?
+sparql select  ?tp count (*) where {graph ?g { ?s ?p ?o . ?s a ?tp filter (bif:contains (?o, "conspiracy")) }} group by ?tp order by desc 2;
+
+-- most popular interests
+select * where  {{select ?o count (*) as cnt where {?s foaf:interest ?o} group by ?o} filter (?cnt > 100) } order by 2 desc;
+
+-- interests of harry potter fans 
+sparql select ?i2 count (*) where { ?p foaf:interest <http://www.livejournal.com/interests.bml?int=harry+potter> .
+  ?p foaf:interest ?i2 } group by ?i2 order by desc 2 limit 20;
+
+
+
+-- common distinctive interests 
+
+sparql  select ?i ?cnt ?n1 ?n2 ?p1 ?p2 
+where {
+{select ?i count (*) as ?cnt where { ?p foaf:interest ?i } group by ?i}
+filter ( ?cnt > 1 && ?cnt < 10) .
+?p1 foaf:interest ?i .
+?p2 foaf:interest ?i .
+filter  (?p1 != ?p2 
+	&& !bif:exists ((select (1) where {?p1 foaf:knows ?p2 }))
+	&& !bif:exists ((select (1) where {?p2 foaf:knows ?p1 }))
+) .
+?p1 foaf:nick ?n1 .
+?p2 foaf:nick ?n2 .
+} order by ?cnt limit 10;
+
+
+-- cliques 
+sparql  select ?i ?cnt ?n1 ?n2 ?p1 ?p2 
+where {
+{select ?i count (*) as ?cnt where { ?p foaf:interest ?i } group by ?i}
+filter ( ?cnt > 1 && ?cnt < 10) .
+?p1 foaf:interest ?i .
+?p2 foaf:interest ?i .
+filter  (?p1 != ?p2 
+	&& (bif:exists ((select (1) where {?p1 foaf:knows ?p2 }))
+	|| bif:exists ((select (1) where {?p2 foaf:knows ?p1 })))
+) .
+?p1 foaf:nick ?n1 .
+?p2 foaf:nick ?n2 .
+} order by ?cnt limit 10;
+
+
+
+-- Most asymetrically known
+
+sparql select count (*) where { ?p1 foaf:knows ?p2 };
+sparql select count (*) where { ?p1 foaf:knows ?p2 . ?p2 foaf:knows ?p1 };
+
+-- celeb with value subquery 
+sparql select ?celeb 
+  (select count (*)  where { ?xx foaf:knows ?celeb . filter (!bif:exists ((select (1) where { ?celeb foaf:knows ?xx1})) ) })
+where {{ select  distinct ?celeb where { ?xx foaf:knows ?celeb} }} limit 10;
+
+-- celeb with group by
+sparql select ?celeb, count (*) where { ?claimant foaf:knows ?celeb . filter (!bif:exists ((select (1) where {?celeb foaf:knows ?claimant }))) } group by ?celeb order by desc 2 limit 10;
+
+sparql select count (*) where { ?claimant foaf:knows ?celeb . filter (!bif:exists ((select (1) where {?celeb foaf:knows ?claimant }))) };
+
+-- Interest profile matches of plaid_skirt who are male and want sex
+
+
+
+
+-- how many interests do people have?
+sparql select avg ((select count (*) { ?p foaf:interest ?i })) where 
+{{ select distinct ?p  where { ?p foaf:interest ?i2 }}};
+
+
+
+-- does openid connect between graphs?
+
+sparql select count (*) where { graph ?g1 {?p1 foaf:openid  ?id } . graph ?g2 { ?p2 foaf:openid ?id } . filter (?g1 != ?g2) };
+
+-- most mentioned openids 
+
+sparql select ?id count (distinct ?g) where { graph ?g { ?xx foaf:openid ?id}} group by ?id order by desc 2 limit 100;
+
+-- what kind of stuff is around Gutman?
+
+sparql select ?tp count (*) where {
+        ?s ?p ?o . filter (bif:contains (?o, "gutman")) .
+	?s ?p2 ?rel . ?rel a ?tp }
+
+sparql select ?tp ?lbl ?s where {
+        ?s ?p ?o . filter (bif:contains (?o, "gutman")) .
+	?s a  ?tp optional {?s rdfs:label ?lbl } } order by ?tp;
+
+-- type of parties  that claim to know each other 
+sparql select distinct ?st ?ot where { ?s foaf:knows ?o . ?s a ?st . ?o a ?ot };
+
+
+-- tag cloud of bombing 
+-- who starts threads about bombing 
+
+
+-- sameAs for identical email sha 
+
+insert into rdf_quad (g, s, p, o) select iri_to_id ('b3si'), first.s, rdf_sas_iri (), rest.s from 
+     (select distinct o from rdf_quad where p = iri_to_id ('http://xmlns.com/foaf/0.1/mbox_sha1sum') ) sha,
+       (select top 1 s, o from rdf_quad where p = iri_to_id ('http://xmlns.com/foaf/0.1/mbox_sha1sum')) first,
+       rdf_quad rest 
+where   first.o = sha.o 
+and rest.o = sha.o
+and rest.p = iri_to_id ('http://xmlns.com/foaf/0.1/mbox_sha1sum') 
+and first.s <> rest.s;
+
+
+-- related tag analysis 
+
+create table tag_count (tcn_tag iri_id_8, tcn_count int, primary key (tcn_tag))
+alter index tag_count on tag_count partition (tcn_tag int (0hexffff00));
+
+create table tag_coincidence (tc_t1 iri_id_8, tc_t2 iri_id_8, tc_count  int, tc_t1_count int, tc_t2_count int, primary key  (tc_t1, tc_t2))
+alter index tag_coincidence on tag_coincidence partition (tc_t1 int (0hexffff00));
+
+
+insert into tag_count select * from (sparql define output:valmode "LONG" select ?t count (*) as ?cnt where {?s sioc:topic ?t} group by ?t) xx option (quietcast);
+
+
+update tag_coincidence set tc_t1_count = (select tcn_count from tag_count where tcn_tag = tc_t1),
+       tc_t2_count = (select tcn_count from tag_count where tcn_tag = tc_t2);
+
+insert into tag_coincidence  (tc_t1, tc_t2, tc_count)
+select "t1", "t2", cnt from 
+(select  "t1", "t2", count (*) as cnt from 
+(sparql define output:valmode "LONG"
+select ?t1 ?t2 where {?s sioc:topic ?t1 . ?s sioc:topic ?t2 } ) tags
+where  "t1" < "t2" group by "t1", "t2") xx
+where isiri_id ("t1") and isiri_id ("t2") option (quietcast); 
+
+
+
+ group by ?t1 ?t2);
+
+insert into rdf_quad (g, s, p, o) select iri_to_id ('tag_summary'), tc_t1, iri_to_id ('related_tag'), tc_t2
+from tag_coincidence where tc_count > )
+
+
+- what is the link between person 1 and person 2?
+- what is the latest mention of x and y?
+- On what sources does the link between x and y depend?
+
+- Who is my nearest match of xx?
+
+- what properties are available for discerning identity of blanks in knows relation?
+
+sparql select ?s ?n where { ?s foaf:knows ?x . ?s foaf:name ?n } limit 10;
+
+what graph contains the most knows relations?
+
+sparql select count (*) ?g where {graph ?g {?s foaf:knows ?o} } group by ?g order by desc 1 limit 10;
+
+
+-- What properties do posts have?
+sparql select ?p count (*) where {?s a sioc:Post . ?s ?p ?o} group by ?p order by desc 2 limit 40;
+
+
+-- tag cloud of computer 
+sparql select ?lbl  count (*)  where {  ?s ?p ?o . ?o bif:contains "computer" . ?s sioc:topic ?tg . optional {?tg rdfs:label ?lbl}}  group by ?lbl order by desc 2 limit 40;
+
+
+sparql select count (*) where { ?claimant foaf:knows ?celeb . filter (!bif:exists ((select (1) where {?celeb foaf:knows ?claimant }))) };
+
+-- does something refer to geography outside geonames?
+
+sparql select count (*) 
+where { graph <http://sws.geonames.org> { ?f a geo:Feature } . graph ?g {?s ?p ?f } . filter ( ?g != <http://sws.geonames.org>) };
+
+sparql select ?g count (*) 
+where { graph <http://sws.geonames.org> { ?f a geo:Feature } . graph ?g {?s ?p ?f } } group by ?g order by desc 2 limit 40;
+
+
+
+-- what properties do documents have?
+sparql select ?p count (*) where {?s a foaf:Document . ?s ?p ?o} group by ?p order by desc 2;
+
+-- what properties do persons have?
+sparql select ?p count (*) where {?s a foaf:Person . ?s ?p ?o} group by ?p order by desc 2 limit 50;
+
+
+-- authors on folksonomy 
+
+sparql select ?auth count (*) where { ?d dc:creator ?auth . ?d ?p ?o filter (bif:contains (?o, "folksonomy")) } group by ?auth order by desc 2;
+
+
+-- who talks most about sex?
+
+sparql select ?auth count (*) where { ?d dc:creator ?auth . ?d ?p ?o filter (bif:contains (?o, "sex")) } group by ?auth order by desc 2;
+-- Who talks only about sex?
+
+
+
+--- traditional text search 
+select "s", "p", search_excerpt (vector ('semantic', 'web'), "o") from (sparql select ?s ?p ?o where {?s ?p ?o . ?o bif:contains "'semantic web'" }) f;
+
+
+-- graph vicinity of text hits 
+
+sparql select ?tp count(*)  where { ?s ?p2 ?o2 . ?o2 a ?tp . ?s ?p ?o . filter ( bif:contains (?o, "plaid_skirt")) } group by ?tp order by desc 2 limit 40;
+
+sparql select ?tp count(*) where { ?s ?p2 ?o2 . ?o2 a ?tp . ?s ?p ?o . filter ( bif:contains (?o, "'terrorist")) } group by ?tp order by desc 2;
+
+
+-- who knows about terrorist bombings?
+sparql select ?g count(*) where { graph ?g {?s ?p ?o . filter ( bif:contains (?o, "'terrorist bombing'")) }} group by ?g order by desc 2;
+
+
