@@ -166,7 +166,8 @@ sparql select ?p count (*) where {?s a sioc:Post . ?s ?p ?o} group by ?p order b
 
 
 -- tag cloud of computer 
-sparql select ?lbl  count (*)  where {  ?s ?p ?o . ?o bif:contains "computer" . ?s sioc:topic ?tg . optional {?tg rdfs:label ?lbl}}  group by ?lbl order by desc 2 limit 40;
+sparql select ?lbl  count (*)  where {  ?s ?p ?o . filter (bif:contains (?o, "computer")) . ?s sioc:topic ?tg . optional {?tg rdfs:label ?lbl}}  group by ?lbl order by desc 2 limit 40;
+
 
 
 sparql select count (*) where { ?claimant foaf:knows ?celeb . filter (!bif:exists ((select (1) where {?celeb foaf:knows ?claimant }))) };
@@ -201,17 +202,61 @@ sparql select ?auth count (*) where { ?d dc:creator ?auth . ?d ?p ?o filter (bif
 
 
 --- traditional text search 
-select "s", "p", search_excerpt (vector ('semantic', 'web'), "o") from (sparql select ?s ?p ?o where {?s ?p ?o . ?o bif:contains "'semantic web'" }) f;
+
+sparql select ?s ?p (bif:search_excerpt (bif:vector ('semantic', 'web'), ?o))  where {?s ?p ?o . filter (bif:contains (?o, "'semantic web'")) } limit 10;
+
 
 
 -- graph vicinity of text hits 
 
-sparql select ?tp count(*)  where { ?s ?p2 ?o2 . ?o2 a ?tp . ?s ?p ?o . filter ( bif:contains (?o, "plaid_skirt")) } group by ?tp order by desc 2 limit 40;
+-- what types of things surround foaf plaid_skirt?
+sparql select ?tp count(*)  where { ?s ?p2 ?o2 . ?o2 a ?tp . ?s foaf:nick ?o . filter ( bif:contains (?o, "plaid_skirt")) } group by ?tp order by desc 2 limit 40;
 
-sparql select ?tp count(*) where { ?s ?p2 ?o2 . ?o2 a ?tp . ?s ?p ?o . filter ( bif:contains (?o, "'terrorist")) } group by ?tp order by desc 2;
+-- what are they called?
+sparql select?lbl count(*) where { ?s ?p2 ?o2 . ?o2 rdfs:label ?lbl . ?s foaf:nick  ?o . filter ( bif:contains (?o, "plaid_skirt")) } group by ?lbl order by desc 2;
+
+-- more generally called?
+sparql define input:inference 'b3s'
+ select?lbl count(*) where { ?s ?p2 ?o2 . ?o2 b3s:label ?lbl . ?s foaf:nick  ?o . filter ( bif:contains (?o, "plaid_skirt")) } group by ?lbl order by desc 2;
+
+
+
+
+
+sparql select?lbl count(*) where { ?s ?p2 ?o2 . ?o2 b3s:label ?lbl . ?s foaf:nick  ?o . filter ( bif:contains (?o, "plaid_skirt")) } group by ?lbl order by desc 2;
 
 
 -- who knows about terrorist bombings?
 sparql select ?g count(*) where { graph ?g {?s ?p ?o . filter ( bif:contains (?o, "'terrorist bombing'")) }} group by ?g order by desc 2;
 
 
+-- extended friends of plaid skirt 
+sparql select ?xx where { ?skirt rdfs:lable ?lbl . filter (bif:contains (?lbl, "plaid_skirt")) .
+?skirt foaf:knows ?xx };
+
+
+sparql select count (*) ?place ?lat ?long ?lbl  where {?s foaf:based_near ?place . ?place pos:lat ?lat . ?place pos:long ?long . ?place rdfs:label ?lbl } group by ?place ?long ?lat ?lbl order by desc 2 limit 50;
+
+-- Stefan Decker 
+sparql select  ?lbl ?p ?o ?sd  where { ?sd a foaf:Person . ?sd ?namep ?ns . filter (bif:contains (?ns, "stefan and decker")) ?sd ?p ?o . optional {?o rdfs:label ?lbl}} limit 50;
+
+-- Social Stefan Decker 
+sparql  select ?sd count (distinct ?xx) where { ?sd a foaf:Person . ?sd ?name ?ns . filter (bif:contains (?ns, "'Stefan Decker'")) . ?sd foaf:knows ?xx } group by ?sd order by desc 2;
+
+-- connections of Stefan Decker 
+sparql select count (*) where 
+{ 
+{select * where { ?s foaf:knows ?o }}
+ option (transitive, t_distinct, t_in(?s), t_out(?o)) . 
+  filter (?s= <mailto:stefan.decker@deri.org>)};
+
+
+
+-- what is being claimed about the location of something called San Francisco?
+sparql select distinct ?sfo ?lat ?long where { ?sfo ?sname ?name . filter (bif:contains (?name, "'san francisco'")) . ?sfo pos:lat ?lat . ?sfo pos:long ?long};
+
+
+
+
+-- types of things which have same as assertions 
+sparql select ?tp count (*) where {?s owl:sameAs ?o . ?s a ?tp  } group by ?tp order by desc 2 limit 100;
