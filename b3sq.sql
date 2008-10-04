@@ -640,22 +640,88 @@ where
 group by ?sd
 order by desc 2;
 
--- connections of Stefan Decker 
+-- connections of Kingsley Idehen 
 
 sparql select count (*) 
 where 
   { 
     {
-      select * 
+      select ?s ?o  
       where 
         { 
           ?s foaf:knows ?o 
         }
     }
-    option (transitive, t_distinct, t_in(?s), t_out(?o)) . 
-    filter (?s= <mailto:stefan.decker@deri.org>)
-  }
-;
+    option (transitive, t_distinct, t_in(?s), t_out(?o), t_min (1)) . 
+    filter (?s= <http://myopenlink.net/dataspace/person/kidehen#this>)
+  };
+
+-- Connections of Kingsley Idehen with same as aliases 
+sparql define input:same-as "YES" select count (*) 
+where 
+  { 
+    {
+      select ?s ?o  
+      where 
+        { 
+          ?s foaf:knows ?o 
+        }
+    }
+    option (transitive, t_distinct, t_in(?s), t_out(?o), t_min (1)) . 
+    filter (?s= <http://myopenlink.net/dataspace/person/kidehen#this>)
+  };
+
+
+
+-- Closest connections of Kingsley Idehen 
+sparql select ?o ?dist 
+where 
+  { 
+    {
+      select ?s ?o  
+      where 
+        { 
+          ?s foaf:knows ?o 
+        }
+    }
+    option (transitive, t_distinct, t_in(?s), t_out(?o), t_min (1), t_step ('step_no') as ?dist) . 
+    filter (?s= <http://myopenlink.net/dataspace/person/kidehen#this>)
+  } limit 50;;
+
+-- What graphs are the principal constituents of Kingsley's network, counting all sameAs aliases?
+sparql define input:same-as "YES" select ?g count (*) 
+where 
+  { 
+    {
+      select ?s ?o ?g 
+      where 
+        { 
+          graph ?g {?s foaf:knows ?o }
+        }
+    }
+    option (transitive, t_distinct, t_in(?s), t_out(?o), t_min (1)) . 
+    filter (?s= <http://myopenlink.net/dataspace/person/kidehen#this>)
+  } group by ?g order by desc 2 limit 100;
+
+
+
+-- What connects?
+sparql  select ?link ?g ?step ?path 
+where 
+  { 
+    {
+      select ?s ?o ?g 
+      where 
+        { 
+          graph ?g {?s foaf:knows ?o }
+        }
+    }
+    option (transitive, t_in(?s), t_out(?o), t_no_cycles, T_shortest_only, t_step (?s) as ?link, t_step ('path_id') as ?path, t_step ('step_no') as ?step, t_direction) . 
+    filter (?s= <http://myopenlink.net/dataspace/person/kidehen#this>
+	&& ?o = <http://www.advogato.org/person/mparaz/foaf.rdf#me>)
+  } limit 20;
+
+
 
 
 
