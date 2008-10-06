@@ -544,7 +544,7 @@ order by desc 2
 
 -- more generally called?
 
-define input:inference 'b3s'
+sparql define input:inference 'b3s'
 select ?lbl count(*) 
 where 
   { 
@@ -686,7 +686,24 @@ where
     }
     option (transitive, t_distinct, t_in(?s), t_out(?o), t_min (1), t_step ('step_no') as ?dist) . 
     filter (?s= <http://myopenlink.net/dataspace/person/kidehen#this>)
-  } limit 50;;
+  } limit 50;
+
+
+-- LinkedIn style 
+sparql select ?o ?dist ((select count (*) where {?o foaf:knows ?xx}))
+where 
+  { 
+    {
+      select ?s ?o  
+      where 
+        { 
+          ?s foaf:knows ?o 
+        }
+    }
+    option (transitive, t_distinct, t_in(?s), t_out(?o), t_min (1), t_max (4), t_step ('step_no') as ?dist) . 
+    filter (?s= <http://myopenlink.net/dataspace/person/kidehen#this>)
+  } order by ?dist desc 3 limit 50;
+
 
 -- What graphs are the principal constituents of Kingsley's network, counting all sameAs aliases?
 sparql define input:same-as "YES" select ?g count (*) 
@@ -716,7 +733,7 @@ where
           graph ?g {?s foaf:knows ?o }
         }
     }
-    option (transitive, t_in(?s), t_out(?o), t_no_cycles, T_shortest_only, t_step (?s) as ?link, t_step ('path_id') as ?path, t_step ('step_no') as ?step, t_direction) . 
+    option (transitive, t_in(?s), t_out(?o), t_no_cycles, T_shortest_only, t_step (?s) as ?link, t_step ('path_id') as ?path, t_step ('step_no') as ?step, t_direction 3) . 
     filter (?s= <http://myopenlink.net/dataspace/person/kidehen#this>
 	&& ?o = <http://www.advogato.org/person/mparaz/foaf.rdf#me>)
   } limit 20;
