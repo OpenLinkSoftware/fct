@@ -1,6 +1,6 @@
 
 
-- Which graphs have text pattern x?
+-- Which graphs have text pattern x?
 
 sparql 
 select count (*) 
@@ -13,12 +13,12 @@ where
 
 sparql 
 select distinct ?g 
-where 
-  graph (?g) 
+where {
+  graph ?g
   { 
     ?s ?p ?o . 
     filter (bif:contains (?o, "paris and moonlight")) 
-  }
+  } }
 ;
 
 -- what kinds of things have conspiracy?
@@ -40,11 +40,11 @@ order by desc 2;
 -- most popular interests
 
 sparql
-select * 
+select ?o ?cnt
 where 
   {
     {
-      select ?o count (*) as cnt 
+      select ?o (count (*)) as ?cnt 
       where 
         {
           ?s foaf:interest ?o
@@ -53,7 +53,7 @@ where
     } 
     filter (?cnt > 100) 
   } 
-order by 2 desc;
+order by desc 2;
 
 -- interests of harry potter fans 
 sparql 
@@ -147,12 +147,12 @@ select count (*)
 
 sparql 
 select ?celeb 
-  (select count (*)  
+  ((select count (*)  
    where 
      { 
        ?xx foaf:knows ?celeb . 
        filter (!bif:exists ((select (1) where { ?celeb foaf:knows ?xx1 })) ) 
-     })
+     }))
 where 
   {
     { 
@@ -318,11 +318,8 @@ select "t1", "t2", cnt from
 (sparql define output:valmode "LONG"
 select ?t1 ?t2 where {?s sioc:topic ?t1 . ?s sioc:topic ?t2 } ) tags
 where  "t1" < "t2" group by "t1", "t2") xx
-where isiri_id ("t1") and isiri_id ("t2") option (quietcast); 
-
-
-
- group by ?t1 ?t2);
+where isiri_id ("t1") and isiri_id ("t2") option (quietcast)
+group by ?t1 ?t2;
 
 insert into rdf_quad (g, s, p, o) 
   select iri_to_id ('tag_summary'), tc_t1, iri_to_id ('related_tag'), tc_t2
@@ -733,7 +730,8 @@ where
           graph ?g {?s foaf:knows ?o }
         }
     }
-    option (transitive, t_in(?s), t_out(?o), t_no_cycles, T_shortest_only, t_step (?s) as ?link, t_step ('path_id') as ?path, t_step ('step_no') as ?step, t_direction 3) . 
+    option (transitive, t_in(?s), t_out(?o), t_no_cycles, T_shortest_only,
+       t_step (?s) as ?link, t_step ('path_id') as ?path, t_step ('step_no') as ?step, t_direction) . 
     filter (?s= <http://myopenlink.net/dataspace/person/kidehen#this>
 	&& ?o = <http://www.advogato.org/person/mparaz/foaf.rdf#me>)
   } limit 20;
