@@ -189,7 +189,17 @@ where
   }
 ;
 
--- Interest profile matches of plaid_skirt who are male and want sex
+-- Interest profile matches of plaid_skirt 
+
+sparql select ?p ((select count (*) where {?p foaf:interest ?i . ?i foaf:interest ?ps}))
+   ((select count (*) where { ?p foaf:interest ?i}))
+where {
+?ps foaf:nick "plaid_skirt"@en .
+{select distinct ?p ?psi where {?p foaf:interest ?i . ?psi foaf:interest ?i }} .
+  filter (?ps = ?psi)
+} order by desc 2 limit 20;
+
+
 
 
 -- how many interests do people have?
@@ -395,6 +405,8 @@ limit 40
 ;
 
 
+
+-- who is most known without knowing in return 
 sparql 
 select count (*) 
 where 
@@ -411,7 +423,7 @@ where
   { 
     graph <http://sws.geonames.org> 
       { 
-        ?f a geo:Feature 
+        ?f a geonames:Feature 
       } . 
     graph ?g 
       {
@@ -426,7 +438,7 @@ where
   { 
     graph <http://sws.geonames.org> 
       { 
-        ?f a geo:Feature 
+        ?f a geonames:Feature 
       } . 
     graph ?g 
       {
@@ -599,8 +611,8 @@ select count (*) ?place ?lat ?long ?lbl
 where 
   {
     ?s foaf:based_near ?place .
-    ?place pos:lat ?lat .
-    ?place pos:long ?long . 
+    ?place geo:lat ?lat .
+    ?place geo:long ?long . 
     ?place rdfs:label ?lbl 
   } 
 group by ?place ?long ?lat ?lbl 
@@ -701,6 +713,10 @@ where
     filter (?s= <http://myopenlink.net/dataspace/person/kidehen#this>)
   } order by ?dist desc 3 limit 50;
 
+-- who claims to know the most distinct, eliminating duplicate sas 
+sparql define input:same-as "YES" 
+  select ?s count (*) where { ?s foaf:knows ?o } group by ?s order by desc 2 limit 10;
+
 
 -- What graphs are the principal constituents of Kingsley's network, counting all sameAs aliases?
 sparql define input:same-as "YES" select ?g count (*) 
@@ -748,8 +764,8 @@ where
   { 
     ?sfo ?sname ?name .
     filter (bif:contains (?name, "'san francisco'")) .
-    ?sfo pos:lat ?lat .
-    ?sfo pos:long ?long
+    ?sfo geo:lat ?lat .
+    ?sfo geo:long ?long
   }
 ;
 
@@ -765,4 +781,6 @@ where
 group by ?tp
 order by desc 2 
 limit 100;
+
+
 
