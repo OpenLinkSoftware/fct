@@ -748,7 +748,7 @@ where
         }
     }
     option (transitive, t_in(?s), t_out(?o), t_no_cycles, T_shortest_only,
-       t_step (?s) as ?link, t_step ('path_id') as ?path, t_step ('step_no') as ?step, t_direction) . 
+       t_step (?s) as ?link, t_step ('path_id') as ?path, t_step ('step_no') as ?step, t_direction 3) . 
     filter (?s= <http://myopenlink.net/dataspace/person/kidehen#this>
 	&& ?o = <http://www.advogato.org/person/mparaz/foaf.rdf#me>)
   } limit 20;
@@ -782,6 +782,13 @@ where
 group by ?tp
 order by desc 2 
 limit 100;
+
+-- how many really distinct knows relations?
+
+sparql define input:same-as "YES" 
+select count (*) where 
+  {{select distinct ?s ?o 
+where { ?s foaf:knows ?o}}};
 
 
 
