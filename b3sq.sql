@@ -191,12 +191,13 @@ where
 
 -- Interest profile matches of plaid_skirt 
 
-sparql select ?p ((select count (*) where {?p foaf:interest ?i . ?i foaf:interest ?ps}))
+sparql select ?n ((select count (*) where {?p foaf:interest ?i . ?ps foaf:interest ?i}))
    ((select count (*) where { ?p foaf:interest ?i}))
 where {
 ?ps foaf:nick "plaid_skirt"@en .
 {select distinct ?p ?psi where {?p foaf:interest ?i . ?psi foaf:interest ?i }} .
   filter (?ps = ?psi)
+  ?p foaf:nick ?n
 } order by desc 2 limit 20;
 
 
