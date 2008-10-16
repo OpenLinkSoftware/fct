@@ -747,7 +747,7 @@ where
           graph ?g {?s foaf:knows ?o }
         }
     }
-    option (transitive, t_in(?s), t_out(?o), t_no_cycles, T_shortest_only,
+    option (transitive, t_distinct, t_in(?s), t_out(?o), t_no_cycles, T_shortest_only,
        t_step (?s) as ?link, t_step ('path_id') as ?path, t_step ('step_no') as ?step, t_direction 3) . 
     filter (?s= <http://myopenlink.net/dataspace/person/kidehen#this>
 	&& ?o = <http://www.advogato.org/person/mparaz/foaf.rdf#me>)
@@ -792,3 +792,13 @@ where { ?s foaf:knows ?o}}};
 
 
 
+
+
+--  umbel named entity types 
+sparql define input:same-as "yes" select ?tp count (*) where {  graph <http://umbel.org> {?s ?p ?o  } . ?o  a ?tp} group by ?tp order by desc 2 limit 50
+;
+
+
+-- in umbel but refs nothing 
+sparql select count (*) where {graph <umbel_ne> {?s ?p ?o} . filter (!bif:exists ((select  (1) where { graph ?g {?s ?p2 ?o2} . filter (?g != <umbel_ne>) })) ) }
+;
