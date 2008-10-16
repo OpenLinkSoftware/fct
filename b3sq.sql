@@ -1,5 +1,23 @@
 
 
+
+
+-- Text Search 
+
+-- Who talks only about sex?
+
+--* Text Search - default is semantic web.  
+
+sparql 
+select ?s ?p (bif:search_excerpt (bif:vector ('semantic', 'web'), ?o))  
+where 
+  {
+    ?s ?p ?o .
+    filter (bif:contains (?o, "'semantic web'")) 
+  } 
+limit 10
+;
+
 -- Which graphs have text pattern x?
 
 sparql 
@@ -21,8 +39,27 @@ where {
   } }
 ;
 
--- what kinds of things have conspiracy?
 
+
+--* Graphs With Text  -- paris and dakar is the sample
+
+sparql 
+select ?g count (*) 
+where {
+  graph ?g
+  { 
+    ?s ?p ?o . 
+    filter (bif:contains (?o, "paris and dakar")) 
+  } } group by ?g order by desc 2 limit 50
+;
+
+
+
+
+
+
+-- what kinds of objects are there about Paris Hilton 
+--* Types of Things With Text -- sample is Paris Hiltton 
 sparql 
 select ?tp count (*) 
 where 
@@ -31,7 +68,7 @@ where
       { 
         ?s ?p ?o . 
         ?s a ?tp 
-        filter (bif:contains (?o, "conspiracy")) 
+        filter (bif:contains (?o, "'paris hilton'")) 
       }
   } 
 group by ?tp
@@ -55,7 +92,8 @@ where
   } 
 order by desc 2;
 
--- interests of harry potter fans 
+--* Interests Around  -- sample is  <http://www.livejournal.com/interests.bml?int=harry+potter>
+
 sparql 
 select ?i2 count (*) 
 where 
@@ -65,7 +103,26 @@ where
   } 
 group by ?i2 
 order by desc 2 
-limit 20;
+limit 20
+;
+
+--  doe not work - Interest Cloud Around -- sample is Harry Potter  
+
+sparql 
+select ?i2 count (*) 
+where 
+  { 
+  ?i1 ?p "Harry Potter"@en .
+    ?p foaf:interest ?i1 .
+    ?p foaf:interest ?i2 
+  } 
+group by ?i2 
+order by desc 2 
+limit 20
+;
+
+
+
 
 
 
@@ -167,7 +224,7 @@ limit 10
 ;
 
 -- celeb with group by
-
+--* The Most One-Sidedly Known People 
 sparql 
 select ?celeb, count (*) 
 where 
@@ -191,14 +248,16 @@ where
 
 -- Interest profile matches of plaid_skirt 
 
-sparql select ?n ((select count (*) where {?p foaf:interest ?i . ?ps foaf:interest ?i}))
+-- People With the Same Interests As X -- sample is "plaid_skirt"@en
+
+sparql select distinct ?n ((select count (*) where {?p foaf:interest ?i . ?ps foaf:interest ?i}))
    ((select count (*) where { ?p foaf:interest ?i}))
 where {
 ?ps foaf:nick "plaid_skirt"@en .
 {select distinct ?p ?psi where {?p foaf:interest ?i . ?psi foaf:interest ?i }} .
   filter (?ps = ?psi)
   ?p foaf:nick ?n
-} order by desc 2 limit 20;
+} order by desc 2 limit 50;
 
 
 
@@ -506,19 +565,6 @@ group by ?auth
 order by desc 2
 ;
 
--- Who talks only about sex?
-
---- traditional text search 
-
-sparql 
-select ?s ?p (bif:search_excerpt (bif:vector ('semantic', 'web'), ?o))  
-where 
-  {
-    ?s ?p ?o .
-    filter (bif:contains (?o, "'semantic web'")) 
-  } 
-limit 10
-;
 
 -- graph vicinity of text hits 
 
@@ -554,6 +600,7 @@ order by desc 2
 
 -- more generally called?
 
+-- Cloud Around  -- sample is plaid skirt 
 sparql define input:inference 'b3s'
 select ?lbl count(*) 
 where 
