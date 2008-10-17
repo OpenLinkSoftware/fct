@@ -2,9 +2,7 @@
 
 
 
--- Text Search 
 
--- Who talks only about sex?
 
 --* Text Search - default is semantic web.  
 
@@ -552,17 +550,19 @@ order by desc 2
 
 -- who talks most about sex?
 
+-- Top 100 Authors by Text  -- 
 
 sparql 
-select ?auth count (*) 
+select ?auth ?cnt ((select count (distinct ?xx) where { ?xx dc:creator ?auth})) where 
+{{ select ?auth count (distinct ?d) as ?cnt 
 where 
   { 
     ?d dc:creator ?auth .
     ?d ?p ?o 
-    filter (bif:contains (?o, "sex")) 
+    filter (bif:contains (?o, "semantic and web")) 
   } 
 group by ?auth 
-order by desc 2
+order by desc 2 limit 100 }}
 ;
 
 
@@ -600,7 +600,7 @@ order by desc 2
 
 -- more generally called?
 
--- Cloud Around  -- sample is plaid skirt 
+-- Cloud Around foaf Person  -- sample is plaid skirt 
 sparql define input:inference 'b3s'
 select ?lbl count(*) 
 where 
@@ -614,6 +614,7 @@ group by ?lbl
 order by desc 2
 ;
 
+
 sparql 
 select ?lbl count(*) 
 where 
@@ -624,38 +625,13 @@ where
     filter ( bif:contains (?o, "plaid_skirt")) 
   } 
 group by ?lbl 
-order by desc 2;
-
-
--- who knows about terrorist bombings?
-sparql 
-select ?g count(*) 
-where 
-  { 
-    graph ?g 
-      {
-        ?s ?p ?o . 
-        filter (bif:contains (?o, "'terrorist bombing'")) 
-      }
-  } 
-group by ?g 
-order by desc 2;
-
--- extended friends of plaid skirt 
-
-sparql 
-select ?xx 
-where 
-  { 
-    ?skirt rdfs:label ?lbl . 
-    filter (bif:contains (?lbl, "plaid_skirt")) .
-    ?skirt foaf:knows ?xx
-  }
+order by desc 2 limit 100
 ;
 
 
+
 sparql 
-select count (*) ?place ?lat ?long ?lbl 
+select ?place count (*) ?lat ?long ?lbl 
 where 
   {
     ?s foaf:based_near ?place .
@@ -668,21 +644,6 @@ order by desc 2
 limit 50
 ;
 
--- Stefan Decker 
-sparql
-select ?lbl ?p ?o ?sd  
-where 
-  { 
-    ?sd a foaf:Person .
-    ?sd ?namep ?ns .
-    filter (bif:contains (?ns, "stefan and decker")) ?sd ?p ?o . 
-    optional 
-      {
-        ?o rdfs:label ?lbl
-      }
-  } 
-limit 50
-;
 
 -- Social Stefan Decker 
 
@@ -747,6 +708,7 @@ where
 
 
 -- LinkedIn style 
+--* Social Connections a la LinkedIn   sample is http://myopenlink.net/dataspace/person/kidehen#this
 sparql select ?o ?dist ((select count (*) where {?o foaf:knows ?xx}))
 where 
   { 
@@ -784,6 +746,8 @@ where
 
 
 -- What connects?
+--* Connection Between  samples are http://myopenlink.net/dataspace/person/kidehen#this and http://www.advogato.org/person/mparaz/foaf.rdf#me
+
 sparql  select ?link ?g ?step ?path 
 where 
   { 
