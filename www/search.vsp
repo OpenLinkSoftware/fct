@@ -3,13 +3,16 @@
 <?vsp
   declare label varchar;
   declare srch, srch2, res, sql_state, err_msg, meta, data, rs any;
-  declare squery, smode varchar;
+  declare squery, smode, sm varchar;
   declare i,j integer;
 
   srch := {?'sc'};
   srch2 := {?'sc2'};
   smode := {?'q'};
+  sm := {?'fa'};
   if (isnull(smode) or smode='') smode := '1';
+  if (smode in ('100','101','102','103')) sm := 'Execute';
+
   label := label_get(smode);
 
   pick_query(smode,srch,squery,srch2);
@@ -18,7 +21,7 @@
 
   vd_remote_data_source ('b3s', null, 'dba', 'dba');
 
-  if (squery <> '' and squery is not null and {?'fa'}='Execute')
+  if (squery <> '' and squery is not null and sm = 'Execute')
   {
     rexecute ('b3s', 'b3s_exec (?)', sql_state, err_msg, vector(squery),0, meta, data);
     res := deserialize (data[0][0]);
@@ -44,21 +47,25 @@
       <table class="description">
         <tr>
           <td>
-            <?vsp http(sprintf('<a href="listall.vsp\r\n">List all queries</a>'));?>
+            <?vsp
+              if (smode in ('100','101','102','103'))
+                http (sprintf('&nbsp;<b><a href="dlistall.vsp?p=%U">Back to Drill-down list | </a></b>',srch));
+              http(sprintf('<a href="listall.vsp\r\n">Demo queries list</a>'));
+            ?>
           </td>
        </tr>
      </table>
     </div>
     <div id="content">
       <table class="description">
-          <form name="form1" action="search.vsp" method="get">
+          <form name="form1" action="search.vsp" method="post">
             <input type="hidden" name="q" value="<?= smode ?>"/>
             <tr>
               <td>
                 <input size="60" type="text" name="sc" value="<?= srch ?>"/>&nbsp;
                 <!-- show the second input field-->
                 <?vsp
-                  if  (smode ='7')
+                  if  (smode ='7' or smode ='102')
                   {
                 ?>
                 <br/><input size="60" type="text" name="sc2" value="<?= srch2 ?>"/>
@@ -70,7 +77,7 @@
             </tr>
           </form>
           <?vsp
-            if ({?'fa'}='Execute')
+            if (sm = 'Execute')
             {
           ?>
           <tr>
@@ -113,16 +120,21 @@
                       tmp := rs[j];
                       if ( isstring(tmp ) and (strstr(tmp,'http://') = 0 or strstr(tmp,'nodeID://')=0))
                       {
-                        http (sprintf ('<td><a class="uri" href="%s">%s</a></td>', concat('http://demo.openlinksw.com/ode/?uri=',tmp), tmp));
+--Social Connections a la LinkedIn: smode ='6' j=0
+--Connection Between:               smode ='7' j=0
+                        http (sprintf ('<td><a class="uri" href="%s">%s</a>', concat('http://demo.openlinksw.com/ode/?uri=',tmp), tmp));
+                        if (smode in ('6','7') and j=0)
+                          http (sprintf('&nbsp;<b><a href="dlistall.vsp?p=%U">Drill-down</a></b>',tmp));
+                        http ('</td>');
                       }
                       else
                       {
                         http('<td>');
-                          --if (__tag of rdf_box = __tag (tmp))
-                          --   __rdf_box_make_complete (tmp);
-                        DB.DBA.RDF_STRSQLVAL_OF_OBJ (tmp);
-dbg_obj_print(rdf_box_is_complete (tmp));
-dbg_obj_print(tmp);
+                        --if (__tag of rdf_box = __tag (tmp))
+                        --   __rdf_box_make_complete (tmp);
+                        --DB.DBA.RDF_STRSQLVAL_OF_OBJ (tmp);
+                        --dbg_obj_print(rdf_box_is_complete (tmp));
+                        --dbg_obj_print(tmp);
                         http_value(tmp);
                         http('</td>');
                       };
@@ -149,7 +161,11 @@ dbg_obj_print(tmp);
       <table class="description">
         <tr>
           <td>
-            <?vsp http(sprintf('<a href="listall.vsp\r\n">List all queries</a>'));?>
+            <?vsp
+              if (smode in ('100','101','102','103'))
+                http (sprintf('&nbsp;<b><a href="dlistall.vsp?p=%U">Back to Drill-down list | </a></b>',srch));
+              http(sprintf('<a href="listall.vsp\r\n">Demo queries list</a>'));
+            ?>
           </td>
        </tr>
      </table>

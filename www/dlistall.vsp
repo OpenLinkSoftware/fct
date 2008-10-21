@@ -1,8 +1,10 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <?vsp
-  declare label varchar;
-  label := 'OpenLink Billion Triple Demo queries';
+  declare label, puri varchar;
+
+  label := 'Drill-down queries';
+  puri := get_keyword('p', params,'');
 ?>
   <head>
     <link rel="stylesheet" type="text/css" href="style.css">
@@ -14,18 +16,36 @@
         <h1 id="title"><?vsp http (sprintf ('%s', label)); ?></h1>
       </div> <!-- hd_l -->
     </div> <!-- header -->
+    <div id="homelink">
+      <table class="description">
+        <tr>
+          <td>
+            <?vsp http(sprintf('<a href="listall.vsp\r\n">Demo queries list</a>'));?>
+          </td>
+       </tr>
+     </table>
+    </div>
     <div id="content">
       <table class="description">
         <?vsp
           declare i integer;
 
-          for(i:=1;i<8;i:=i+1)
+          for(i:=100;i<104;i:=i+1)
           {
-            http (sprintf ('<tr><td><a class="homelinks" href="search.vsp?q=%s">%s</a></td></tr>',cast(i as varchar),label_get(cast(i as varchar))));
+            http (sprintf ('<tr><td><a class="homelinks" href="search.vsp?q=%s&sc=%U">%s</a></td></tr>',cast(i as varchar), puri, label_get(cast(i as varchar))));
           };
         ?>
       </table>
     </div><!--  #content -->
+    <div id="homelink">
+      <table class="description">
+        <tr>
+          <td>
+            <?vsp http(sprintf('<a href="listall.vsp\r\n">Demo queries list</a>'));?>
+          </td>
+       </tr>
+     </table>
+    </div>
     <div id="footer">
       <div id="ft_b">
         <a href="http://virtuoso.openlinksw.com" title="OpenLink Virtuoso"><img class="powered_by" src="http://dbpedia.org/statics/virt_power_no_border.png" alt="Powered by OpenLink Virtuoso"/></a>

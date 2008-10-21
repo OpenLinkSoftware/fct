@@ -9,6 +9,10 @@ create procedure label_get(in smode varchar)
   else if (smode='5') label := 'Top 100 Authors by Text';
   else if (smode='6') label := 'Social Connections a la LinkedIn';
   else if (smode='7') label := 'Connection Between';
+  else if (smode='100') label := 'Concept Cloud';
+  else if (smode='101') label := 'Social Net';
+  else if (smode='102') label := 'Graphs in Social Net';
+  else if (smode='103') label := 'Interest Mattches';
   else label := 'No such query';
   return label;
 }
@@ -271,6 +275,103 @@ create procedure pick_query(in smode varchar, inout val any, inout query varchar
     validate_input(val2);
     s4 := val2;
     s5 := '>)  } limit 20';
+    query := concat('',s1, s2, s3, s4, s5, '');
+  }
+  --smode > 99 is reserved for drill-down queries
+  else if (smode='100')
+  {
+-- 1  Cloud Around foaf Person, placeholder for http://myopenlink.net/dataspace/person/kidehen#this
+--sparql define input:inference 'b3s'
+--select count(*)
+--where
+--  {
+--    <http://myopenlink.net/dataspace/person/kidehen#this>  ?p2 ?o2 .
+--    ?o2 <http://b3s-demo.openlinksw.com/label> ?lbl .
+--  }
+--;
+    if (isnull(val)  or val = '') val := 'http://myopenlink.net/dataspace/person/kidehen#this';
+    s1 := 'sparql define input:inference ''b3s'' select count(*) where { <';
+    validate_input(val);
+    s2 := val;
+    s3 := '>  ?p2 ?o2 . ?o2 <http://b3s-demo.openlinksw.com/label> ?lbl .  }';
+    query := concat('',s1, s2, s3, '');
+  }
+  else if (smode='101')
+  {
+-- -- 2 Social Connections a la LinkedIn, placeholder is sample is http://myopenlink.net/dataspace/person/kidehen#this
+--sparql
+--select ?o ?dist ((select count (*) where {?o foaf:knows ?xx}))
+--where
+--  {
+--    {
+--      select ?s ?o
+--      where
+--        {
+--          ?s foaf:knows ?o
+--        }
+--    }
+--    option (transitive, t_distinct, t_in(?s), t_out(?o), t_min (1), t_max (4), t_step ('step_no') as ?dist) .
+--    filter (?s= <http://myopenlink.net/dataspace/person/kidehen#this>)
+--  } order by ?dist desc 3 limit 50
+--;
+    if (isnull(val)  or val = '') val := 'http://myopenlink.net/dataspace/person/kidehen#this';
+    s1 := 'sparql select ?o ?dist ((select count (*) where {?o foaf:knows ?xx})) where { { select ?s ?o where { ?s foaf:knows ?o } } option (transitive, t_distinct, t_in(?s), t_out(?o), t_min (1), t_max (4), t_step (''step_no'') as ?dist) . filter (?s= <';
+    validate_input(val);
+    s2 := val;
+    s3 := '> ) } order by ?dist desc 3 limit 50';
+    query := concat('',s1, s2, s3, '');
+  }
+  else if (smode='102')
+  {
+---- 3 Connection Between, placeholder is http://myopenlink.net/dataspace/person/kidehen#this and text entry for the other IRI: http://www.advogato.org/person/mparaz/foaf.rdf#me
+--sparql
+--select ?link ?g ?step ?path
+--where
+--  {
+--    {
+--      select ?s ?o ?g
+--      where
+--        {
+--          graph ?g {?s foaf:knows ?o }
+--        }
+--    }
+--    option (transitive, t_distinct, t_in(?s), t_out(?o), t_no_cycles, T_shortest_only,
+--       t_step (?s) as ?link, t_step ('path_id') as ?path, t_step ('step_no') as ?step, t_direction 3) .
+--    filter (?s= <http://myopenlink.net/dataspace/person/kidehen#this>
+--	&& ?o = <http://www.advogato.org/person/mparaz/foaf.rdf#me>)
+--  } limit 20
+--;
+
+    if (isnull(val)  or val = '') val := 'http://myopenlink.net/dataspace/person/kidehen#this';
+    if (isnull(val2)  or val2 = '') val2 := 'http://www.advogato.org/person/mparaz/foaf.rdf#me';
+    s1 := 'sparql select ?link ?g ?step ?path where  { { select ?s ?o ?g where { graph ?g {?s foaf:knows ?o } } } option (transitive, t_distinct, t_in(?s), t_out(?o), t_no_cycles, T_shortest_only, t_step (?s) as ?link, t_step (''path_id'') as ?path, t_step (''step_no'') as ?step, t_direction 3) . filter (?s= <';
+    validate_input(val);
+    s2 := val;
+    s3 := '> && ?o = <';
+    validate_input(val2);
+    s4 := val2;
+    s5 := '> )  } limit 20';
+    query := concat('',s1, s2, s3, s4, s5, '');
+  }
+  else if (smode='103')
+  {
+---- 4 placehoder is : http://myopenlink.net/dataspace/person/kidehen#this
+--sparql
+--select distinct ?n ((select count (*) where {?p foaf:interest ?i . ?ps foaf:interest ?i}))
+--   ((select count (*) where { ?p foaf:interest ?i}))
+--where {
+--{select distinct ?p ?psi where {?p foaf:interest ?i . ?psi foaf:interest ?i }} .
+--  filter (?psi = <http://myopenlink.net/dataspace/person/kidehen#this> && ?ps = <http://myopenlink.net/dataspace/person/kidehen#this> )
+--  ?p foaf:nick ?n
+--} order by desc 2 limit 50
+--;
+    if (isnull(val)  or val = '') val := 'http://myopenlink.net/dataspace/person/kidehen#this';
+    s1 := 'sparql select distinct ?n ((select count (*) where {?p foaf:interest ?i . ?ps foaf:interest ?i})) ((select count (*) where { ?p foaf:interest ?i})) where { {select distinct ?p ?psi where {?p foaf:interest ?i . ?psi foaf:interest ?i }} . filter (?psi = <';
+    validate_input(val);
+    s2 := val;
+    s3 := '> && ?ps = <';
+    s4 := val;
+    s5 := '> ) ?p foaf:nick ?n } order by desc 2 limit 50';
     query := concat('',s1, s2, s3, s4, s5, '');
   }
   else
