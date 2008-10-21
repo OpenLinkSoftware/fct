@@ -1,0 +1,168 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<?vsp
+  declare label varchar;
+  declare srch, srch2, res, sql_state, err_msg, meta, data, rs any;
+  declare squery, smode varchar;
+  declare i,j integer;
+
+  srch := {?'sc'};
+  srch2 := {?'sc2'};
+  smode := {?'q'};
+  if (isnull(smode) or smode='') smode := '1';
+  label := label_get(smode);
+
+  pick_query(smode,srch,squery,srch2);
+  sql_state := '00000';
+  err_msg := 'none';
+
+  vd_remote_data_source ('b3s', null, 'dba', 'dba');
+
+  if (squery <> '' and squery is not null and {?'fa'}='Execute')
+  {
+    rexecute ('b3s', 'b3s_exec (?)', sql_state, err_msg, vector(squery),0, meta, data);
+    res := deserialize (data[0][0]);
+  }
+  else if (squery = '')
+  {
+    sql_state := '0001';
+    err_msg := 'No such query';
+    res := vector();
+  };
+?>
+  <head>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <title><?=label?></title>
+  </head>
+  <body>
+    <div id="header">
+      <div id="hd_l">
+        <h1 id="title"><?vsp http (sprintf ('%s', label)); ?></h1>
+      </div> <!-- hd_l -->
+    </div> <!-- header -->
+    <div id="homelink">
+      <table class="description">
+        <tr>
+          <td>
+            <?vsp http(sprintf('<a href="listall.vsp\r\n">List all queries</a>'));?>
+          </td>
+       </tr>
+     </table>
+    </div>
+    <div id="content">
+      <table class="description">
+          <form name="form1" action="search.vsp" method="get">
+            <input type="hidden" name="q" value="<?= smode ?>"/>
+            <tr>
+              <td>
+                <input size="60" type="text" name="sc" value="<?= srch ?>"/>&nbsp;
+                <!-- show the second input field-->
+                <?vsp
+                  if  (smode ='7')
+                  {
+                ?>
+                <br/><input size="60" type="text" name="sc2" value="<?= srch2 ?>"/>
+                <?vsp
+                  };
+                ?>
+                <input type="submit" name="fa" value="Execute"/>
+              </td>
+            </tr>
+          </form>
+          <?vsp
+            if ({?'fa'}='Execute')
+            {
+          ?>
+          <tr>
+            <th align="left">Search Results Found: <?vsp http(sprintf('%d',length(res)));?></th>
+          </tr>
+          <?vsp
+            if ('00000' <> sql_state)
+            {
+          ?>
+          <tr>
+            <th align="left">Execution Error</th>
+          </tr>
+          <tr>
+            <td>SQL State: <?=sql_state?></td>
+          </tr>
+          <tr>
+            <th align="left">Error Message</th>
+          </tr>
+          <tr>
+            <td>SQL State: <?=err_msg?></td>
+          </tr>
+          <?vsp
+            }
+            else
+            {
+          ?>
+          <tr>
+            <td>
+              <table class="tableresult" border="1">
+                <?vsp
+                  i:=0;
+                  declare tmp any;
+                  for(i:=0;i<length(res);i:=i+1)
+                  {
+                    j:=0;
+                    rs := res[i];
+                    http('<tr>');
+                    for(j:=0;j<length(rs);j:=j+1)
+                    {
+                      tmp := rs[j];
+                      if ( isstring(tmp ) and (strstr(tmp,'http://') = 0 or strstr(tmp,'nodeID://')=0))
+                      {
+                        http (sprintf ('<td><a class="uri" href="%s">%s</a></td>', concat('http://demo.openlinksw.com/ode/?uri=',tmp), tmp));
+                      }
+                      else
+                      {
+                        http('<td>');
+                          --if (__tag of rdf_box = __tag (tmp))
+                          --   __rdf_box_make_complete (tmp);
+                        DB.DBA.RDF_STRSQLVAL_OF_OBJ (tmp);
+dbg_obj_print(rdf_box_is_complete (tmp));
+dbg_obj_print(tmp);
+                        http_value(tmp);
+                        http('</td>');
+                      };
+                    };
+                    http('</tr>');
+                  };
+                ?>
+              </table>
+            </td>
+          </tr>
+          <?vsp
+            };
+              };
+          ?>
+          <tr>
+            <th align="left">Query:</th>
+          </tr>
+          <tr>
+            <td><?vsp http_value(squery);?></td>
+          </tr>
+      </table>
+    </div><!--  #content -->
+    <div id="homelink">
+      <table class="description">
+        <tr>
+          <td>
+            <?vsp http(sprintf('<a href="listall.vsp\r\n">List all queries</a>'));?>
+          </td>
+       </tr>
+     </table>
+    </div>
+    <div id="footer">
+      <div id="ft_b">
+        <a href="http://virtuoso.openlinksw.com" title="OpenLink Virtuoso"><img class="powered_by" src="http://dbpedia.org/statics/virt_power_no_border.png" alt="Powered by OpenLink Virtuoso"/></a>
+        <a href="http://linkeddata.org/"><img alt="This material is Open Knowledge" src="http://dbpedia.org/statics/LoDLogo.gif" border="0"></a> &nbsp;
+        <a href="http://dbpedia.org/sparql"><img alt="W3C Semantic Web Technology" src="http://dbpedia.org/statics/sw-sparql-blue.png" border="0"></a> &nbsp;  &nbsp;
+        <a href="http://www.opendefinition.org/"><img alt="This material is Open Knowledge" src="http://dbpedia.org/statics/od_80x15_red_green.png" border="0"></a>
+      </div> <!-- #ft_b -->
+    </div> <!-- #footer -->
+  </body>
+</html>
+
+
