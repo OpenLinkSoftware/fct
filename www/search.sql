@@ -219,7 +219,7 @@ create procedure pick_query(in smode varchar, inout val any, inout query varchar
     s1 := 'sparql select ?auth ?cnt ((select count (distinct ?xx) where { ?xx dc:creator ?auth})) where {{ select ?auth count (distinct ?d) as ?cnt where { ?d dc:creator ?auth .  ?d ?p ?o   filter (bif:contains (?o, "' ;
     validate_input(val);
     s2 := FTI_MAKE_SEARCH_STRING(val);
-    s3 := '")) } group by ?auth order by desc 2 limit 100 }} ' ;
+    s3 := '") && isIRI (?auth)) } group by ?auth order by desc 2 limit 100 }} ' ;
     query := concat('',s1, s2, s3, '');
 
 
