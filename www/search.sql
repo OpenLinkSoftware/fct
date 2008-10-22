@@ -12,7 +12,7 @@ create procedure label_get(in smode varchar)
   else if (smode='100') label := 'Concept Cloud';
   else if (smode='101') label := 'Social Net';
   else if (smode='102') label := 'Graphs in Social Net';
-  else if (smode='103') label := 'Interest Mattches';
+  else if (smode='103') label := 'Interest Matches';
   else label := 'No such query';
   return label;
 }
@@ -371,7 +371,7 @@ create procedure pick_query(in smode varchar, inout val any, inout query varchar
     s2 := val;
     s3 := '> && ?ps = <';
     s4 := val;
-    s5 := '> ) ?p foaf:nick ?n } order by desc 2 limit 50';
+    s5 := '> ) ?p foaf:nick ?n } order by desc 3 limit 50';
     query := concat('',s1, s2, s3, s4, s5, '');
   }
   else
