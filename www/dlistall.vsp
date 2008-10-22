@@ -20,7 +20,7 @@
       <table class="description">
         <tr>
           <td>
-            <?vsp http(sprintf('<a href="listall.vsp\r\n">Demo queries list</a>'));?>
+            <?vsp http(sprintf('<a href="listall.vsp\r\n">Back to main menu</a>'));?>
           </td>
        </tr>
      </table>
@@ -41,7 +41,7 @@
       <table class="description">
         <tr>
           <td>
-            <?vsp http(sprintf('<a href="listall.vsp\r\n">Demo queries list</a>'));?>
+            <?vsp http(sprintf('<a href="listall.vsp\r\n">Back to main menu</a>'));?>
           </td>
        </tr>
      </table>

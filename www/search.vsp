@@ -50,8 +50,9 @@
             <?vsp
               if (smode in ('100','101','102','103'))
                 http (sprintf('&nbsp;<b><a href="dlistall.vsp?p=%U">Back to Drill-down list | </a></b>',srch));
-              http(sprintf('<a href="listall.vsp\r\n">Demo queries list</a>'));
+              http(sprintf('<a href="listall.vsp\r\n">Back to main menu</a>'));
             ?>
+	    <p><?V desc_get (smode) ?></p>	
           </td>
        </tr>
      </table>
@@ -62,7 +63,7 @@
             <input type="hidden" name="q" value="<?= smode ?>"/>
             <tr>
               <td>
-                <input size="60" type="text" name="sc" value="<?= srch ?>"/>&nbsp;
+		<?V input_get (smode) ?> <input size="60" type="text" name="sc" value="<?= srch ?>"/>&nbsp;
                 <!-- show the second input field-->
                 <?vsp
                   if  (smode ='7' or smode ='102')
@@ -108,6 +109,17 @@
             <td>
               <table class="tableresult" border="1">
                 <?vsp
+		  declare head any;
+		  head := head_get (smode);
+		  if (length (head))
+		    {
+		      http ('<tr>');
+		      foreach (any elm in head) do
+			{
+			  http_value (elm, 'th'); 
+			}
+		      http ('</tr>');
+		    }
                   i:=0;
                   declare tmp any;
                   for(i:=0;i<length(res);i:=i+1)
@@ -162,7 +174,7 @@
             <th align="left">Query:</th>
           </tr>
           <tr>
-            <td><?vsp http_value(squery);?></td>
+            <td><?vsp http (pretty_sparql (squery, 0));?></td>
           </tr>
       </table>
     </div><!--  #content -->
@@ -173,7 +185,7 @@
             <?vsp
               if (smode in ('100','101','102','103'))
                 http (sprintf('&nbsp;<b><a href="dlistall.vsp?p=%U">Back to Drill-down list | </a></b>',srch));
-              http(sprintf('<a href="listall.vsp\r\n">Demo queries list</a>'));
+              http(sprintf('<a href="listall.vsp\r\n">Back to main menu</a>'));
             ?>
           </td>
        </tr>

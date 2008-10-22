@@ -10,7 +10,7 @@ body {
 #ft_b { text-align: center; margin-top: 0.7ex }
 #homelink { display: inline; }
 #homelink, #homelink a { color: #666; }
-#homelink a { font-weight: bold; text-decoration: none; }
+#homelink a { font-weight: bold; text-decoration: underline; }
 #homelink a:hover { color: red; text-decoration: underline; }
 h1 { display: inline; font-weight: bold; font-size: 200%; margin: 0; text-align: left; }
 h2 { font-weight: normal; font-size: 124%; margin: 1.2em 0 0.2em; }

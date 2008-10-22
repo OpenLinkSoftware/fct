@@ -5,7 +5,6 @@ create procedure label_get(in smode varchar)
   else if (smode='2') label := 'Graphs With Text';
   else if (smode='3') label := 'Types of Things With Text';
   else if (smode='4') label := 'Interests Around';
-  --else if (smode='5') label := 'The Most One-Sidedly Known People';
   else if (smode='5') label := 'Top 100 Authors by Text';
   else if (smode='6') label := 'Social Connections a la LinkedIn';
   else if (smode='7') label := 'Connection Between';
@@ -20,6 +19,95 @@ create procedure label_get(in smode varchar)
 }
 ;
 
+create procedure input_get (in num varchar)
+{
+  declare t1, t2 any;
+  t1 := vector (
+  	'Search for',
+	'Search for',
+	'Search for',
+	'interest URI',
+	'Search for',
+	'Person URI',
+	'Person URI',
+	'Nickname',
+	'Nickname'
+	);
+  t2 := vector (
+  	'',
+	'',
+	'',
+	''
+	);
+  num := atoi (num) - 1;
+  if (num > -1 and num < 9)
+    return t1[num];
+  else if (num > 98 and num < 102)
+    return t2[num - 99];
+  return '';
+}
+;
+
+
+create procedure desc_get (in num varchar)
+{
+  declare t1, t2 any;
+  t1 := vector (
+  	'Show triples containing a text pattern. The bif:search_excerpt is used to format a short excerpt of the matching literal in search-engine style',
+	'What sources talk the most about a given subject? Show the top N graphs containing triples with the given text pattern. Sort by descending triple count.',
+	'What types of objects contain a text pattern. Find matches, get the type. Group by type, order by count.',
+	'What else are people interested in X interested in? What else do Harry Potter fans like?',
+	'Who writes the most about a topic. Show for each author the number of works mentioning the topic and total number of works.',
+	'Show the people a person directly or indirectly knows. Sort by distance and count of connections of the known person',
+	'Given two people, find what chain of acquaintances links them together. For each step in the chain show the person linked to, the graph linking this person to the previous person, the number of the step and the number of the path. Note that there may be many paths through which the people are linked.',
+	'Given a person, find people with the most interests in common with this person. Show the person, number of shared interests and the total number of interests.',
+	'Show names of things surrounding a person. These may be interests, classes of things, other people and so forth. For each label show the count of occurrences, largest count first. This uses the b3s:label superproperty which includes rdfs:label, dc:title, and other qualities which have  a general meaning of label.'
+	);
+  t2 := vector (
+  	'',
+	'',
+	'',
+	''
+	);
+  num := atoi (num) - 1;
+  if (num > -1 and num < 9)
+    return t1[num];
+  else if (num > 98 and num < 102)
+    return t2[num - 99];
+  return '';
+}
+;
+
+create procedure head_get (in num varchar)
+{
+  declare t1, t2 any;
+  t1 := vector (
+    vector ('Subject', 'Predicate', 'Hit summary'),
+    vector ('Graph', 'Number of mentions'),
+    vector ('Class', 'Count'),
+    vector ('Interest', 'Number of People'),
+    vector ('Author', 'Works Containing Pattern', 'Total Number of Works'),
+    vector ('Connection', 'Distance', 'Number of Connections'),
+    vector ('Person URI', 'Graph', 'Step No.', 'Path'),
+    vector ('Person', 'Shared Interests', 'Total Interests'),
+    vector ('Thing','Occurrences')
+  );
+  t2 := vector (
+    vector (),
+    vector (),
+    vector (),
+    vector ()
+  );
+  num := atoi (num) - 1;
+  if (num > -1 and num < 9)
+    return t1[num];
+  else if (num > 98 and num < 102)
+    return t2[num - 99];
+  return vector ();
+}
+;
+
+
 create procedure validate_input(inout val varchar)
 {
   val := trim(val, ' ');
@@ -29,6 +117,102 @@ create procedure validate_input(inout val varchar)
   --val := replace(val, '&', '');
   val := replace(val, '"', '');
   val := replace(val, '''', '');
+}
+;
+
+create procedure print_nbsp_1 (inout ses any, in n int)
+{
+  for (declare i int, i := 0; i < n;  i := i + 1)
+    http ('&nbsp;', ses);
+}
+;
+
+create procedure pretty_sparql_1 (inout arr any, inout inx int, in len int, inout ses any, in lev int := 0)
+{
+  declare nbsp, was_open, was_close, num_open int;
+  nbsp := 0;
+  was_open := 0;
+  was_close := 0;
+  num_open := 0;
+  for (;inx < len; inx := inx + 1)
+    {
+      declare elm varchar;
+      elm := arr[inx];
+      dbg_obj_print (elm);
+
+      if (elm = '(')
+	num_open := num_open + 1;
+      if (elm = ')')
+	num_open := num_open - 1;
+
+      if (num_open = 0)
+        {
+	  if (elm = '{')
+	    {
+	      nbsp := nbsp + 2;
+	      http ('<br>', ses);
+	      print_nbsp_1 (ses, nbsp);
+	      was_open := 1;
+	      was_close := 0;
+	    }
+	  else if (was_open = 1)
+	    {
+	      was_open := 0;
+	      was_close := 0;
+	      http ('<br>', ses);
+	      print_nbsp_1 (ses, nbsp + 2);
+	    }
+	  else if (elm = '}')
+	    {
+	      --if (not was_close)
+		http ('<br>', ses);
+	      print_nbsp_1 (ses, nbsp);
+	    }
+	}
+
+
+      http (elm, ses);
+
+      if (num_open = 0)
+        {
+	  if (elm = '}')
+	    {
+	      was_close := 1;
+	      nbsp := nbsp - 2;
+	      http ('<br>', ses);
+	      print_nbsp_1 (ses, nbsp);
+	    }
+	  else if (elm = '.')
+	    {
+	      http ('<br>', ses);
+	      print_nbsp_1 (ses, nbsp + 1);
+	    }
+	}
+
+      if (elm = 'sparql')
+	http ('<br>');
+      http (' ', ses);
+    }
+}
+;
+
+create procedure pretty_sparql (in q varchar, in lev int := 0)
+{
+  declare ses, arr any;
+  declare inx int;
+  ses := string_output ();
+  q := sprintf ('%V', q);
+  q := replace (q, '\n', ' ');
+  q := replace (q, '}', ' } ');
+  q := replace (q, '{', ' { ');
+  q := replace (q, ')', ' ) ');
+  q := replace (q, '(', ' ( ');
+  q := regexp_replace (q, '\\s\\s+', ' ', 1, null);
+  arr := split_and_decode (q, 0, '\0\0 ');
+  inx := 0;
+  dbg_obj_print (arr);
+  pretty_sparql_1 (arr, inx, length (arr), ses, lev);
+  return string_output_string (ses);
 }
 ;
 
@@ -111,8 +295,8 @@ create procedure pick_query(in smode varchar, inout val any, inout query varchar
 
     if (isnull(val) or val = '') val := 'semantic web';
     s1 := 'sparql select ?s ?p (bif:search_excerpt (bif:vector (';
-    s3 := '), ?o))  where { ?s ?p ?o . filter (bif:contains (?o, "''';
-    s5 := '''")) } limit 10';
+    s3 := '), ?o)) where  {  ?s ?p ?o .  filter (bif:contains (?o, "''';
+    s5 := '''"))  }  limit 10';
 
     validate_input(val);
     s2 := element_split(val);
@@ -157,7 +341,7 @@ create procedure pick_query(in smode varchar, inout val any, inout query varchar
     if (isnull(val)  or val = '') val := 'Paris Hilton';
     s1 := 'sparql select ?tp count(*) where { graph ?g  { ?s ?p ?o . ?s a ?tp  filter (bif:contains (?o, "''';
     validate_input(val);
-    s2 := words_to_string(val);
+    s2 := (val);
     s3 := '''") ) } } group by ?tp order by desc 2';
     query := concat('',s1, s2, s3,'');
   }
@@ -218,10 +402,10 @@ create procedure pick_query(in smode varchar, inout val any, inout query varchar
 --;
 
     if (isnull(val) or val = '') val := 'semantic and web';
-    s1 := 'sparql select ?auth ?cnt ((select count (distinct ?xx) where { ?xx dc:creator ?auth})) where {{ select ?auth count (distinct ?d) as ?cnt where { ?d dc:creator ?auth .  ?d ?p ?o   filter (bif:contains (?o, "' ;
+    s1 := 'sparql select ?auth ?cnt ((select count (distinct ?xx) where { ?xx dc:creator ?auth } )) where { { select ?auth count (distinct ?d) as ?cnt where { ?d dc:creator ?auth .  ?d ?p ?o   filter (bif:contains (?o, "' ;
     validate_input(val);
     s2 := FTI_MAKE_SEARCH_STRING(val);
-    s3 := '") && isIRI (?auth)) } group by ?auth order by desc 2 limit 100 }} ' ;
+    s3 := '") && isIRI (?auth)) } group by ?auth order by desc 2 limit 100 } } ' ;
     query := concat('',s1, s2, s3, '');
 
 
@@ -283,27 +467,24 @@ create procedure pick_query(in smode varchar, inout val any, inout query varchar
     {
       if (isnull(val)  or val = '') val := '"plaid_skirt"@en';
 s1 := 'sparql
-select distinct ?n ((select count (*) where {?p foaf:interest ?i . ?ps foaf:interest ?i}))
+select ?n ((select count (*) where {?p foaf:interest ?i . ?ps foaf:interest ?i}))
    ((select count (*) where { ?p foaf:interest ?i}))
 where {
 ?ps foaf:nick ';
 s2 := val;
 s3 := ' .
-{select distinct ?p ?psi where {?p foaf:interest ?i . ?psi foaf:interest ?i }} .
-  filter (?ps = ?psi)
-  ?p foaf:nick ?n
-} order by desc 2 limit 50';
+{ select distinct ?p ?psi where { ?p foaf:interest ?i . ?psi foaf:interest ?i } } .  filter (?ps = ?psi) ?p foaf:nick ?n } order by desc 2 limit 50';
       query := concat(s1, s2, s3);
     }
   else if (smode = '9')
     {
       if (isnull(val)  or val = '') val := 'plaid_skirt';
       s1 :=
-      'sparql define input:inference \'b3s\' select ?o2 ?lbl count(*) where { ?s  ?p2 ?o2 .  ?o2 <http://b3s-demo.openlinksw.com/label> ?lbl . ' ||
+      'sparql define input:inference \'b3s\' select ?s ?lbl count(*) where { ?s  ?p2 ?o2 .  ?o2 <http://b3s-demo.openlinksw.com/label> ?lbl . ' ||
       ' ?s  foaf:nick ?o .  filter (bif:contains (?o, "';
       validate_input(val);
       s2 := words_to_string(val);
-      s3 := '")) } group by ?o2 ?lbl order by desc 2';
+      s3 := '")) } group by ?s ?lbl order by desc 2';
       query := s1 || s2 || s3;
     }
   --smode > 99 is reserved for drill-down queries
@@ -395,7 +576,7 @@ s3 := ' .
 --} order by desc 2 limit 50
 --;
     if (isnull(val)  or val = '') val := 'http://myopenlink.net/dataspace/person/kidehen#this';
-    s1 := 'sparql select distinct ?n ((select count (*) where {?p foaf:interest ?i . ?ps foaf:interest ?i})) ((select count (*) where { ?p foaf:interest ?i})) where { {select distinct ?p ?psi where {?p foaf:interest ?i . ?psi foaf:interest ?i }} . filter (?psi = <';
+    s1 := 'sparql select distinct ?n ((select count (*) where { ?p foaf:interest ?i . ?ps foaf:interest ?i})) ((select count (*) where { ?p foaf:interest ?i})) where { { select distinct ?p ?psi where { ?p foaf:interest ?i . ?psi foaf:interest ?i  } } . filter (?psi = <';
     validate_input(val);
     s2 := val;
     s3 := '> && ?ps = <';

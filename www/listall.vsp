@@ -17,11 +17,15 @@
     <div id="content">
       <table class="description">
         <?vsp
+	  declare qrlist any;
           declare i integer;
+	  qrlist := vector ('1','2','3','8','4','5','6','7','9');
 
-          for(i:=1;i<10;i:=i+1)
-          {
-            http (sprintf ('<tr><td><a class="homelinks" href="search.vsp?q=%s">%s</a></td></tr>',cast(i as varchar),label_get(cast(i as varchar))));
+          for(i:=0;i<9;i:=i+1)
+	  {
+	    declare num int;
+	    num := qrlist [i];
+            http (sprintf ('<tr><td><a class="homelinks" href="search.vsp?q=%s">%s</a></td></tr>', num,label_get(num)));
           };
         ?>
       </table>
