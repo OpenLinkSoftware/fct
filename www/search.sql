@@ -138,7 +138,6 @@ create procedure pretty_sparql_1 (inout arr any, inout inx int, in len int, inou
     {
       declare elm varchar;
       elm := arr[inx];
-      dbg_obj_print (elm);
 
       if (elm = '(')
 	num_open := num_open + 1;
@@ -214,7 +213,6 @@ create procedure pretty_sparql (in q varchar, in lev int := 0)
   q := regexp_replace (q, '\\s\\s+', ' ', 1, null);
   arr := split_and_decode (q, 0, '\0\0 ');
   inx := 0;
-  dbg_obj_print (arr);
   pretty_sparql_1 (arr, inx, length (arr), ses, lev);
   return string_output_string (ses);
 }
