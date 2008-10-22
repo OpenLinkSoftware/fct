@@ -124,7 +124,7 @@
 --Connection Between:               smode ='7' j=0
                         http (sprintf ('<td><a class="uri" href="%s">%s</a>', concat('http://demo.openlinksw.com/ode/?uri=',tmp), tmp));
                         if (smode in ('5','6','7') and j=0)
-                          http (sprintf('&nbsp;<b><a href="dlistall.vsp?p=%U">Drill-down</a></b>',tmp));
+			  http (sprintf('&nbsp;<b><a href="dlistall.vsp?p=%U">Drill-down</a></b>',tmp));
                         http ('</td>');
                       }
                       else
@@ -138,7 +138,13 @@
 			if (__tag of rdf_box = __tag (tmp) and not rdf_box_is_complete (tmp))
 			  http ('Incomplete box');
 			else  
-                          http_value(tmp);
+			  {
+			    if (smode = '8' and j = 0) 
+			      http (sprintf ('<a href="search.vsp?q=%U&sc=%U">', smode, tmp));	
+			    http_value(tmp);
+			    if (smode = '8' and j = 0) 
+			      http ('</a>');	
+			  }
                         http('</td>');
                       };
                     };
