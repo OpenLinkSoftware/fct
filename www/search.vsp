@@ -19,7 +19,7 @@
   sql_state := '00000';
   err_msg := 'none';
 
-  vd_remote_data_source ('b3s', null, 'dba', 'dba');
+  --vd_remote_data_source ('b3s', null, 'dba', 'dba');
 
   if (squery <> '' and squery is not null and sm = 'Execute')
   {
@@ -135,7 +135,10 @@
                         --DB.DBA.RDF_STRSQLVAL_OF_OBJ (tmp);
                         --dbg_obj_print(rdf_box_is_complete (tmp));
                         --dbg_obj_print(tmp);
-                        http_value(tmp);
+			if (__tag of rdf_box = __tag (tmp) and not rdf_box_is_complete (tmp))
+			  http ('Incomplete box');
+			else  
+                          http_value(tmp);
                         http('</td>');
                       };
                     };
