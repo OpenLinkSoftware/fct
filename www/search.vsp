@@ -140,7 +140,7 @@
 			else  
 			  {
 			    if (smode = '8' and j = 0) 
-			      http (sprintf ('<a href="search.vsp?q=%U&sc=%U&fa=Execute">', smode, '"'||tmp||'"'));	
+			      http (sprintf ('<a href="search.vsp?q=%U&sc=%U&fa=Execute">', smode, '"'||tmp||'"@en'));	
 			    http_value(tmp);
 			    if (smode = '8' and j = 0) 
 			      http ('</a>');	
