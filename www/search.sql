@@ -10,6 +10,7 @@ create procedure label_get(in smode varchar)
   else if (smode='6') label := 'Social Connections a la LinkedIn';
   else if (smode='7') label := 'Connection Between';
   else if (smode='8') label := 'Interest Profile';
+  else if (smode='9') label := 'Cloud Around Person';
   else if (smode='100') label := 'Concept Cloud';
   else if (smode='101') label := 'Social Net';
   else if (smode='102') label := 'Graphs in Social Net';
@@ -293,6 +294,17 @@ s3 := ' .
   ?p foaf:nick ?n
 } order by desc 2 limit 50';
       query := concat(s1, s2, s3);
+    }
+  else if (smode = '9')
+    {
+      if (isnull(val)  or val = '') val := 'plaid_skirt';
+      s1 :=
+      'sparql define input:inference \'b3s\' select ?o2 ?lbl count(*) where { ?s  ?p2 ?o2 .  ?o2 <http://b3s-demo.openlinksw.com/label> ?lbl . ' ||
+      ' ?s  foaf:nick ?o .  filter (bif:contains (?o, "';
+      validate_input(val);
+      s2 := words_to_string(val);
+      s3 := '")) } group by ?o2 ?lbl order by desc 2';
+      query := s1 || s2 || s3;
     }
   --smode > 99 is reserved for drill-down queries
   else if (smode='100')

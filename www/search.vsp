@@ -123,7 +123,7 @@
 --Social Connections a la LinkedIn: smode ='6' j=0
 --Connection Between:               smode ='7' j=0
                         http (sprintf ('<td><a class="uri" href="%s">%s</a>', concat('http://demo.openlinksw.com/ode/?uri=',tmp), tmp));
-                        if (smode in ('5','6','7') and j=0)
+                        if (smode in ('5','6','7','9') and j=0)
 			  http (sprintf('&nbsp;<b><a href="dlistall.vsp?p=%U">Drill-down</a></b>',tmp));
                         http ('</td>');
                       }
