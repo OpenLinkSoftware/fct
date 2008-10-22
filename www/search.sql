@@ -9,6 +9,7 @@ create procedure label_get(in smode varchar)
   else if (smode='5') label := 'Top 100 Authors by Text';
   else if (smode='6') label := 'Social Connections a la LinkedIn';
   else if (smode='7') label := 'Connection Between';
+  else if (smode='8') label := 'Interest Profile';
   else if (smode='100') label := 'Concept Cloud';
   else if (smode='101') label := 'Social Net';
   else if (smode='102') label := 'Graphs in Social Net';
@@ -277,6 +278,22 @@ create procedure pick_query(in smode varchar, inout val any, inout query varchar
     s5 := '>)  } limit 20';
     query := concat('',s1, s2, s3, s4, s5, '');
   }
+  else if (smode = '8')
+    {
+      if (isnull(val)  or val = '') val := '"plaid_skirt"@en';
+s1 := 'sparql
+select distinct ?n ((select count (*) where {?p foaf:interest ?i . ?ps foaf:interest ?i}))
+   ((select count (*) where { ?p foaf:interest ?i}))
+where {
+?ps foaf:nick ';
+s2 := val;
+s3 := ' .
+{select distinct ?p ?psi where {?p foaf:interest ?i . ?psi foaf:interest ?i }} .
+  filter (?ps = ?psi)
+  ?p foaf:nick ?n
+} order by desc 2 limit 50';
+      query := concat(s1, s2, s3);
+    }
   --smode > 99 is reserved for drill-down queries
   else if (smode='100')
   {
