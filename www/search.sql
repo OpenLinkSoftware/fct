@@ -164,10 +164,14 @@ create procedure pretty_sparql_1 (inout arr any, inout inx int, in len int, inou
 	    }
 	  else if (elm = '}')
 	    {
-	      --if (not was_close)
-		http ('<br>', ses);
-	      print_nbsp_1 (ses, nbsp);
+	      if (not was_close)
+		{
+		  http ('<br>', ses);
+		  print_nbsp_1 (ses, nbsp);
+		}
 	    }
+	  else
+	    was_close := 0;
 	}
 
 
