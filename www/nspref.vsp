@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <?vsp
   declare label varchar;
-  label := 'OpenLink Billion Triple Demo queries';
+  label := 'Predefined name space prefixes';
 ?>
   <head>
     <link rel="stylesheet" type="text/css" href="style.css">
@@ -15,22 +15,16 @@
       </div> <!-- hd_l -->
     </div> <!-- header -->
     <div id="content">
-      <table class="description">
+      <table class="tableresult" border="1">
         <?vsp
-	  declare qrlist any;
-          declare i integer;
-	  qrlist := vector ('1','2','3','8','4','5','6','7','9');
-
-          for(i:=0;i<9;i:=i+1)
-	  {
-	    declare num int;
-	    num := qrlist [i];
-            http (sprintf ('<tr><td><a class="homelinks" href="search.vsp?q=%s">%s</a></td></tr>', num,label_get(num)));
-          };
+	http (sprintf ('<tr><th>Prefix</th><th>URI</th></tr>'));
+	  for select NS_PREFIX, NS_URL from SYS_XML_PERSISTENT_NS_DECL order by 1 do
+	    {
+	       http (sprintf ('<tr><td>%V</td><td>%V</td></tr>', NS_PREFIX, NS_URL));
+	    }
         ?>
       </table>
     </div><!--  #content -->
-    <div>You may also use the <a href="/sparql">SPARQL endpoint</a> . For your convenience we have a set of <a href="nspref.vsp">predefined name space prefixes</a>.</div>
     <div id="footer">
       <div id="ft_b">
         <a href="http://virtuoso.openlinksw.com" title="OpenLink Virtuoso"><img class="powered_by" src="http://dbpedia.org/statics/virt_power_no_border.png" alt="Powered by OpenLink Virtuoso"/></a>
@@ -41,5 +35,4 @@
     </div> <!-- #footer -->
   </body>
 </html>
-
 

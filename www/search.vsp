@@ -69,7 +69,7 @@
                   if  (smode ='7' or smode ='102')
                   {
                 ?>
-                <br/><input size="60" type="text" name="sc2" value="<?= srch2 ?>"/>
+                <br/><?V input_get (smode) ?> <input size="60" type="text" name="sc2" value="<?= srch2 ?>"/>
                 <?vsp
                   };
                 ?>
@@ -134,7 +134,10 @@
                       {
 --Social Connections a la LinkedIn: smode ='6' j=0
 --Connection Between:               smode ='7' j=0
-                        http (sprintf ('<td><a class="uri" href="%s">%s</a>', concat('http://demo.openlinksw.com/ode/?uri=',tmp), tmp));
+			if (smode not in ('2'))
+		   	  http (sprintf ('<td><a class="uri" href="%s">%s</a>', concat('http://b3s.openlinksw.com/ode/?uri=', sprintf ('%U',tmp)), tmp));
+ 		        else
+                          http (sprintf ('<td><a class="uri" href="%s">%s</a>', concat('http://demo.openlinksw.com/ode/?uri=',tmp), tmp));
                         if (smode in ('5','6','7','9') and j=0)
 			  http (sprintf('&nbsp;<b><a href="dlistall.vsp?p=%U">Drill-down</a></b>',tmp));
                         http ('</td>');
