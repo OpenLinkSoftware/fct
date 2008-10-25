@@ -559,7 +559,7 @@ order by desc 2
 ;
 
 
--- who talks most about sex?
+
 
 --* Top 100 Authors by Text  --
 
@@ -826,6 +826,11 @@ limit 100
 
 -- how many really distinct knows relations?
 
+sparql define input:same-as "YES" 
+select count (*) where 
+  {{select distinct ?s ?o 
+where { ?s foaf:knows ?o}}};
+
 sparql
 define input:same-as "YES"
 select count (*) where
@@ -836,14 +841,44 @@ where { ?s foaf:knows ?o}}}
 
 
 
+-- common named entities  that have a dbpedia id
+sparql select  ?wp count (*)  where { graph <umbel_ne> { ?n ?p ?ent  } . ?wp owl:sameAs ?ent }  group by ?wp order by desc 2 limit 50;
 
---  umbel named entity types
-sparql
-define input:same-as "yes" select ?tp count (*) where {  graph <http://umbel.org> {?s ?p ?o  } . ?o  a ?tp} group by ?tp order by desc 2 limit 50
-;
+
+
+
+
 
 
 -- in umbel but refs nothing
 sparql
 select count (*) where {graph <umbel_ne> {?s ?p ?o} . filter (!bif:exists ((select  (1) where { graph ?g {?s ?p2 ?o2} . filter (?g != <umbel_ne>) })) ) }
 ;
+
+--
+
+create table sas_attr (sn_name varchar, sn_iri iri_id_8, primary key (sn_name, sn_iri));
+alter index sas_attr on sas_attr partition (sn_name varchar);
+
+insert into sas_attr select distinct __ro2sq ("n"), "bn"  from (sparql define output:valmode "LONG" select ?n ?bn where { ?bn foaf:name ?n . filter (bif:length (?n) > 7)}) x;
+
+
+-- for checking 
+select top 10 sn_name, sn_iri, min_iri from (
+select a.sn_name, a.sn_iri, (select min (sn_iri) from sas_attr b where a.sn_name = b.sn_name) as min_iri 
+from sas_attr a) x where sn_iri <> min_iri;
+
+
+-- for making the sas 
+
+log_enable (2);
+insert soft rdf_quad (g, s, p, o)
+select iri_to_id ('b3s_inf_sas'),  sn_iri, rdf_sas_iri (), min_iri from (
+select  a.sn_iri, (select min (sn_iri) from sas_attr b where a.sn_name = b.sn_name) as min_iri 
+from sas_attr a) x where sn_iri <> min_iri;
+
+
+
+
+
+-
