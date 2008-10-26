@@ -13,7 +13,9 @@
   <body>
     <div id="header">
       <div id="hd_l">
-        <h1 id="title"><?vsp http (sprintf ('%s', label)); ?></h1>
+	  <h1 id="title"><?vsp http (sprintf ('%s', label)); ?> for
+	      <a href="/ode?uri=<?U puri ?>"><?V puri ?></a>
+	  </h1>
       </div> <!-- hd_l -->
     </div> <!-- header -->
     <div id="homelink">
@@ -36,6 +38,59 @@
           };
         ?>
       </table>
+      <div>Properties</div>
+      <table class="tableresult" border="1">
+	  <?vsp
+	  declare sql_state, err_msg, meta, data, res any;
+	  declare tmp, i, j, rs, len, to_print any;
+	  sql_state := '00000';
+	  err_msg := 'none';
+	  rexecute ('b3s', 'b3s_exec (?)', sql_state, err_msg, vector(
+	  sprintf ('sparql select distinct ?p ?o where { <%s> ?p ?o }', puri)
+	  ),0, meta, data);
+	  if (sql_state = '00000')
+	    {
+	      res := deserialize (data[0][0]);
+	      len := length (res);
+	      if (len > 5)
+	        to_print := 5;
+              else
+	        to_print := len;
+	        {
+                  for(i:=0;i<to_print;i:=i+1)
+                  {
+                    j:=0;
+                    rs := res[i];
+                    http('<tr>');
+                    for(j:=0;j<length(rs);j:=j+1)
+                    {
+                      tmp := rs[j];
+                      if ( isstring(tmp ) and (strstr(tmp,'http://') = 0 or strstr(tmp,'nodeID://')=0))
+                      {
+		        http (sprintf ('<td><a class="uri" href="%s">%s</a>', concat('http://b3s.openlinksw.com/ode/?uri=', sprintf ('%U',tmp)), tmp));
+                        http ('</td>');
+                      }
+                      else
+                      {
+                        http('<td>');
+			if (__tag of rdf_box = __tag (tmp) and not rdf_box_is_complete (tmp))
+			  http ('Incomplete box');
+			else  
+			  {
+			    http_value(tmp);
+			  }
+                        http('</td>');
+                      };
+                    };
+                    http('</tr>');
+                  };
+               }
+	  }
+	  ?>
+      </table>
+      <?vsp
+      http (sprintf ('<div>total count: %d</div>', len));
+      ?>
     </div><!--  #content -->
     <div id="homelink">
       <table class="description">

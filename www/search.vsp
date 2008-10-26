@@ -66,7 +66,7 @@
 		<?V input_get (smode) ?> <input size="60" type="text" name="sc" value="<?= srch ?>"/>&nbsp;
                 <!-- show the second input field-->
                 <?vsp
-                  if  (smode ='7' or smode ='102')
+                  if  (smode ='7')
                   {
                 ?>
                 <br/><?V input_get (smode) ?> <input size="60" type="text" name="sc2" value="<?= srch2 ?>"/>
@@ -134,11 +134,17 @@
                       {
 --Social Connections a la LinkedIn: smode ='6' j=0
 --Connection Between:               smode ='7' j=0
-			if (smode not in ('2'))
+			if (smode = '4' and j = 0) 
+			  {
+			    http (sprintf ('<td><a href="search.vsp?q=%U&sc=%U&fa=Execute">', smode, '<'||tmp||'>'));
+		            http_value (tmp);
+			    http (sprintf('</a>&nbsp;<a href="/ode/?uri=%U">ODE</a>',tmp));
+			  }	
+			else if (smode not in ('2'))
 		   	  http (sprintf ('<td><a class="uri" href="%s">%s</a>', concat('http://b3s.openlinksw.com/ode/?uri=', sprintf ('%U',tmp)), tmp));
  		        else
                           http (sprintf ('<td><a class="uri" href="%s">%s</a>', concat('http://demo.openlinksw.com/ode/?uri=',tmp), tmp));
-                        if (smode in ('5','6','7','9') and j=0)
+                        if (smode in ('5','6','7', '8','9') and j=0)
 			  http (sprintf('&nbsp;<b><a href="dlistall.vsp?p=%U">Drill-down</a></b>',tmp));
                         http ('</td>');
                       }
@@ -154,10 +160,10 @@
 			  http ('Incomplete box');
 			else  
 			  {
-			    if (smode = '8' and j = 0) 
+			    if (smode = '8' and j = 1) 
 			      http (sprintf ('<a href="search.vsp?q=%U&sc=%U&fa=Execute">', smode, '"'||tmp||'"@en'));	
 			    http_value(tmp);
-			    if (smode = '8' and j = 0) 
+			    if (smode = '8' and j = 1) 
 			      http ('</a>');	
 			  }
                         http('</td>');
