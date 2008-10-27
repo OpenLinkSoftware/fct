@@ -242,6 +242,7 @@ create procedure element_split(in val any)
 
   declare words any;
   srch_split := '';
+  val := trim (val, '"');
   FTI_MAKE_SEARCH_STRING_INNER (val,words);
   k := 0;
   for(k:=0;k<length(words);k:=k+1)
@@ -264,7 +265,7 @@ create procedure words_to_string(in val any)
   srch_split := '';
   val := trim (val, '"');
   val := '"'||val||'"';
-  return FTI_MAKE_SEARCH_STRING_INNER (val,words);
+  FTI_MAKE_SEARCH_STRING_INNER (val,words);
   k := 0;
   for(k:=0;k<length(words);k:=k+1)
   {
@@ -307,7 +308,7 @@ create procedure pick_query(in smode varchar, inout val any, inout query varchar
 
     validate_input(val);
     s2 := element_split(val);
-    s4 := fti_make_search_string (val);
+    s4 := trim (fti_make_search_string(val), '()');
     query := concat('',s1, s2, s3, s4, s5, '');
   }
   else if (smode='2')
@@ -325,7 +326,7 @@ create procedure pick_query(in smode varchar, inout val any, inout query varchar
     if (isnull(val) or val = '') val := 'paris and dakar';
     s1 := 'sparql select ?g count (*) where { graph ?g { ?s ?p ?o . filter (bif:contains (?o, \'';
     --validate_input(val);
-    s2 := fti_make_search_string(val);
+    s2 := trim (fti_make_search_string(val), '()');
     s3 := '\')) } } group by ?g order by desc 2 limit 50';
     query := concat('',s1, s2, s3,'');
   }
@@ -348,7 +349,7 @@ create procedure pick_query(in smode varchar, inout val any, inout query varchar
     if (isnull(val)  or val = '') val := '"Paris Hilton"';
     s1 := 'sparql select ?tp count(*) where { graph ?g  { ?s ?p ?o . ?s a ?tp  filter (bif:contains (?o, ''';
     validate_input(val);
-    s2 := fti_make_search_string(val);
+    s2 := trim (fti_make_search_string(val), '()');
     s3 := ''') ) } } group by ?tp order by desc 2';
     query := concat('',s1, s2, s3,'');
   }
@@ -411,7 +412,7 @@ create procedure pick_query(in smode varchar, inout val any, inout query varchar
     if (isnull(val) or val = '') val := 'semantic and web';
     s1 := 'sparql select ?auth ?cnt ((select count (distinct ?xx) where { ?xx dc:creator ?auth } )) where { { select ?auth count (distinct ?d) as ?cnt where { ?d dc:creator ?auth .  ?d ?p ?o   filter (bif:contains (?o, \'' ;
     validate_input(val);
-    s2 := fti_make_search_string (val);
+    s2 := trim (fti_make_search_string(val), '()');
     s3 := '\') && isIRI (?auth)) } group by ?auth order by desc 2 limit 100 } } ' ;
     query := concat('',s1, s2, s3, '');
 
@@ -492,7 +493,7 @@ s3 := ' .
       'sparql define input:inference \'b3s\' select ?s ?lbl count(*) where { ?s  ?p2 ?o2 .  ?o2 <http://b3s-demo.openlinksw.com/label> ?lbl . ' ||
       ' ?s  foaf:nick ?o .  filter (bif:contains (?o, ''';
       validate_input(val);
-      s2 := fti_make_search_string (val);
+      s2 := trim (fti_make_search_string(val), '()');
       s3 := ''')) } group by ?s ?lbl order by desc 3';
       query := s1 || s2 || s3;
     }
@@ -587,7 +588,7 @@ s3 := ' .
 --} order by desc 2 limit 50
 --;
     if (isnull(val)  or val = '') val := 'http://myopenlink.net/dataspace/person/kidehen#this';
-    s1 := 'sparql select distinct ?n ((select count (*) where { ?p foaf:interest ?i . ?ps foaf:interest ?i})) ((select count (*) where { ?p foaf:interest ?i})) where { { select distinct ?p ?psi where { ?p foaf:interest ?i . ?psi foaf:interest ?i  } } . filter (?psi = <';
+    s1 := 'sparql select ?n ((select count (*) where { ?p foaf:interest ?i . ?ps foaf:interest ?i})) ((select count (*) where { ?p foaf:interest ?i})) where { { select distinct ?p ?psi where { ?p foaf:interest ?i . ?psi foaf:interest ?i  } } . filter (?psi = <';
     validate_input(val);
     s2 := val;
     s3 := '> && ?ps = <';
