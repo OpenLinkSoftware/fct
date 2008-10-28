@@ -6,6 +6,8 @@
   declare squery, smode, sm varchar;
   declare i,j integer;
 
+  set http_charset='utf-8';
+
   srch := {?'sc'};
   srch2 := {?'sc2'};
   smode := {?'q'};
@@ -50,7 +52,7 @@
             <?vsp
               if (smode in ('100','101','102','103'))
                 http (sprintf('&nbsp;<b><a href="dlistall.vsp?p=%U">Back to Drill-down list | </a></b>',srch));
-              http(sprintf('<a href="listall.vsp\r\n">Back to main menu</a>'));
+              http(sprintf('<a href="listall.vsp">Back to main menu</a>'));
             ?>
 	    <p><?V desc_get (smode) ?></p>	
           </td>
@@ -63,6 +65,12 @@
             <input type="hidden" name="q" value="<?= smode ?>"/>
             <tr>
               <td>
+		<?vsp
+		  if (input_get (smode) = 'Search for')
+                    {
+                      http_value ('In search form, enter words separated by spaces.  To indicate consecutive words, enclose in quotes (").', 'p'); 
+		    }   
+		?>  
 		<?V input_get (smode) ?> <input size="60" type="text" name="sc" value="<?= srch ?>"/>&nbsp;
                 <!-- show the second input field-->
                 <?vsp
@@ -141,9 +149,9 @@
 			    http (sprintf('</a>&nbsp;<a href="/ode/?uri=%U">ODE</a>',tmp));
 			  }	
 			else if (smode not in ('2'))
-		   	  http (sprintf ('<td><a class="uri" href="%s">%s</a>', concat('http://b3s.openlinksw.com/ode/?uri=', sprintf ('%U',tmp)), tmp));
+		   	  http (sprintf ('<td><a class="uri" href="%s">%s</a>', concat('http://b3s.openlinksw.com/ode/?uri=', sprintf ('%U',tmp)), get_curie (tmp)));
  		        else
-                          http (sprintf ('<td><a class="uri" href="%s">%s</a>', concat('http://demo.openlinksw.com/ode/?uri=',tmp), tmp));
+                          http (sprintf ('<td><a class="uri" href="%s">%s</a>', concat('http://demo.openlinksw.com/ode/?uri=',tmp), get_curie (tmp)));
                         if (smode in ('5','6','7', '8','9') and j=0)
 			  http (sprintf('&nbsp;<b><a href="dlistall.vsp?p=%U">Drill-down</a></b>',tmp));
                         http ('</td>');
@@ -161,11 +169,15 @@
 			else  
 			  {
 			    if (smode = '8' and j = 1) 
-			      http (sprintf ('<a href="search.vsp?q=%U&sc=%U&fa=Execute">', smode, '"'||tmp||'"@en'));	
+			      http (sprintf ('<a href="search.vsp?q=%U&sc=%U&fa=Execute">', smode, tmp));	
 		            if (smode = '1' and j = 2)
                               http (tmp);
 			    else  
-			      http_value(tmp);
+                              {
+			        if (isstring (tmp))
+				  tmp := charset_recode (tmp, 'UTF-8', '_WIDE_');
+			        http_value(tmp);
+		              } 		
 			    if (smode = '8' and j = 1) 
 			      http ('</a>');	
 			  }

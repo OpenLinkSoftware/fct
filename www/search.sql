@@ -120,6 +120,54 @@ create procedure validate_input(inout val varchar)
 }
 ;
 
+create procedure get_curie (in val any)
+{
+
+  declare delim, delim1, delim2, delim3 integer;
+  declare pref, res, suff varchar;
+
+  delim1 := coalesce (strrchr (val, '/'), -1);
+  delim2 := coalesce (strrchr (val, '#'), -1);
+  delim3 := coalesce (strrchr (val, ':'), -1);
+  delim := __max (delim1, delim2, delim3);
+
+  if (delim < 0)
+    return val;
+
+  pref := subseq (val, 0, delim+1);
+  suff := subseq (val, delim + 1);
+
+  if (pref = val)
+    return val;
+
+  res := null;
+  if (strstr (val, 'http://dbpedia.org/resource/') = 0 ) res :=  'dbpedia';
+  if (strstr (val, 'http://dbpedia.org/property/') = 0 ) res :=  'p';
+  if (strstr (val, 'http://dbpedia.openlinksw.com/wikicompany/') = 0 ) res :=  'wikicompany';
+  if (strstr (val, 'http://dbpedia.org/class/yago/') = 0 ) res :=  'yago';
+  if (strstr (val, 'http://www.w3.org/2003/01/geo/wgs84_pos#') = 0 ) res :=  'geo';
+  if (strstr (val, 'http://www.geonames.org/ontology#') = 0 ) res :=  'geonames';
+  if (strstr (val, 'http://xmlns.com/foaf/0.1/') = 0 ) res :=  'foaf';
+  if (strstr (val, 'http://www.w3.org/2004/02/skos/core#') = 0 ) res :=  'skos';
+  if (strstr (val, 'http://www.w3.org/2002/07/owl#') = 0 ) res :=  'owl';
+  if (strstr (val, 'http://www.w3.org/2000/01/rdf-schema#') = 0 ) res :=  'rdfs';
+  if (strstr (val, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#') = 0 ) res :=  'rdf';
+  if (strstr (val, 'http://www.w3.org/2001/XMLSchema#') = 0 ) res :=  'xsd';
+  if (strstr (val, 'http://purl.org/dc/elements/1.1/') = 0 ) res :=  'dc';
+  if (strstr (val, 'http://purl.org/dc/terms/') = 0 ) res :=  'dcterms';
+  if (strstr (val, 'http://dbpedia.org/units/') = 0 ) res :=  'units';
+  if (strstr (val, 'http://www.w3.org/1999/xhtml/vocab#') = 0 ) res :=  'xhv';
+  if (strstr (val, 'http://rdfs.org/sioc/ns#') = 0 ) res :=  'sioc';
+  if (strstr (val, 'http://purl.org/ontology/bibo/') = 0 ) res :=  'bibo';
+
+  if (res is null)
+    res := __xml_get_ns_prefix (pref, 2);
+  if (res is null)
+    return val;
+  return res||':'||suff;
+}
+;
+
 create procedure print_nbsp_1 (inout ses any, in n int)
 {
   for (declare i int, i := 0; i < n;  i := i + 1)
