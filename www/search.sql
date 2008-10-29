@@ -14,6 +14,12 @@ create procedure label_get(in smode varchar)
   else if (smode='101') label := 'Social Net';
   else if (smode='102') label := 'Graphs in Social Net';
   else if (smode='103') label := 'Interest Matches';
+  else if (smode='104') label := 'Named Entities Cloud';
+  else if (smode='1001') label := 'Named Entities Cloud';
+  else if (smode='1002') label := 'Text Search in a Graph';
+  else if (smode='1003') label := 'Documents by Author';
+  else if (smode='1004') label := 'Authors about NE';
+  else if (smode='1005') label := 'Shared Interests';
   else label := 'No such query';
   return label;
 }
@@ -57,7 +63,10 @@ create procedure desc_get (in num varchar)
 	'What sources talk the most about a given subject? Show the top N graphs containing triples with the given text pattern. Sort by descending triple count.',
 	'What types of objects contain a text pattern. Find matches, get the type. Group by type, order by count.',
 	'What else are people interested in X interested in? What else do Harry Potter fans like?',
-	'Who writes the most about a topic. Show for each author the number of works mentioning the topic and total number of works.',
+	'Who writes the most about a topic. Show for each author the number of works mentioning the topic and total number of works.'
+||'<br>For all documents and posts we have extracted named entities the entity could shows the entities which occur in the works of each author.'
+||'There are statistics about named entities occurring together, these are used for display a list of related entities. '
+	,
 	'Show the people a person directly or indirectly knows. Sort by distance and count of connections of the known person',
 	'Given two people, find what chain of acquaintances links them together. For each step in the chain show the person linked to, the graph linking this person to the previous person, the number of the step and the number of the path. Note that there may be many paths through which the people are linked.',
 	'Given a person, find people with the most interests in common with this person. Show the person, number of shared interests and the total number of interests.',
@@ -80,7 +89,7 @@ create procedure desc_get (in num varchar)
 
 create procedure head_get (in num varchar)
 {
-  declare t1, t2 any;
+  declare t1, t2, t3 any;
   t1 := vector (
     vector ('Subject', 'Predicate', 'Hit summary'),
     vector ('Graph', 'Number of mentions'),
@@ -98,6 +107,7 @@ create procedure head_get (in num varchar)
     vector (),
     vector ()
   );
+  t3 := vector ();
   num := atoi (num) - 1;
   if (num > -1 and num < 9)
     return t1[num];
@@ -546,6 +556,36 @@ s3 := ' .
       query := s1 || s2 || s3;
     }
   --smode > 99 is reserved for drill-down queries
+  else if (smode = '1001' or smode = '104')
+    {
+      validate_input(val);
+      query := sprintf ('sparql select ?ne count (*) where { graph <umbel-sc> { ?s rdfs:seeAlso ?ne . }  ?s dc:creator <%s> } group by ?ne order by desc 2', val);
+    }
+  else if (smode = '1002')
+    {
+      validate_input(val);
+      s2 := element_split(val);
+      s4 := trim (fti_make_search_string(val), '()');
+      query := sprintf ('sparql select ?s ?p ( bif:search_excerpt ( bif:vector (%s) , ?o ) ) where {  graph ?G  {  ?s ?p ?o . filter ( bif:contains ( ?o, \'%s\' ) )  } . filter (?g = <%s>)   } limit 10', s2, s4, val2);
+    }
+  else if (smode = '1003')
+    {
+      validate_input(val);
+      s2 := element_split(val);
+      s4 := trim (fti_make_search_string(val), '()');
+      query := sprintf ('sparql select ?title ?ne  ( bif:search_excerpt ( bif:vector (%s) , ?o ) )  where {  { ?s dc:creator <%s> ; dc:title ?title ; ?p ?o . filter bif:contains (?o, \'%s\') } graph <umbel-sc> { ?s rdfs:seeAlso ?ne } } limit 50', s2, val2, s4);
+    }
+  else if (smode = '1004')
+    {
+      validate_input(val);
+      query := sprintf ('sparql select ?author count(*) where { graph <umbel-sc> { ?s rdfs:seeAlso <%s> } { ?s dc:creator ?author . filter isIRI (?author) }} group by ?author order by desc 2 limit 50', val);
+    }
+  else if (smode = '1005')
+    {
+      if (val not like '"%"' and strchr (val, '@') is null)
+	val := '"'||val||'"';
+      query := sprintf ('sparql select distinct ?i where {  ?ps foaf:nick %s . ?ps foaf:interest ?i . ?psi foaf:interest ?i . filter (?ps != ?psi)  . ?ps foaf:nick ?n } limit 200', val);
+    }
   else if (smode='100')
   {
 -- 1  Cloud Around foaf Person, placeholder for http://myopenlink.net/dataspace/person/kidehen#this
