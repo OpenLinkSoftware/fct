@@ -30,7 +30,8 @@ select fct_query (xtree_doc ('
 
 
 
-select fct_eval (xtree_doc ('
+select fct_test ('
 <query> <class iri="http://xmlns.com/foaf/0.1/Person" />
 <view type="properties" limit="10" /></query>
- '));
+ ', 1000);
+

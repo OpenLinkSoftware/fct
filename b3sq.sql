@@ -128,16 +128,11 @@ limit 20
 
 -- common distinctive interests
 
-sparql
-select ?i ?cnt ?n1 ?n2 ?p1 ?p2
-  where
-    {
-      {
-        select ?i count (*) as ?cnt
-          where
-            {
-              ?p foaf:interest ?i
-            }
+sparql select ?i ?cnt ?n1 ?n2 ?p1 ?p2
+  where {
+      {select ?i count (*) as ?cnt
+          where {
+              ?p foaf:interest ?i}
           group by ?i
       }
       filter ( ?cnt > 1 && ?cnt < 10) .
@@ -149,8 +144,7 @@ select ?i ?cnt ?n1 ?n2 ?p1 ?p2
       ?p1 foaf:nick ?n1 .
       ?p2 foaf:nick ?n2 .
     }
-  order by ?cnt
-  limit 10
+  order by ?cnt limit 10
 ;
 
 -- cliques
@@ -209,7 +203,7 @@ select ?celeb
   ((select count (*)
    where
      {
-       ?xx foaf:knows ?celeb .
+       ?xx1 foaf:knows ?celeb .
        filter (!bif:exists ((select (1) where { ?celeb foaf:knows ?xx1 })) )
      }))
 where
@@ -222,21 +216,17 @@ where
         }
     }
   }
-limit 10
+order by desc 2 limit 10
 ;
+-- cl_exec ('__dbf_set (''cl_res_buffer_bytes'', 300000)');
 
 -- celeb with group by
 --* The Most One-Sidedly Known People
-sparql
-select ?celeb, count (*)
-where
-  {
+sparql select ?celeb, count (*)
+where {
     ?claimant foaf:knows ?celeb .
     filter (!bif:exists ((select (1) where { ?celeb foaf:knows ?claimant })))
-  }
-group by ?celeb
-order by desc 2
-limit 10
+  } group by ?celeb order by desc 2 limit 10
 ;
 
 sparql
@@ -623,7 +613,7 @@ where
     filter (bif:contains (?o, "plaid_skirt"))
   }
 group by ?s ?lbl
-order by desc 2
+order by desc 3
 ;
 
 
@@ -742,6 +732,23 @@ where
     }
     option (transitive, t_distinct, t_in(?s), t_out(?o), t_min (1), t_max (4), t_step ('step_no') as ?dist) .
     filter (?s= <http://myopenlink.net/dataspace/person/kidehen#this>)
+  } order by ?dist desc 3 limit 50
+;
+
+-- with sas and blank nodes 
+sparql define input:same-as "yes"
+select ?o ?dist ((select count (*) where {{select distinct ?other where {?o foaf:knows ?other}}}))
+where
+  {
+    {
+      select ?s ?o
+      where
+        {
+          ?s foaf:knows ?o
+        }
+    }
+    option (transitive, t_distinct, t_in(?s), t_out(?o), t_min (1), t_max (1), t_step ('step_no') as ?dist) .
+    filter (?s= <http://richard.cyganiak.de/foaf.rdf#cygri>)
   } order by ?dist desc 3 limit 50
 ;
 
@@ -879,6 +886,101 @@ from sas_attr a) x where sn_iri <> min_iri;
 
 
 
+select iri_to_id ('b3s_inf_sas'),  sn_iri, rdf_sas_iri (), min_iri from (
+select  a.sn_iri, (select min (sn_iri) from sas_attr b where a.sn_name = b.sn_name) as min_iri 
+from sas_attr a) x where sn_iri <> min_iri;
+
+log_enable (2);
+insert into rdf_quad (g,s,p, o)
+select iri_to_id ('b3s_inf_sas'), min_iri, rdf_sas_iri (), sn_iri from  
+(select sn_name, min (sn_iri) as min_iri from sas_attr group by sn_name) mn, sas_attr b where b.sn_iri > min_iri and b.sn_name = mn.sn_name;
 
 
--
+
+
+
+
+
+
+-- Blank nodes ifp sameness 
+
+sparql define input:inference "b3sifp" select distinct ?k where { ?k foaf:name ?n . ?n bif:contains "'Kjetil Kjernsmo'" };
+
+sparql define input:inference "b3sifp" 
+select distinct ?k ?f1 ?f2 where { ?k foaf:name ?n . ?n bif:contains "'Kjetil Kjernsmo'" . ?k foaf:knows ?f1 . ?f1 foaf:knows ?f2 };
+
+sparql define input:same-as "yes" 
+select distinct ?k ?f1 ?f2 where { ?k foaf:name ?n . ?n bif:contains "'Kjetil Kjernsmo'" . ?k foaf:knows ?f1 . ?f1 foaf:knows ?f2 };
+
+
+sparql define input:inference "b3sifp" 
+select count (*) where { ?x a foaf:Person . ?x foaf:knows ?y};
+
+
+
+
+
+sparql select distinct ?p where {?p a foaf:Person option (same-as "yes")};
+
+-- What person has the most sameAs aliases?
+
+sparql select ?person count (*) where  
+{{select distinct ?person where {?person a foaf:Person } limit 1000}
+ {select ?x ?alias where {{ ?x owl:sameAs ?alias } union {?alias owl:sameAs ?x}}}
+	option (transitive, t_in (?x), t_out (?alias), t_distinct) .
+ filter (?x = ?person) .
+} group by ?person order by desc 2 limit 20;
+
+
+
+-- where the synonyms of Dan York?
+sparql select ?g count (*) where {
+ {select ?x ?alias ?g where {{ graph ?g {?x owl:sameAs ?alias }} union {graph ?g {?alias owl:sameAs ?x}}}}
+	option (transitive, t_in (?x), t_out (?alias), t_distinct, t_min (1)) .
+ filter (?x = <http://www.advogato.org/person/dyork/foaf.rdf#me> ) .
+} group by ?g order by desc 2 limit 30;
+
+
+-- Smoosh 
+
+create table name_prop (np_name any, np_p iri_id_8, np_o any, primary key (np_name, np_p, np_o));
+alter index name_prop on name_prop partition (np_name varchar (-1, 0hexffff));
+create table name_iri (ni_name any primary key, ni_s iri_id_8);
+alter index name_iri on name_iri partition (ni_name varchar (-1, 0hexffff));
+create table pref_iri (i iri_id_8, pref iri_id_8, primary key (i));
+alter index pref_iri on pref_iri partition (i int (0hexffff00));
+
+insert soft pref_iri (i, pref) select s, ni_s from name_iri, rdf_quad where o = ni_name and p = iri_to_id ('http://xmlns.com/foaf/0.1/name');
+
+
+insert soft name_prop select "n", "p", "o" from (sparql define output:valmode "LONG" select ?n ?p ?o where {?x a foaf:Person . ?x foaf:name ?n . ?x ?p ?o}) xx;
+insert into name_iri select np_name, (select min (s) from rdf_quad where o = np_name and p = iri_to_id ('http://xmlns.com/foaf/0.1/name')) as mini from name_prop where np_p = iri_to_id ('http://xmlns.com/foaf/0.1/name');
+
+
+
+-- count the smoosh before inserting
+create table smoosh_ct (s iri_id_8, p iri_id_8, o any, primary key (s,p,o));
+alter index smoosh_ct on smoosh_ct partition (s int (0hexffff00));
+
+insert soft smoosh_ct (s, p, o)  select s, np_p, np_o from name_prop, rdf_quad where o = np_name and p = iri_to_id ('http://xmlns.com/foaf/0.1/name');
+
+
+insert soft rdf_quad (g,s,p,o) select iri_to_id ('psmoosh'), s, np_p, np_o from name_prop, rdf_quad where o = np_name and p = iri_to_id ('http://xmlns.com/foaf/0.1/name') xx;
+
+
+-- Make smartSmoosh.  When inserting an O, look up the right one.
+
+
+insert soft rdf_quad (g,s,p,o) select iri_to_id ('psmoosh'), ni_s, np_p, 
+  coalesce ((select pref from pref_iri where i = np_o), np_o)
+from name_prop, name_iri where ni_name = np_name option (loop, quietcast);
+
+
+-- How many tripoles in the original?
+
+sparql select count (*) where { graph ?g { ?x a foaf:Person . ?x foaf:name ?n . ?x ?p ?o}}; 
+
+sparql select  count (*) where {{select distinct ?person where {?person a foaf:Person}} . filter (bif:exists ((select (1) where { ?person foaf:name ?nn}))) . ?person ?p ?o};
+
+
+

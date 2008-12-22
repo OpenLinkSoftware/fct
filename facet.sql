@@ -2,14 +2,14 @@
 
 
 
-create procedure FCT_LABEL (in x any, in g_id iri_id_8, in ctx varchar, in l iri_id_8)
+create procedure FCT_LABEL (in x any, in g_id iri_id_8, in ctx varchar, in label_iri iri_id_8)
 {
   declare best_str any;
   declare best_l, l int;
   rdf_check_init ();
   best_str := null;
   best_l := 0;
-  for select o, p from rdf_quad table option (no cluster) where s = x and p in (rdf_super_sub (ctx, l, 3)) do
+  for select o, p from rdf_quad  where s = x and p in (rdf_super_sub_list (ctx, label_iri, 3)) do
     {
       if (is_rdf_box (o) or isstring (o))
 	{
@@ -24,7 +24,8 @@ create procedure FCT_LABEL (in x any, in g_id iri_id_8, in ctx varchar, in l iri
   return best_str;
 }
 
-dpipe_define ('DB.DBA.FCT_LABEL', 'DB.DBA.RDF_QUAD', 'RDF_QUAD', 'DB.DBA.FCT_LABEL', 0);
+--dpipe_define ('DB.DBA.FCT_LABEL', 'DB.DBA.RDF_QUAD', 'RDF_QUAD', 'DB.DBA.FCT_LABEL', 0);
+--dpipe_define ('FCT_LABEL', 'DB.DBA.RDF_QUAD', 'RDF_QUAD', 'DB.DBA.FCT_LABEL', 0);
 
 
 ttlp ('
@@ -58,6 +59,8 @@ create procedure fct_xml_wrap (in n int, in txt any)
   ntxt := string_output ();
   if (n = 2)
     http ('select xmlelement ("result", xmlagg (xmlelement ("row", xmlelement ("column", "c1"), xmlelement ("column", "c2")))) from (sparql ', ntxt);
+  if (n = 1)
+    http ('select xmlelement ("result", xmlagg (xmlelement ("row", xmlelement ("column", "c1"), xmlelement ("column", fct_label ("c1", 0, ''facets'', __i2id (''http://www.openlinksw.com/schemas/virtrdf#label'')))))) from (sparql ', ntxt);
   http (txt, ntxt);
   http (') xx', ntxt);
   return string_output_string (ntxt);
@@ -69,7 +72,7 @@ create procedure fct_n_cols (in tree any)
   declare tp varchar;
   tp := cast (xpath_eval ('//view/@type', tree, 1) as varchar);
   if ('list' = tp)
-    return 2;
+    return 1;
   return 2;
   signal ('FCT00', 'Unknown facet view type');
 }
@@ -83,7 +86,7 @@ create procedure fct_view (in tree any, in this_s int, in txt any, in pre any, i
   mode := cast (xpath_eval ('./@type', tree, 1) as varchar);
   if ('list' = mode)
     {
-      http (sprintf ('select distinct ?s%d as ?c1 (LONG::sql:FCT_LABEL (?s%d, 0, "fct_labels", <label>)) as ?c2 ', this_s, this_s), pre);
+      http (sprintf ('select distinct ?s%d as ?c1 ', this_s), pre);
       fct_post (tree, post, lim, offs);
     }
   if ('properties' = mode)
@@ -192,7 +195,7 @@ create procedure fct_query (in tree any)
 }
 
 
-create procedure fct_test (in str varchar)
+create procedure fct_test (in str varchar, in timeout int := 0)
 {
   declare sqls, msg varchar;
   declare start_time int;
@@ -200,14 +203,16 @@ create procedure fct_test (in str varchar)
   tree := xtree_doc (str);
   qr := fct_query (xpath_eval ('//query', tree, 1));
  qr2 := fct_xml_wrap (fct_n_cols (tree), qr);
+  set result_timeout = timeout;
   sqls := '00000';
   start_time := msec_time ();
   exec (qr2, sqls, msg, vector (), 0, md, res);
-  if (sqls <> '00000')
+  if (sqls <> '00000' and sqls <> 'S1TAT')
     signal (sqls, msg);
-  reply := xmlelement ("facets", xmlelement ("sparql", qr), xmlelement ("time", msec_time () - start_time), 
-		      xmlelement ("db-activity", db_activity ()), res[0][0]);
-  dbg_obj_print (reply);
+  reply := xmlelement ("facets", xmlelement ("sparql", qr), xmlelement ("time", msec_time () - start_time),
+		       xmlelement ("complete", case when sqls = 'S1TAT' then 'no' else 'yes' end),
+		       xmlelement ("db-activity", db_activity ()), res[0][0]);
+  --dbg_obj_print (reply);
   return xslt ('file://facet_text.xsl', reply);
 }
 

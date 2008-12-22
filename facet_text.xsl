@@ -14,6 +14,9 @@
 </xsl:text> 
 </xsl:for-each>
 
+<xsl:text>
+complete = </xsl:text><xsl:value-of select="complete"/> 
+<xsl:text> Activity = </xsl:text> <xsl:value-of select="db-activity"/>
     </xsl:template>
 </xsl:stylesheet>
 
