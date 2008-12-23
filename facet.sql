@@ -2,18 +2,28 @@
 
 
 
-create procedure FCT_LABEL (in x any, in g_id iri_id_8, in ctx varchar, in label_iri iri_id_8)
+cl_exec ('registry_set (''fct_label_iri'', ?)', vector (cast (iri_id_num (__i2id ('http://www.openlinksw.com/schemas/virtrdf#label')) as varchar)));
+
+
+create procedure FCT_LABEL (in x any, in g_id iri_id_8, in ctx varchar)
 {
   declare best_str any;
   declare best_l, l int;
+  declare label_iri iri_id_8;
+  if (not isiri_id (x))
+    return null;
   rdf_check_init ();
+  label_iri := iri_id_from_num (atoi (registry_get ('fct_label_iri')));
   best_str := null;
   best_l := 0;
   for select o, p from rdf_quad  where s = x and p in (rdf_super_sub_list (ctx, label_iri, 3)) do
     {
       if (is_rdf_box (o) or isstring (o))
 	{
-	  l := length (o);
+	  if (is_rdf_box (o) and not rdf_box_is_complete (o))
+	    L := 20;
+	  else
+	    l := length (o);
 	  if (l > best_l)
 	    {
 	    best_str := o;
@@ -24,8 +34,48 @@ create procedure FCT_LABEL (in x any, in g_id iri_id_8, in ctx varchar, in label
   return best_str;
 }
 
---dpipe_define ('DB.DBA.FCT_LABEL', 'DB.DBA.RDF_QUAD', 'RDF_QUAD', 'DB.DBA.FCT_LABEL', 0);
---dpipe_define ('FCT_LABEL', 'DB.DBA.RDF_QUAD', 'RDF_QUAD', 'DB.DBA.FCT_LABEL', 0);
+
+create procedure FCT_LABEL_DP (in x any, in g_id iri_id_8, in ctx varchar)
+{
+  declare best_str any;
+  declare best_l, l int;
+  declare label_iri iri_id_8;
+  if (not isiri_id (x))
+    return vector (null, 1);
+  rdf_check_init ();
+  label_iri := iri_id_from_num (atoi (registry_get ('fct_label_iri')));
+  best_str := null;
+  best_l := 0;
+  for select o, p from rdf_quad table option (no cluster) where s = x and p in (rdf_super_sub_list (ctx, label_iri, 3)) do
+    {
+      if (is_rdf_box (o) or isstring (o))
+	{
+	  if (is_rdf_box (o) and not rdf_box_is_complete (o))
+	    L := 20;
+	  else
+	    l := length (o);
+	  if (l > best_l)
+	    {
+	    best_str := o;
+	    best_l := l;
+	    }
+	}
+    }
+  if (is_rdf_box (best_str) and not rdf_box_is_complete (best_str))
+    return vector (0, 0, vector ('LBL_O_VALUE', vector (rdf_box_ro_id (best_str))));
+  return vector (best_str, 1);
+}
+
+create procedure LBL_O_VALUE (in id int)
+{
+  set isolation = 'committed';
+  return vector ((select case (isnull (RO_LONG)) when 0 then blob_to_string (RO_LONG) else RO_VAL end 
+		   from DB.DBA.RDF_OBJ table option (no cluster) where RO_ID = id), 1);
+}
+
+dpipe_define ('DB.DBA.FCT_LABEL', 'DB.DBA.RDF_QUAD', 'RDF_QUAD_OPGS', 'DB.DBA.FCT_LABEL_DP', 0);
+dpipe_define ('FCT_LABEL', 'DB.DBA.RDF_QUAD', 'RDF_QUAD_OPGS', 'DB.DBA.FCT_LABEL_DP', 0);
+dpipe_define ('LBL_O_VALUE', 'DB.DBA.RDF_OBJ', 'RDF_OBJ', 'DB.DBA.LBL_O_VALUE', 0);
 
 
 ttlp ('
@@ -58,11 +108,11 @@ create procedure fct_xml_wrap (in n int, in txt any)
   declare ntxt any;
   ntxt := string_output ();
   if (n = 2)
-    http ('select xmlelement ("result", xmlagg (xmlelement ("row", xmlelement ("column", "c1"), xmlelement ("column", "c2")))) from (sparql ', ntxt);
+    http ('select xmlelement ("result", xmlagg (xmlelement ("row", xmlelement ("column", __ro2sq ("c1")), xmlelement ("column", fct_label ("c1", 0, ''facets'' )), xmlelement ("column", "c2")))) from (sparql define output:valmode "LONG" ', ntxt);
   if (n = 1)
-    http ('select xmlelement ("result", xmlagg (xmlelement ("row", xmlelement ("column", "c1"), xmlelement ("column", fct_label ("c1", 0, ''facets'', __i2id (''http://www.openlinksw.com/schemas/virtrdf#label'')))))) from (sparql ', ntxt);
+    http ('select xmlelement ("result", xmlagg (xmlelement ("row", xmlelement ("column", __ro2sq ("c1")), xmlelement ("column", fct_label ("c1", 0, ''facets'' ))))) from (sparql define output:valmode "LONG"', ntxt);
   http (txt, ntxt);
-  http (') xx', ntxt);
+  http (') xx option (quietcast)', ntxt);
   return string_output_string (ntxt);
 }
 
@@ -96,6 +146,12 @@ create procedure fct_view (in tree any, in this_s int, in txt any, in pre any, i
       http (sprintf (' group by ?s%dp order by desc 2', this_s), post);
       fct_post (tree, post, lim, offs);
     }
+  if ('text-properties' = mode)
+    {
+      http (sprintf ('select  ?s%dp as ?c1 count (*) as ?c2 ', this_s), pre);
+      http (sprintf (' group by ?s%dp order by desc 2', this_s), post);
+      fct_post (tree, post, lim, offs);
+    }
   if ('classes' = mode)
     {
       http (sprintf ('select ?s%dc as ?c1 count (*) as ?c2 ', this_s), pre);
@@ -107,7 +163,7 @@ create procedure fct_view (in tree any, in this_s int, in txt any, in pre any, i
     {
       declare exp any;
     exp := cast (xpath_eval ('//text', tree) as varchar);
-      http (sprintf ('select distinct ?s%d as ?c1 (bif:search_excerpt (bif:search_terms ("%s"), ?o%d) as ?c2 ', this_s, exp, this_s), pre);
+      http (sprintf ('select distinct ?s%d as ?c1 (bif:search_excerpt (bif:vector (%s), ?o%d)) as ?c2 ', this_s, element_split (exp), this_s), pre);
       fct_post (tree, post, lim, offs);
     }
 }
@@ -148,7 +204,8 @@ create procedure fct_text (in tree any, in this_s int, inout max_s int, in txt a
       prop := '<' || prop || '>';
       else 
       prop := sprintf ('?s%dp', this_s);
-      http (sprintf (' ?s%d %s ?o%d . filter (bif:contains (?o%d, "%s")) .', this_s, prop, this_s, this_s, cast (tree as varchar)), txt);
+      http (sprintf (' ?s%d %s ?o%d . filter (bif:contains (?o%d, ''%s'')) .', this_s, prop, this_s, this_s, 
+		     fti_make_search_string (cast (tree as varchar))), txt);
     }
 
   if ('property' = n)
