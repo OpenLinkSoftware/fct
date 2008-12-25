@@ -1,0 +1,16 @@
+<html>
+<body>
+<?vsp 
+-- dbg_obj_print (http_param ('cmd'));
+-- dbg_obj_print (http_param ('search_for'));
+-- 	dbg_obj_print  (http_request_header ());
+
+declare cmd varchar;
+cmd := http_param ('cmd');
+
+
+fct_vsp ();
+?>
+</body>
+</html>
+

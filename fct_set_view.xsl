@@ -34,11 +34,19 @@
 </xsl:element>
 </xsl:element>
 </xsl:if>
+<xsl:if test="$op = 'class' and $pos = count (./ancestor::*[name () = 'query' or name () = 'property' or name () = 'property-of']) + count (./preceding::*[name () = 'query' or name () = 'property' or name () = 'property-of'])">
+<class iri="{$iri}"/>
+</xsl:if>
 </xsl:copy>
 </xsl:if>
 </xsl:template>
 
 <xsl:template match="view">
+<xsl:if test="'class' = $op">
+<xsl:copy>
+<xsl:apply-templates select="@* | node()" />
+</xsl:copy>
+</xsl:if>
 </xsl:template>
  
 

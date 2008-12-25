@@ -141,11 +141,19 @@ create procedure fct_view (in tree any, in this_s int, in txt any, in pre any, i
     }
   if ('properties' = mode)
     {
-      http (sprintf ('select distinct ?s%dp as ?c1 count (*) as ?c2 ', this_s), pre);
+      http (sprintf ('select ?s%dp as ?c1 count (*) as ?c2 ', this_s), pre);
       http (sprintf (' ?s%d ?s%dp ?s%do .', this_s, this_s, this_s), txt);
       http (sprintf (' group by ?s%dp order by desc 2', this_s), post);
       fct_post (tree, post, lim, offs);
     }
+  if ('properties-in' = mode)
+    {
+      http (sprintf ('select ?s%dip as ?c1 count (*) as ?c2 ', this_s), pre);
+      http (sprintf (' ?s%do ?s%dip ?s%d .', this_s, this_s, this_s), txt);
+      http (sprintf (' group by ?s%dip order by desc 2', this_s), post);
+      fct_post (tree, post, lim, offs);
+    }
+
   if ('text-properties' = mode)
     {
       http (sprintf ('select  ?s%dp as ?c1 count (*) as ?c2 ', this_s), pre);
@@ -155,7 +163,7 @@ create procedure fct_view (in tree any, in this_s int, in txt any, in pre any, i
   if ('classes' = mode)
     {
       http (sprintf ('select ?s%dc as ?c1 count (*) as ?c2 ', this_s), pre);
-      http (sprintf (' ?s%d ?a ?s%dc .', this_s, this_s), txt);
+      http (sprintf (' ?s%d a ?s%dc .', this_s, this_s), txt);
       http (sprintf (' group by ?s%dc order by desc 2', this_s), post);
       fct_post (tree, post, lim, offs);
     }
