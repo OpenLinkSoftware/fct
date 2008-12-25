@@ -211,7 +211,7 @@ create procedure fct_text (in tree any, in this_s int, inout max_s int, in txt a
       if (prop is not null)
       prop := '<' || prop || '>';
       else 
-      prop := sprintf ('?s%dp', this_s);
+      prop := sprintf ('?s%dtextp', this_s);
       http (sprintf (' ?s%d %s ?o%d . filter (bif:contains (?o%d, ''%s'')) .', this_s, prop, this_s, this_s, 
 		     fti_make_search_string (cast (tree as varchar))), txt);
     }
