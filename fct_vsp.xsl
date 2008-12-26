@@ -9,9 +9,14 @@
 <xsl:choose>
 <xsl:when test="$type = 'properties'">
 <td>
-<a><xsl:attribute name="href">/fct/facet.vsp?cmd=<xsl:value-of select="$cmd"/>&amp;iri=<xsl:value-of select="urlify (column[1])"/>&amp;sid=<xsl:value-of select="$sid"/></xsl:attribute>
+<xsl:if test="'url' = column[1]/@datatype">
+<a><xsl:attribute name="href">/fct/facet.vsp?cmd=open&amp;iri=<xsl:value-of select="urlify (column[1])"/>&amp;sid=<xsl:value-of select="$sid"/></xsl:attribute>open</a>
+</xsl:if>
+
+<a><xsl:attribute name="href">/fct/facet.vsp?cmd=<xsl:value-of select="$cmd"/>&amp;iri=<xsl:value-of select="urlify (column[1])"/>&amp;lang=<xsl:value-of select="column[1]/@xml:lang"/>&amp;datatype=<xsl:value-of select="column[1]/@datatype"/>&amp;sid=<xsl:value-of select="$sid"/></xsl:attribute>
 <xsl:value-of select="column[1]"/>
-</a></td>
+</a>
+</td>
 <td><xsl:value-of select="column[2]"/></td>
 <td><xsl:value-of select="column[3]"/></td>
 </xsl:when>

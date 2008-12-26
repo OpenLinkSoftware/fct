@@ -94,6 +94,25 @@ foaf:nick rdfs:subPropertyOf virtrdf:label .', 'xx', 'facets');
 rdfs_rule_set ('facets', 'facets');
 
 
+create procedure fct_inf_clause (in tree any)
+{
+  declare i varchar;
+ i := xpath_eval ('/query/@inference', tree);
+  if (i is null)
+    return '';
+  return sprintf (' define input:inference "%s" ', cast (i as varchar));
+}
+
+create procedure fct_sas_clause (in tree any)
+{
+  declare i varchar;
+ i := xpath_eval ('/query/@same-as', tree);
+  if (i is null)
+    return '';
+  return sprintf (' define input:same-as "%s" ', cast (i as varchar));
+}
+
+
 create procedure fct_post (in tree any, in post any, in lim int, in offs int)
 {
   if (lim is not null)
@@ -103,14 +122,31 @@ create procedure fct_post (in tree any, in post any, in lim int, in offs int)
 }
 
 
+create procedure fct_dtp (in x any)
+{
+  if (isiri_id (x))
+    return 'url';
+  return id_to_iri (rdf_datatype_of_long (x));
+}
+
+create procedure fct_lang (in x any)
+{
+  if (not is_rdf_box (x))
+    return NULL;
+  if (rdf_box_lang (x) = 257)
+    return null;
+  return (select rl_id from rdf_language where rl_twobyte = rdf_box_language (x));
+}
+
+
 create procedure fct_xml_wrap (in n int, in txt any)
 {
   declare ntxt any;
   ntxt := string_output ();
   if (n = 2)
-    http ('select xmlelement ("result", xmlagg (xmlelement ("row", xmlelement ("column", __ro2sq ("c1")), xmlelement ("column", fct_label ("c1", 0, ''facets'' )), xmlelement ("column", "c2")))) from (sparql define output:valmode "LONG" ', ntxt);
+    http ('select xmlelement ("result", xmlagg (xmlelement ("row", xmlelement ("column", xmlattributes (fct_lang ("c1") as "xml:lang", fct_dtp ("c1") as "datatype"), __ro2sq ("c1")), xmlelement ("column", fct_label ("c1", 0, ''facets'' )), xmlelement ("column", "c2")))) from (sparql define output:valmode "LONG" ', ntxt);
   if (n = 1)
-    http ('select xmlelement ("result", xmlagg (xmlelement ("row", xmlelement ("column", __ro2sq ("c1")), xmlelement ("column", fct_label ("c1", 0, ''facets'' ))))) from (sparql define output:valmode "LONG"', ntxt);
+    http ('select xmlelement ("result", xmlagg (xmlelement ("row", xmlelement ("column", xmlattributes (fct_lang ("c1") as "xml:lang", fct_dtp ("c1") as "datatype"), __ro2sq ("c1")), xmlelement ("column", fct_label ("c1", 0, ''facets'' ))))) from (sparql define output:valmode "LONG"', ntxt);
   http (txt, ntxt);
   http (') xx option (quietcast)', ntxt);
   return string_output_string (ntxt);
@@ -139,6 +175,12 @@ create procedure fct_view (in tree any, in this_s int, in txt any, in pre any, i
       http (sprintf ('select distinct ?s%d as ?c1 ', this_s), pre);
       fct_post (tree, post, lim, offs);
     }
+  if ('list-count' = mode)
+    {
+      http (sprintf ('select ?s%d as ?c1 count (*) as ?c2 ', this_s), pre);
+      http (sprintf (' group by ?s%d order by desc 2', this_s), post);
+      fct_post (tree, post, lim, offs);
+    }
   if ('properties' = mode)
     {
       http (sprintf ('select ?s%dp as ?c1 count (*) as ?c2 ', this_s), pre);
@@ -156,8 +198,8 @@ create procedure fct_view (in tree any, in this_s int, in txt any, in pre any, i
 
   if ('text-properties' = mode)
     {
-      http (sprintf ('select  ?s%dp as ?c1 count (*) as ?c2 ', this_s), pre);
-      http (sprintf (' group by ?s%dp order by desc 2', this_s), post);
+      http (sprintf ('select  ?s%dtextp as ?c1 count (*) as ?c2 ', this_s), pre);
+      http (sprintf (' group by ?s%dtextp order by desc 2', this_s), post);
       fct_post (tree, post, lim, offs);
     }
   if ('classes' = mode)
@@ -281,3 +323,22 @@ create procedure fct_test (in str varchar, in timeout int := 0)
   return xslt ('file://facet_text.xsl', reply);
 }
 
+
+create procedure fct_exec (in tree any, in timeout int)
+{
+  declare start_time int;
+  declare sqls, msg, qr, qr2 varchar;
+  declare md, res any;
+  set result_timeout = timeout;
+  db_activity ();
+  sqls := '00000';
+  qr := fct_query (xpath_eval ('//query', tree, 1));
+  qr2 := fct_xml_wrap (fct_n_cols (tree), qr);
+  start_time := msec_time ();
+  exec (qr2, sqls, msg, vector (), 0, md, res);
+  if (sqls <> '00000' and sqls <> 'S1TAT')
+    signal (sqls, msg);
+  return xmlelement ("facets", xmlelement ("sparql", qr), xmlelement ("time", msec_time () - start_time),
+		       xmlelement ("complete", case when sqls = 'S1TAT' then 'no' else 'yes' end),
+		       xmlelement ("db-activity", db_activity ()), res[0][0]);
+}

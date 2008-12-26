@@ -19,7 +19,10 @@
 <xsl:apply-templates select="@* | node()" />
 <xsl:if test="$op = 'view' and $pos = count (./ancestor::*[name () = 'query' or name () = 'property' or name () = 'property-of']) + count (./preceding::*[name () = 'query' or name () = 'property' or name () = 'property-of'])">
 <xsl:element name="view">
-<xsl:attribute name="type"> <xsl:value-of select="$type"/></xsl:attribute>
+<xsl:attribute name="type"> 
+<xsl:choose><xsl:when test="'list' = $type and ./text">text</xsl:when>
+<xsl:otherwise><xsl:value-of select="$type"/></xsl:otherwise></xsl:choose>
+</xsl:attribute>
 <xsl:attribute name="limit"> <xsl:value-of select="$limit"/></xsl:attribute>
 <xsl:attribute name="offset"> <xsl:value-of select="$offset"/></xsl:attribute>
 </xsl:element>
