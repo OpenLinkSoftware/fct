@@ -97,8 +97,8 @@ rdfs_rule_set ('facets', 'facets');
 create procedure fct_inf_clause (in tree any)
 {
   declare i varchar;
- i := xpath_eval ('/query/@inference', tree);
-  if (i is null)
+ i := cast (xpath_eval ('/query/@inference', tree) as varchar);
+  if (i is null or '' = i)
     return '';
   return sprintf (' define input:inference "%s" ', cast (i as varchar));
 }
@@ -106,8 +106,8 @@ create procedure fct_inf_clause (in tree any)
 create procedure fct_sas_clause (in tree any)
 {
   declare i varchar;
- i := xpath_eval ('/query/@same-as', tree);
-  if (i is null)
+ i := cast (xpath_eval ('/query/@same-as', tree) as varchar);
+  if (i is null or '' = i)
     return '';
   return sprintf (' define input:same-as "%s" ', cast (i as varchar));
 }
@@ -135,7 +135,7 @@ create procedure fct_lang (in x any)
     return NULL;
   if (rdf_box_lang (x) = 257)
     return null;
-  return (select rl_id from rdf_language where rl_twobyte = rdf_box_language (x));
+  return (select rl_id from rdf_language where rl_twobyte = rdf_box_lang (x));
 }
 
 
@@ -169,6 +169,7 @@ create procedure fct_view (in tree any, in this_s int, in txt any, in pre any, i
   declare mode varchar;
   offs := xpath_eval ('./@offset', tree, 1);
   lim := xpath_eval ('./@limit', tree, 1);
+  http (sprintf (' %s %s ', fct_inf_clause (tree), fct_sas_clause (tree)), pre);
   mode := cast (xpath_eval ('./@type', tree, 1) as varchar);
   if ('list' = mode)
     {
@@ -327,18 +328,22 @@ create procedure fct_test (in str varchar, in timeout int := 0)
 create procedure fct_exec (in tree any, in timeout int)
 {
   declare start_time int;
-  declare sqls, msg, qr, qr2 varchar;
+  declare sqls, msg, qr, qr2, act varchar;
   declare md, res any;
   set result_timeout = timeout;
-  db_activity ();
+  --db_activity ();
   sqls := '00000';
   qr := fct_query (xpath_eval ('//query', tree, 1));
   qr2 := fct_xml_wrap (fct_n_cols (tree), qr);
   start_time := msec_time ();
   exec (qr2, sqls, msg, vector (), 0, md, res);
+  act := db_activity ();
+  set result_timeout = 0;
   if (sqls <> '00000' and sqls <> 'S1TAT')
     signal (sqls, msg);
+  if (not isarray (res) or 0 = length (res) or not isarray (res[0]) or 0 = length (res[0]))
+    res := vector (vector (xtree_doc ('<result/>')));
   return xmlelement ("facets", xmlelement ("sparql", qr), xmlelement ("time", msec_time () - start_time),
 		       xmlelement ("complete", case when sqls = 'S1TAT' then 'no' else 'yes' end),
-		       xmlelement ("db-activity", db_activity ()), res[0][0]);
+		       xmlelement ("db-activity", act), res[0][0]);
 }

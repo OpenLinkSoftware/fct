@@ -178,7 +178,7 @@ create procedure fct_nav (in tree any, in reply any, in txt any)
   if ('properties' <> tp)
     fct_view_link ('properties', 'Show properties', txt);
   if ('properties-in' <> tp)
-    fct_view_link ('properties-in', 'Show properties where these are the values', txt);
+    fct_view_link ('properties-in', 'Show properties referencing these', txt);
   if ('text' <> tp)
     {
       if (tp <> 'list-count')
@@ -187,6 +187,7 @@ create procedure fct_nav (in tree any, in reply any, in txt any)
 	fct_view_link ('list', 'Show values', txt);
     }
   http (sprintf ('<br><a href="/fct/facet.vsp?cmd=set_inf&sid=%d">Inference options</a>', connection_get ('sid')), txt);
+  http (' <a href=/fct/facet.vsp?qq=ww">New Search</a>', txt);
 } 
 
 
@@ -321,7 +322,7 @@ create procedure fct_open_property  (in tree any, in sid int, in iri varchar, in
 }
 
 
-create procedure fct_set_class  (in tree any, in sid int, in iri varchar)
+create procedure fct_set_class (in tree any, in sid int, in iri varchar)
 {
   declare pos int;
   pos := fct_view_pos (tree);
@@ -386,7 +387,7 @@ create procedure fct_open_iri (in tree any, in sid int, in iri varchar)
   declare txt, sqls, msg, md, res, res_tree any;
   http (sprintf ('Showing iri %s', iri));
   txt := string_output ();
-  http ('select xmlelement ("result", xmlagg (xmlelement ("row", xmlelement ("column", "c1"), xmlelement ("column", fct_label ("c1", 0, ''facets'')), xmlelement ("column", xmlattributes (fct_lang ("c2") as "xml:lang", fct_dtp ("c2") as "datatype"), __ro2sq ("c2"))))) from (sparql define output:valmode "LONG" ', txt);
+  http ('select xmlelement ("result", xmlagg (xmlelement ("row", xmlelement ("column", __ro2sq ("c1")), xmlelement ("column", fct_label ("c1", 0, ''facets'')), xmlelement ("column", xmlattributes (fct_lang ("c2") as "xml:lang", fct_dtp ("c2") as "datatype"), __ro2sq ("c2"))))) from (sparql define output:valmode "LONG" ', txt);
   http (sprintf (' %s %s select ?c1 ?c2 where { <%s> ?c1 ?c2 } limit 10000) xx', fct_inf_clause (tree), fct_sas_clause (tree), iri), txt);
   sqls:= '00000';
   exec (string_output_string (txt), sqls, msg, vector (), 0, md, res);

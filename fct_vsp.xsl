@@ -40,7 +40,7 @@
 
 <xsl:choose>
 <xsl:when test="/facets/complete = 'yes'">Complete results</xsl:when>
-<xsl:otherwise>Partial results</xsl:otherwise>
+<xsl:otherwise>Partial results <a href="/fct/facet.vsp?cmd=refresh&amp;sid={$sid}">Retry</a></xsl:otherwise>
 </xsl:choose>
 <xsl:value-of select="/facets/time"/> msec.  Resource utilization: 
 <xsl:value-of select="/facets/db-activity"/>
