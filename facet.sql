@@ -220,6 +220,35 @@ create procedure fct_view (in tree any, in this_s int, in txt any, in pre any, i
 }
 
 
+create procedure fct_literal (in tree any)
+{
+  declare lit, dtp, lang varchar;
+  dtp := cast (xpath_eval ('./@datatype', tree) as varchar);
+  lang := cast (xpath_eval ('./@xml:lang', tree) as varchar);
+  if (lang is not null and lang <> '')
+  lit := sprintf ('"%s"@%s"', cast (tree as varchar), lang);
+  else if ('uri' = dtp or 'url' = dtp or 'iri' = dtp)
+    lit := sprintf ('<%s>', cast (tree as varchar));
+  else if (dtp like '%tring')
+    lit := sprintf ('"%s"', cast (tree as varchar));
+  else if (dtp = '' or dtp is null or dtp like '%nteger' or dtp like '%ouble' or dtp like '%loat' or dtp like '%nt')
+    lit := cast (tree as varchar);
+  else 
+    lit := sprintf ('"%s"^^<%s>', cast (tree as varchar), dtp);
+  return lit;
+}
+
+
+create procedure fct_cond (in tree any, in this_s int, in txt any)
+{
+  declare lit, op varchar;
+ lit := fct_literal (tree);
+  op := coalesce (cast (xpath_eval ('./@op', tree) as varchar), '=');
+  if (0 = op)
+    op := '=';
+  http (sprintf (' filter (?s%d %s %s) . ', this_s, op, lit), txt);
+}
+
 create procedure fct_text_1 (in tree any, in this_s int, inout max_s int, in txt any, in pre any, in post any) 
 {
   declare c any;
@@ -277,7 +306,7 @@ create procedure fct_text (in tree any, in this_s int, inout max_s int, in txt a
     }
   if ('value' = n)
     {
-      http (sprintf (' filter (?s%d = %s) . ', this_s, cast (tree as varchar)), txt);
+      fct_cond (tree, this_s, txt);
     }
   if (n = 'view')
     {

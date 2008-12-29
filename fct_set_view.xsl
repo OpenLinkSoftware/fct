@@ -40,12 +40,16 @@
 <xsl:if test="$op = 'class' and $pos = count (./ancestor::*[name () = 'query' or name () = 'property' or name () = 'property-of']) + count (./preceding::*[name () = 'query' or name () = 'property' or name () = 'property-of'])">
 <class iri="{$iri}"/>
 </xsl:if>
+<xsl:if test="$op = 'value' and $pos = count (./ancestor::*[name () = 'query' or name () = 'property' or name () = 'property-of']) + count (./preceding::*[name () = 'query' or name () = 'property' or name () = 'property-of'])">
+<value xml:lang="{$lang}" datatype="{$datatype}" op="{$cmp}" ><xsl:value-of select="$iri"/></value>
+</xsl:if>
+
 </xsl:copy>
 </xsl:if>
 </xsl:template>
 
 <xsl:template match="view">
-<xsl:if test="'class' = $op">
+<xsl:if test="'class' = $op or 'value' = $op">
 <xsl:copy>
 <xsl:apply-templates select="@* | node()" />
 </xsl:copy>

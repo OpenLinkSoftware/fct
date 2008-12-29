@@ -127,7 +127,7 @@ create procedure fct_query_info (in tree any, in this_s int, inout max_s int, in
     }
   if ('value' = n)
     {
-      http (sprintf (' %s = %s .', fct_var_tag (this_s, ctx), cast (tree as varchar)), txt);
+      http (sprintf (' %s %s %V .', fct_var_tag (this_s, ctx), cast (xpath_eval ('./@op', tree) as varchar), fct_literal (tree)), txt);
     }
   if (ctx)
     http (' <br>\n', txt);
@@ -405,6 +405,22 @@ create procedure fct_refresh (in tree any)
 }
 
 
+create procedure fct_select_value (in tree any, in sid int, in val varchar, in lang varchar, in dtp varchar, in op varchar)
+{
+  declare pos int;
+  if (op is null or op = '' or op = 0)
+    op := '=';
+  pos := fct_view_pos (tree);
+    tree := xslt ('file://fct/fct_set_view.xsl', tree, vector ('pos', pos, 'op', 'value', 'iri', val, 'lang', lang, 'datatype', dtp, 'cmp', op));
+
+  if (op = '=')
+    tree := xslt ('file://fct/fct_set_view.xsl', tree, vector ('pos', 0, 'op', 'view', 'type', 'list', 'limit', 20, 'offset', 0));
+  update fct_state set fct_state = tree where fct_sid = sid;
+  commit work;
+  fct_web (tree);
+}
+
+
 create procedure fct_vsp ()
 {
   declare cmd varchar;
@@ -444,6 +460,8 @@ create procedure fct_vsp ()
     fct_refresh (tree);
   else if ('set_inf' = cmd)
     fct_set_inf (tree, sid);
+  else if ('select_value' = cmd)
+    fct_select_value (tree, sid, http_param ('iri'), http_param ('lang'), http_param ('datatype'), http_param ('op'));
   else 
     {
       http ('Unrecognized command');
