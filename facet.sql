@@ -1,5 +1,34 @@
 
+-- Facet web service 
 
+create procedure fct_short_uri (in x any)
+{
+  declare loc, pref, sh varchar;
+  if (not isstring (x))
+    return x;
+ pref := iri_split (x, loc);
+ sh := __xml_get_ns_prefix (pref, 2); 
+  if (sh is not null)
+    return sh || ':' || loc;
+  return x;
+}
+
+create procedure fct_long_uri (in x any)
+{
+  declare loc, pref, sh varchar;
+  if (not isstring (x))
+    return x;
+ pref := iri_split (x, loc);
+  if ('' = pref or ':' <> subseq (pref, length (pref) - 1))
+    return x;
+ sh := __xml_get_ns_uri (subseq (pref, 0, length (pref) - 1), 2); 
+  if (sh is not null)
+    return sh || loc;
+  return x;
+}
+
+
+}
 
 
 cl_exec ('registry_set (''fct_label_iri'', ?)', vector (cast (iri_id_num (__i2id ('http://www.openlinksw.com/schemas/virtrdf#label')) as varchar)));
