@@ -1,6 +1,4 @@
-
-
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/TR/WD-xsl">
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
 <xsl:param name="pos"/>
 <xsl:param name="op"/>
@@ -10,22 +8,22 @@
 <xsl:param name="iri"/>
 <xsl:param name="name"/>
 
+<xsl:template match = "query | property |property-of">
 
-
-    <xsl:template match = "query | property |property-of">
 <xsl:if test="not ($op = 'close') or not ($pos = count (./ancestor::*[name () = 'query' or name () = 'property' or name () = 'property-of']) + count (./preceding::*[name () = 'query' or name () = 'property' or name () = 'property-of']))">
-
-<xsl:copy>
-<xsl:apply-templates select="@* | node()" />
-<xsl:if test="$op = 'view' and $pos = count (./ancestor::*[name () = 'query' or name () = 'property' or name () = 'property-of']) + count (./preceding::*[name () = 'query' or name () = 'property' or name () = 'property-of'])">
-<xsl:element name="view">
-<xsl:attribute name="type"> 
-<xsl:choose><xsl:when test="'list' = $type and ./text">text</xsl:when>
-<xsl:otherwise><xsl:value-of select="$type"/></xsl:otherwise></xsl:choose>
-</xsl:attribute>
-<xsl:attribute name="limit"> <xsl:value-of select="$limit"/></xsl:attribute>
-<xsl:attribute name="offset"> <xsl:value-of select="$offset"/></xsl:attribute>
-</xsl:element>
+  <xsl:copy>
+    <xsl:apply-templates select="@* | node()" />
+    <xsl:if test="$op = 'view' and $pos = count (./ancestor::*[name () = 'query' or name () = 'property' or name () = 'property-of']) + count (./preceding::*[name () = 'query' or name () = 'property' or name () = 'property-of'])">
+      <xsl:element name="view">
+        <xsl:attribute name="type"> 
+          <xsl:choose> 
+            <xsl:when test="'list' = $type and ./text">text</xsl:when>
+            <xsl:otherwise><xsl:value-of select="$type"/></xsl:otherwise>
+          </xsl:choose>
+        </xsl:attribute>
+        <xsl:attribute name="limit"> <xsl:value-of select="$limit"/></xsl:attribute>
+        <xsl:attribute name="offset"> <xsl:value-of select="$offset"/></xsl:attribute>
+      </xsl:element>
 </xsl:if>
 <xsl:if test="$op = 'prop' and $pos = count (./ancestor::*[name () = 'query' or name () = 'property' or name () = 'property-of']) + count (./preceding::*[name () = 'query' or name () = 'property' or name () = 'property-of'])">
 <xsl:element name="{$name}">

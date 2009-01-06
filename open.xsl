@@ -1,12 +1,10 @@
-
-
-
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/TR/WD-xsl">
-    <xsl:output method="html"/>
-    <xsl:template match = "result">
+<?xml version="1.0" encoding="utf-8"?>
+<xsl:stylesheet version ="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:output method="html"/>
+<xsl:template match = "result">
 
 <a href="/fct/facet.vsp?cmd=refresh&sid={$sid}">Return to facets</a>
-<br/><br/>
+<br/>
 <table>
 	<xsl:for-each select="row">
 <tr>
@@ -25,11 +23,6 @@
 </xsl:text>
 </xsl:for-each>
 </table>
-
-
-
-
-
 </xsl:template>
 </xsl:stylesheet>
 

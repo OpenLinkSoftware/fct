@@ -1,6 +1,5 @@
-
-
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/TR/WD-xsl">
+<?xml version="1.0" encoding="utf-8"?>
+<xsl:stylesheet version ="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
 <xsl:param name="pos"/>
 <xsl:param name="op"/>
@@ -10,9 +9,7 @@
 <xsl:param name="iri"/>
 <xsl:param name="name"/>
 
-
-
-    <xsl:template match = "query">
+<xsl:template match = "query">
 <xsl:copy>
 <xsl:element name="text">
 <xsl:if test="not ($prop='none')">

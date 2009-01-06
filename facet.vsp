@@ -1,16 +1,40 @@
-<html>
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>OpenLink Faceted Data Browser</title>
+<link rel="stylesheet" media="screen" type="text/css" href="styles/default.css"/>
+</head>
 <body>
+<div id="PG">
+<div id="HD">
+  <a href="http://www.openlinksw.com" class="logo">
+    <img id="opl_logo" src="images/openlinklogo_wstrap_2008_no_motto.png" alt="OpenLink Software"/>
+  </a>
+  <h1>Faceted Data Explorer <span class="descr">- A Server-Hosted Faceted Data Browser</span></h1>
+</div><!-- #HD -->
+<div id="MD">
 <?vsp 
 -- dbg_obj_print (http_param ('cmd'));
 -- dbg_obj_print (http_param ('search_for'));
--- 	dbg_obj_print  (http_request_header ());
+-- dbg_obj_print  (http_request_header ());
 
 declare cmd varchar;
 cmd := http_param ('cmd');
 
-
 fct_vsp ();
 ?>
+</div><!-- #MD -->
+<div id="FT">
+  <a href="http://virtuoso.openlinksw.com/"><img src="images/virt_power_no_border.png" alt="Powered by OpenLink Virtuoso"/></a>
+  <a href="http://linkeddata.org"><img src="images/LoDLogo.gif" alt="Linked Data"/></a><br/>
+  Copyright &copy; 2009 OpenLink Software
+  <div id="FT_L"></div>
+  <div id="FT_R"></div>
+</div>
+</div> <!-- #PG -->
 </body>
 </html>
 

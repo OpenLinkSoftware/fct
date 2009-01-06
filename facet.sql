@@ -28,8 +28,6 @@ create procedure fct_long_uri (in x any)
 }
 
 
-}
-
 
 cl_exec ('registry_set (''fct_label_iri'', ?)', vector (cast (iri_id_num (__i2id ('http://www.openlinksw.com/schemas/virtrdf#label')) as varchar)));
 
@@ -60,7 +58,7 @@ create procedure FCT_LABEL (in x any, in g_id iri_id_8, in ctx varchar)
 	    }
 	}
     }
-  return best_str;
+  return __ro2sq(best_str);
 }
 
 
@@ -181,7 +179,6 @@ create procedure fct_xml_wrap (in n int, in txt any)
   return string_output_string (ntxt);
 }
 
-
 create procedure fct_n_cols (in tree any)
 {
   declare tp varchar;
@@ -191,6 +188,42 @@ create procedure fct_n_cols (in tree any)
   return 2;
   signal ('FCT00', 'Unknown facet view type');
 }
+
+create procedure element_split(in val any)
+{
+  declare srch_split, el varchar;
+  declare k integer;
+  declare sall any;
+
+
+  --srch_split := '';
+  --k := 0;
+  --sall := split_and_decode(val, 0, '\0\0 ');
+  --for(k:=0;k<length(sall);k:=k+1)
+  --{
+  -- el := sall[k];
+  -- if (el is not null and length(el) > 0) srch_split := concat (srch_split, ', ', '''',el,'''');
+  --};
+  --srch_split := trim(srch_split,',');
+  --srch_split := trim(srch_split,' ');
+  --return srch_split;
+
+  declare words any;
+  srch_split := '';
+  val := trim (val, '"');
+  FTI_MAKE_SEARCH_STRING_INNER (val,words);
+  k := 0;
+  for(k:=0;k<length(words);k:=k+1)
+  {
+    el := words[k];
+    if (el is not null and length(el) > 0)
+      srch_split := concat (srch_split, ', ', '''',el,'''');
+  };
+  srch_split := trim(srch_split,',');
+  srch_split := trim(srch_split,' ');
+  return srch_split;
+}
+;
 
 create procedure fct_view (in tree any, in this_s int, in txt any, in pre any, in post any)
 {
@@ -325,6 +358,7 @@ create procedure fct_text (in tree any, in this_s int, inout max_s int, in txt a
       http (sprintf (' ?s%d <%s> ?s%d .', this_s, cast (xpath_eval ('./@iri', tree, 1) as varchar), new_s), txt);
       fct_text_1 (tree, new_s, max_s, txt, pre, post);
     }
+
   if ('property-of' = n)
     {
       declare new_s int;

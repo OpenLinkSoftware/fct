@@ -1,0 +1,33 @@
+html {}
+
+body { 
+  margin: 0; padding: 0;
+  font-family: Gill Sans, Verdana, Helvetica, sans-serif;
+  font-size: 9pt; text-align: center;}
+
+a, a:visited {color: #242;}
+
+#PG { width: 1000px; text-align: left; margin: 10px auto 10px auto;}
+#HD { width: 100%; float: left; text-align: center;}
+#MD { width: 100%; float: left; margin-top: 10px;}
+#FT { width: 100%; float: left; margin-top: 10px; color: #335; border-top: 1px solid #335; text-align: center;}
+
+#new_srch { margin-top: 40px; margin-bottom: 40px; width: 100%; text-align: center;}
+#res { float: left; clear: left; margin: 0; width: 800px;}
+#res h3 { margin-top: 0;}
+#opl_logo { border: 0; width: 120px; float: left;}
+#HD h1 { float:left; margin: 0 0 0 80px;vertical-align: top; color: #335;}
+span.descr { font-size: 9pt; color: 557; margin-top: 0;}
+label.left_txt { margin-right: 5px;}
+
+#result_nfo { margin-top: 8px; color: #446;}
+
+#fct_nav { float: left; margin-left: 10px; padding-left: 3px; width: 186px; border-left: 1px solid #335;}
+#fct_nav h3 { margin: 0; padding: 0;}
+#fct_nav ul { list-style-type: none; padding: 0; margin: 0;}
+#fct_nav ul li { list-style-type: none;}
+#fct_nav ul li a { text-decoration: none;}
+#fct_nav ul li a:hover { text-decoration: underline;}
+#fct_nav ul { margin-top: 8px; }
+#fct_nav ul.n2 { border-top: 1px solid #ddd;}
+#FT img { border: 0;}
