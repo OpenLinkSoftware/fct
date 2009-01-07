@@ -11,13 +11,13 @@
 
 <xsl:template match = "query">
 <xsl:copy>
-<xsl:element name="text">
-<xsl:if test="not ($prop='none')">
-<xsl:attribute name="property"><xsl:value-of select="$prop"/></xsl:attribute>
-</xsl:if>
-<xsl:value-of select="$text" />
-</xsl:element>
-<xsl:apply-templates select="@* | node()" />
+  <xsl:element name="text">
+    <xsl:if test="not ($prop='none')">
+      <xsl:attribute name="property"><xsl:value-of select="$prop"/></xsl:attribute>
+    </xsl:if>
+    <xsl:value-of select="$text" />
+  </xsl:element>
+  <xsl:apply-templates select="@* | node()" />
 </xsl:copy>
 </xsl:template>
 
@@ -26,9 +26,9 @@
  
 
 <xsl:template match="@* | node()">
-<xsl:copy>
-<xsl:apply-templates select="@* | node()"/>
-</xsl:copy>
+  <xsl:copy>
+    <xsl:apply-templates select="@* | node()"/>
+  </xsl:copy>
 </xsl:template>
 
 </xsl:stylesheet>

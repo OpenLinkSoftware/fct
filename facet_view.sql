@@ -1,7 +1,8 @@
 
 -- Facets web page
 
-create procedure fct_view_pos (in tree any)
+create procedure 
+fct_view_pos (in tree any)
 {
   declare c any;
   declare i int;
@@ -15,18 +16,16 @@ create procedure fct_view_pos (in tree any)
 }
 
 
-
-
-
-create procedure fct_view_info (in tree any, in ctx int, in txt any)
+create procedure 
+fct_view_info (in tree any, in ctx int, in txt any)
 {
   declare pos, lim, offs int;
   declare mode varchar;
   pos := 1 + fct_view_pos (tree);
   tree := xpath_eval ('//view', tree);
   mode := cast (xpath_eval ('./@type', tree, 1) as varchar);
- lim := atoi (cast (xpath_eval ('./@limit', tree, 1) as varchar));
- offs := atoi (cast (xpath_eval ('./@offset', tree, 1) as varchar));
+  lim := atoi (cast (xpath_eval ('./@limit', tree, 1) as varchar));
+  offs := atoi (cast (xpath_eval ('./@offset', tree, 1) as varchar));
   if ('list' = mode)
     {
       http (sprintf ('showing list of s%d\n', pos), txt);
@@ -46,7 +45,10 @@ create procedure fct_view_info (in tree any, in ctx int, in txt any)
 
   if ('text-properties' = mode)
     {
-      http (sprintf ('showing properties of s%d where the value contains %s\n', pos, cast (xpath_eval ('//text', tree) as varchar)), txt);
+      http (sprintf ('showing properties of s%d where the value contains %s\n', 
+                     pos, 
+	    	     cast (xpath_eval ('//text', tree) as varchar)), 
+            txt);
     }
   if ('classes' = mode)
     {
@@ -62,7 +64,8 @@ create procedure fct_view_info (in tree any, in ctx int, in txt any)
 }
 
 
-create procedure fct_var_tag (in this_s int, in ctx int)
+create procedure 
+fct_var_tag (in this_s int, in ctx int)
 {
   if (ctx)
     return sprintf ('<a href="/fct/facet.vsp?cmd=set_focus&sid=%d&n=%d">s%d</a>', connection_get ('sid'), this_s, this_s);
@@ -71,7 +74,8 @@ create procedure fct_var_tag (in this_s int, in ctx int)
 }
 
 
-create procedure fct_query_info_1 (in tree any, in this_s int, inout max_s int, in level int, in ctx any, in txt any)
+create procedure 
+fct_query_info_1 (in tree any, in this_s int, inout max_s int, in level int, in ctx any, in txt any)
 {
   declare c any;
   declare i, len int;
@@ -82,14 +86,15 @@ create procedure fct_query_info_1 (in tree any, in this_s int, inout max_s int, 
     }
 }
 
-create procedure fct_query_info (in tree any, in this_s int, inout max_s int, in level int, in ctx any, in txt any)
+create procedure 
+fct_query_info (in tree any, in this_s int, inout max_s int, in level int, in ctx any, in txt any)
 {
   declare n varchar;
   n := cast (xpath_eval ('name ()', tree, 1) as varchar);
   http (space (2 * level), txt);
   if ('class' = n)
     {
-      http (sprintf ('%s a %s .', fct_var_tag (this_s, ctx), cast (xpath_eval ('./@iri', tree) as varchar)), txt);
+      http (sprintf ('%s a %s .', fct_var_tag (this_s, ctx), fct_short_uri (cast (xpath_eval ('./@iri', tree) as varchar))), txt);
     }
   else if ('query' = n)
     {
@@ -110,7 +115,7 @@ create procedure fct_query_info (in tree any, in this_s int, inout max_s int, in
       declare new_s int;
       max_s := max_s + 1;
       new_s := max_s;
-      http (sprintf (' %s %s %s .', fct_var_tag (this_s, ctx), cast (xpath_eval ('./@iri', tree, 1) as varchar), fct_var_tag (new_s, ctx)), txt);
+      http (sprintf (' %s %s %s .', fct_var_tag (this_s, ctx), fct_short_uri (cast (xpath_eval ('./@iri', tree, 1) as varchar)), fct_var_tag (new_s, ctx)), txt);
       if (ctx)
 	http (sprintf ('<a href="/fct/facet.vsp?sid=%d&cmd=drop&n=%d">drop s%d</a> ', connection_get ('sid'), new_s, new_s), txt);
       fct_query_info_1 (tree, new_s, max_s, level, ctx, txt);
@@ -120,7 +125,7 @@ create procedure fct_query_info (in tree any, in this_s int, inout max_s int, in
       declare new_s int;
       max_s := max_s + 1;
       new_s := max_s;
-      http (sprintf (' %s  %s %s .', fct_var_tag (new_s, ctx), cast (xpath_eval ('./@iri', tree, 1) as varchar), fct_var_tag (this_s, ctx)), txt);
+      http (sprintf (' %s %s %s .', fct_var_tag (new_s, ctx), fct_short_uri (cast (xpath_eval ('./@iri', tree, 1) as varchar)), fct_var_tag (this_s, ctx)), txt);
       if (ctx)
 	http (sprintf ('<a href="/fct/facet.vsp?sid=%d&cmd=drop&n=%d">drop s%d</a> ', connection_get ('sid'), new_s, new_s), txt);
       fct_query_info_1 (tree, new_s, max_s, ctx, level, txt);
@@ -135,15 +140,12 @@ create procedure fct_query_info (in tree any, in this_s int, inout max_s int, in
     http ('\n', txt);
 }
 
-
-
 vhost_define (lpath=>'/fct',ppath=>'/fct/',vsp_user=>'dba', def_page=>'index.vsp;index.vspx;');
 
 create table fct_state (fct_sid int primary key, fct_state xmltype);
 alter index fct_state on fct_state partition (fct_sid int);
 
 sequence_next ('fct_seq');
-
 
 create procedure
 fct_top (in tree any, in txt any)
@@ -155,7 +157,8 @@ fct_top (in tree any, in txt any)
 }
 
 
-create procedure fct_view_link (in tp varchar, in msg varchar, in txt any)
+create procedure 
+fct_view_link (in tp varchar, in msg varchar, in txt any)
 {
   http (sprintf ('<li><a href="/fct/facet.vsp?cmd=set_view&sid=%d&type=%s&limit=20&offset=0">%s</a></li>\n',
                  connection_get ('sid'), tp, msg),
@@ -204,14 +207,16 @@ fct_nav (in tree any,
 }
 
 
-create procedure fct_view_type (in vt varchar)
+create procedure 
+fct_view_type (in vt varchar)
 {
   if (vt in ('properties', 'classes', 'properties-in', 'text-properties', 'list', 'list-count'))
     return 'properties';
   return 'default';
 }
 
-create procedure fct_view_cmd (in tp varchar)
+create procedure 
+fct_view_cmd (in tp varchar)
 {
   if ('text-properties' = tp)
     return 'set_text_property';
@@ -242,6 +247,7 @@ fct_web (in tree any, in timeout int := 0)
     timeout := atoi (registry_get ('fct_timeout'));
 
   reply := fct_exec (tree, timeout);
+
   --dbg_obj_print (reply);
 
   txt := string_output ();
@@ -250,25 +256,33 @@ fct_web (in tree any, in timeout int := 0)
 
   tp := cast (xpath_eval ('//view/@type', tree) as varchar);
 
-  http_value (xslt ('file://fct/fct_vsp.xsl',
-                    reply,
-		    vector ('sid', connection_get ('sid'), 'cmd', fct_view_cmd (tp), 'type', fct_view_type (tp))),
+  http_value (xslt ('file://fct/fct_vsp.xsl', 
+                    reply, 
+		    vector ('sid', 
+		            connection_get ('sid'), 
+     			    'cmd', 
+			    fct_view_cmd (tp), 
+			    'type', 
+			    fct_view_type (tp))),
 	      null, txt);
+
+  dbg_printf ('%s', string_output_string (txt));
 
   fct_nav (tree, reply, txt);
 
   http (txt);
 }
 
-
-
-create procedure fct_set_text (in tree any, in sid int, in txt varchar)
+create procedure 
+fct_set_text (in tree any, in sid int, in txt varchar)
 {
   declare new_tree any;
  new_tree := xslt ('file://fct/fct_set_text.xsl', tree, vector ('text', txt, 'prop', 'none'));
   if (xpath_eval ('//view', new_tree) is null)
     {
-    new_tree := xslt ('file://fct/fct_set_view.xsl', new_tree, vector ('pos', 0, 'type', 'text', 'limit', 20, 'op', 'view'));
+      new_tree := xslt ('file://fct/fct_set_view.xsl', 
+                      new_tree, 
+		      vector ('pos', 0, 'type', 'text', 'limit', 20, 'op', 'view'));
       dbg_obj_print (new_tree);
     }
   update fct_state set fct_state = new_tree where fct_sid = sid;
@@ -277,7 +291,8 @@ create procedure fct_set_text (in tree any, in sid int, in txt varchar)
 }
 
 
-create procedure fct_set_text_property (in tree any, in sid int, in iri varchar)
+create procedure 
+fct_set_text_property (in tree any, in sid int, in iri varchar)
 {
   declare new_tree, txt any;
   txt := cast (xpath_eval ('//text', tree) as varchar);
@@ -288,9 +303,12 @@ create procedure fct_set_text_property (in tree any, in sid int, in iri varchar)
   fct_web (new_tree);
 }
 
-create procedure fct_set_focus (in tree any, in sid int, in pos int)
+create procedure 
+fct_set_focus (in tree any, in sid int, in pos int)
 {
-  tree := xslt ('file://fct/fct_set_view.xsl', tree, vector ('pos', pos - 1, 'op', 'view', 'type', 'list', 'limit', 20, 'offset', 0));
+  tree := xslt ('file://fct/fct_set_view.xsl', 
+                tree, 
+		vector ('pos', pos - 1, 'op', 'view', 'type', 'list', 'limit', 20, 'offset', 0));
   update fct_state set fct_state = tree where fct_sid = sid;
   commit work;
   fct_web (tree);
@@ -308,19 +326,29 @@ create procedure fct_drop (in tree any, in sid int, in pos int)
 }
 
 
-create procedure fct_set_view (in tree any, in sid int, in tp varchar, in lim int, in offs int)
+create procedure 
+fct_set_view (in tree any, in sid int, in tp varchar, in lim int, in offs int)
 {
   declare pos int;
   pos := fct_view_pos (tree);
+
   if ('text-properties' = tp)
     {
       declare txt varchar;
+
       txt := cast (xpath_eval ('//text', tree) as varchar);
-      tree := xslt ('file://fct/fct_set_text.xsl', tree, vector ('text', txt, 'prop', 'none'));
+      tree := xslt ('file://fct/fct_set_text.xsl', 
+                    tree, 
+		    vector ('text', txt, 'prop', 'none'));
     }
-  tree := xslt ('file://fct/fct_set_view.xsl', tree, vector ('pos', pos, 'op', 'view', 'type', tp, 'limit', lim, 'offset', offs));
+
+  tree := xslt ('file://fct/fct_set_view.xsl', 
+                tree, 
+		vector ('pos', pos, 'op', 'view', 'type', tp, 'limit', lim, 'offset', offs));
+
   update fct_state set fct_state = tree where fct_sid = sid;
   commit work;
+
   fct_web (tree);
 }
 
@@ -371,7 +399,8 @@ create procedure fct_new ()
   <form method="post"
         action="/fct/facet.vsp?cmd=text&sid=<?= sid ?>" >
   <div id="new_srch">
-    <label class="left_txt" for="new_search_txt">Search for</label><input id="new_search_txt" size="60" type=text name=search_for>
+    <label class="left_txt" 
+           for="new_search_txt">Search for</label><input id="new_search_txt" size="60" type=text name=search_for>
   <input type=submit  value="Go">
   </div>
   </form>
@@ -420,7 +449,8 @@ create procedure fct_set_inf (in tree any, in sid int)
 
 
 
-create procedure fct_open_iri (in tree any, in sid int, in iri varchar)
+create procedure 
+fct_open_iri (in tree any, in sid int, in iri varchar)
 {
   declare txt, sqls, msg, md, res, res_tree any;
 
@@ -444,44 +474,76 @@ create procedure fct_open_iri (in tree any, in sid int, in iri varchar)
   http_value (res_tree, null);
 }
 
-
-create procedure fct_refresh (in tree any)
+create procedure 
+fct_refresh (in tree any)
 {
   fct_web (tree);
 }
 
+create procedure 
+fct_bold_tags (in s varchar)
+{
+  declare exit handler for sqlstate '*'
+    {
+      return s;
+    };
+  
+  return (xtree_doc (sprintf ('<span class="srch_xerpt">%s</span>', s)));  
+}
 
-create procedure fct_select_value (in tree any, in sid int, in val varchar, in lang varchar, in dtp varchar, in op varchar)
+create procedure 
+fct_select_value (in tree any, 
+		  in sid int, 
+		  in val varchar, 
+		  in lang varchar, 
+		  in dtp varchar, 
+		  in op varchar)
 {
   declare pos int;
+
   if (op is null or op = '' or op = 0)
     op := '=';
+  
   pos := fct_view_pos (tree);
-    tree := xslt ('file://fct/fct_set_view.xsl', tree, vector ('pos', pos, 'op', 'value', 'iri', val, 'lang', lang, 'datatype', dtp, 'cmp', op));
+  tree := xslt ('file://fct/fct_set_view.xsl', 
+                tree, 
+		vector ('pos', pos, 'op', 'value', 'iri', val, 'lang', lang, 'datatype', dtp, 'cmp', op));
 
   if (op = '=')
-    tree := xslt ('file://fct/fct_set_view.xsl', tree, vector ('pos', 0, 'op', 'view', 'type', 'list', 'limit', 20, 'offset', 0));
+    tree := xslt ('file://fct/fct_set_view.xsl', 
+                  tree, 
+		  vector ('pos', 0, 'op', 'view', 'type', 'list', 'limit', 20, 'offset', 0));
+
   update fct_state set fct_state = tree where fct_sid = sid;
   commit work;
   fct_web (tree);
 }
 
 
-create procedure fct_vsp ()
+create procedure 
+fct_vsp ()
 {
   declare cmd varchar;
   declare tree any;
   declare sid int;
+  declare _timeout any;
+
   cmd := http_param ('cmd');
   if (0 = cmd)
     {
       fct_new ();
       return;
     }
+
   sid := atoi (http_param ('sid'));
+
+  _timeout := http_param ('timeout'); -- XXX add timeout
+
   whenever not found goto no_ses;
+
   select fct_state into tree from fct_state where fct_sid = sid;
   connection_set ('sid', sid);
+
   if ('text' = cmd)
     fct_set_text (tree, sid, http_param ('search_for'));
   else if ('set_focus' = cmd)
@@ -503,7 +565,7 @@ create procedure fct_vsp ()
   else if ('open' = cmd)
     fct_open_iri (tree, sid, http_param ('iri'));
   else if ('refresh' = cmd)
-    fct_refresh (tree);
+    fct_refresh (tree);	    
   else if ('set_inf' = cmd)
     fct_set_inf (tree, sid);
   else if ('select_value' = cmd)
@@ -520,36 +582,4 @@ create procedure fct_vsp ()
 }
 ;
 
-create procedure fct_uri_curie (in uri varchar)
-{
-  declare delim integer;
-  declare uriSearch, nsPrefix varchar;
-
-  delim := -1;
-
-  uriSearch := uri;
-  nsPrefix := null;
-  while (nsPrefix is null and delim <> 0) {
-
-    delim := coalesce (strrchr (uriSearch, '/'), 0);
-    delim := __max (delim, coalesce (strrchr (uriSearch, '#'), 0));
-    delim := __max (delim, coalesce (strrchr (uriSearch, ':'), 0));
-
-    nsPrefix := coalesce(__xml_get_ns_prefix(subseq(uriSearch, 0, delim + 1),2), __xml_get_ns_prefix(subseq(uriSearch, 0, delim),2));
-    uriSearch := subseq(uriSearch, 0, delim);
---    dbg_obj_print(uriSearch);
-  }
-
-  if (nsPrefix is not null) {
-	declare rhs varchar;
-	rhs := subseq(uri, length(uriSearch) + 1, null);
-	if (length(rhs) = 0) {
-		return uri;
-	} else {
-		return nsPrefix || ':' || rhs;
-	}
-  }
-  return uri;
-}
-;
 
