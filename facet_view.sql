@@ -266,7 +266,9 @@ fct_web (in tree any, in timeout int := 0)
 			    fct_view_type (tp))),
 	      null, txt);
 
-  dbg_printf ('%s', string_output_string (txt));
+
+  -- dbg_obj_print (reply);
+  -- dbg_printf ('%s', string_output_string (txt));
 
   fct_nav (tree, reply, txt);
 
@@ -283,7 +285,7 @@ fct_set_text (in tree any, in sid int, in txt varchar)
       new_tree := xslt ('file://fct/fct_set_view.xsl', 
                       new_tree, 
 		      vector ('pos', 0, 'type', 'text', 'limit', 20, 'op', 'view'));
-      dbg_obj_print (new_tree);
+      -- dbg_obj_print (new_tree);
     }
   update fct_state set fct_state = new_tree where fct_sid = sid;
   commit work;
@@ -483,12 +485,16 @@ fct_refresh (in tree any)
 create procedure 
 fct_bold_tags (in s varchar)
 {
+  declare ret any;
+
   declare exit handler for sqlstate '*'
     {
       return s;
     };
-  
-  return (xtree_doc (sprintf ('<span class="srch_xerpt">%s</span>', s)));  
+
+  ret := xtree_doc (sprintf ('<span class="srch_xerpt">%s</span>', s));
+  -- dbg_obj_print (ret);
+  return ret;
 }
 
 create procedure 
@@ -518,7 +524,6 @@ fct_select_value (in tree any,
   commit work;
   fct_web (tree);
 }
-
 
 create procedure 
 fct_vsp ()
@@ -577,9 +582,7 @@ fct_vsp ()
     }
   return;
  no_ses:
-  http ('bad session number. New search started');
+  http ('<div class="ses_info">bad session number. New search started</div>');
   fct_new ();
 }
 ;
-
-

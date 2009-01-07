@@ -588,8 +588,6 @@ fct_exec (in tree any, in timeout int)
   exec (qr2, sqls, msg, vector (), 0, md, res);
   act := db_activity ();
 
-  dbg_printf ('***BLOF!');
-
   set result_timeout = 0;
 
   if (sqls <> '00000' and sqls <> 'S1TAT')
@@ -597,6 +595,8 @@ fct_exec (in tree any, in timeout int)
 
   if (not isarray (res) or 0 = length (res) or not isarray (res[0]) or 0 = length (res[0]))
     res := vector (vector (xtree_doc ('<result/>')));
+
+--  dbg_obj_print (res[0][0]);
 
   return xmlelement ("facets", xmlelement ("sparql", qr), xmlelement ("time", msec_time () - start_time),
 		       xmlelement ("complete", case when sqls = 'S1TAT' then 'no' else 'yes' end),

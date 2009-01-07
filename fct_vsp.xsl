@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xsl:stylesheet version ="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 <xsl:output method="html"/>
+
 <xsl:template match = "facets">
 
 <div id="res">
@@ -14,15 +15,33 @@
             <xsl:if test="'url' = column[1]/@datatype">
               <a>
 		<xsl:attribute name="href">/about/?url=<xsl:value-of select="urlify (column[1])"/>&amp;sid=<xsl:value-of select="$sid"/></xsl:attribute>open
-              </a>&#160;
+              </a><xsl:text>&#160;</xsl:text>
             </xsl:if>
-            <a><xsl:attribute name="href">/fct/facet.vsp?cmd=<xsl:value-of select="$cmd"/>&amp;iri=<xsl:value-of select="urlify (column[1])"/>&amp;lang=<xsl:value-of select="column[1]/@xml:lang"/>&amp;datatype=<xsl:value-of select="column[1]/@datatype"/>&amp;sid=<xsl:value-of select="$sid"/></xsl:attribute><xsl:value-of select="column[1]"/></a>
+            <a>
+	      <xsl:attribute name="href">/fct/facet.vsp?cmd=<xsl:value-of select="$cmd"/>&amp;iri=<xsl:value-of select="urlify (column[1])"/>&amp;lang=<xsl:value-of select="column[1]/@xml:lang"/>&amp;datatype=<xsl:value-of select="column[1]/@datatype"/>&amp;sid=<xsl:value-of select="$sid"/></xsl:attribute>
+	      <xsl:attribute name="title">
+		<xsl:value-of select="column[1]"/>
+	      </xsl:attribute>
+	      <xsl:choose>
+		<xsl:when test="'' != column[1]/@shortform">
+		  <xsl:value-of select="column[1]/@shortform"/>
+		</xsl:when>
+		<xsl:otherwise>
+		  <xsl:value-of select="column[1]"/>
+		</xsl:otherwise>
+	      </xsl:choose>
+            </a>
           </td>
           <td>
-            <xsl:value-of select="column[2]"/>
+	    <xsl:choose>
+	      <xsl:when test="'' != ./@shortform"><xsl:value-of select="./@shortform"/></xsl:when>
+	      <xsl:otherwise>
+		<xsl:value-of select="column[2]"/>
+	      </xsl:otherwise>
+	    </xsl:choose>
           </td>
           <td>
-            <xsl:value-of select="column[3]"/>
+            <xsl:apply-templates select="column[3]"/>
           </td>
         </xsl:when>
         <xsl:otherwise>
@@ -38,7 +57,7 @@
 		    </xsl:choose>
 		  </a>
 		</xsl:when>
-		<xsl:otherwise><xsl:value-of select="."/></xsl:otherwise>
+		<xsl:otherwise><xsl:apply-templates select="."/></xsl:otherwise>
 	      </xsl:choose>
             </td>
           </xsl:for-each>
@@ -64,5 +83,13 @@
 </div> <!-- #result_nfo -->
 </div> <!-- #res -->
 </xsl:template>
+
+<xsl:template match="@* | node()">
+  <xsl:copy>
+    <xsl:apply-templates select="@* | node()"/>
+  </xsl:copy>
+</xsl:template>
+
+
 </xsl:stylesheet>
 
