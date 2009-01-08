@@ -15,6 +15,8 @@ a, a:visited {color: #242;}
 #new_srch { margin-top: 40px; margin-bottom: 40px; width: 100%; text-align: center;}
 #res { float: left; clear: left; margin: 0; width: 800px;}
 #res h3 { margin-top: 0;}
+table.result { width: 100% }
+table.result td { max-width: 350px;}
 #opl_logo { border: 0; width: 120px; float: left;}
 #HD h1 { float:left; margin: 0 0 0 80px;vertical-align: top; color: #335;}
 span.descr { font-size: 9pt; color: 557; margin-top: 0;}
