@@ -7,7 +7,7 @@
 <div id="res">
 <h3>Results</h3>
 
-<table>
+<table class="result">
   <xsl:choose>
     <xsl:when test="$type = 'properties'">
       <tr><th>Property URI</th><th></th><th>Count</th></tr>
