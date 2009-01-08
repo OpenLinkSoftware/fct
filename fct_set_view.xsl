@@ -7,6 +7,7 @@
 <xsl:param name="offset"/>
 <xsl:param name="iri"/>
 <xsl:param name="name"/>
+<xsl:param name="timeout"/>
 
 <xsl:template match = "query | property |property-of">
 
@@ -56,9 +57,9 @@
  
 
 <xsl:template match="@* | node()">
-<xsl:copy>
-<xsl:apply-templates select="@* | node()"/>
-</xsl:copy>
+  <xsl:copy>
+    <xsl:apply-templates select="@* | node()"/>
+  </xsl:copy>
 </xsl:template>
 
 </xsl:stylesheet>

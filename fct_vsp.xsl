@@ -10,7 +10,7 @@
 <table>
   <xsl:choose>
     <xsl:when test="$type = 'properties'">
-      <tr><th>URI</th><th></th><th>NUM</th></tr>
+      <tr><th>Property URI</th><th></th><th>Count</th></tr>
     </xsl:when>
   </xsl:choose>
   <xsl:for-each select="result/row">
