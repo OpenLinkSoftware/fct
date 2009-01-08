@@ -69,7 +69,7 @@ fct_trunc_uri (in s varchar, in maxlen int := 40)
 
   if (length(_s) <= maxlen) return _s;
   _h := floor (maxlen / 2);
-  return sprintf ('%s&#x2026;%s', "LEFT"(_s, _h), "RIGHT"(_s, _h-1));
+  return sprintf ('%s...%s', "LEFT"(_s, _h), "RIGHT"(_s, _h-1));
 }
 ;
 

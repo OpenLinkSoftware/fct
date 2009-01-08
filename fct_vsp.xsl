@@ -6,7 +6,13 @@
 
 <div id="res">
 <h3>Results</h3>
+
 <table>
+  <xsl:choose>
+    <xsl:when test="$type = 'properties'">
+      <tr><th>URI</th><th></th><th>NUM</th></tr>
+    </xsl:when>
+  </xsl:choose>
   <xsl:for-each select="result/row">
     <tr>
       <xsl:choose>
@@ -18,7 +24,9 @@
               </a><xsl:text>&#160;</xsl:text>
             </xsl:if>
             <a>
-	      <xsl:attribute name="href">/fct/facet.vsp?cmd=<xsl:value-of select="$cmd"/>&amp;iri=<xsl:value-of select="urlify (column[1])"/>&amp;lang=<xsl:value-of select="column[1]/@xml:lang"/>&amp;datatype=<xsl:value-of select="column[1]/@datatype"/>&amp;sid=<xsl:value-of select="$sid"/></xsl:attribute>
+	      <xsl:attribute name="href">
+                /fct/facet.vsp?cmd=<xsl:value-of select="$cmd"/>&amp;iri=<xsl:value-of select="urlify (column[1])"/>&amp;lang=<xsl:value-of select="column[1]/@xml:lang"/>&amp;datatype=<xsl:value-of select="column[1]/@datatype"/>&amp;sid=<xsl:value-of select="$sid"/>
+              </xsl:attribute>
 	      <xsl:attribute name="title">
 		<xsl:value-of select="column[1]"/>
 	      </xsl:attribute>
@@ -51,6 +59,7 @@
 		<xsl:when test="'url' = ./@datatype">
 		  <a>
                     <xsl:attribute name="href">/about/?url=<xsl:value-of select="urlify (.)"/></xsl:attribute>
+		    <xsl:attribute name="title"><xsl:value-of select="."/></xsl:attribute>
                     <xsl:choose>
 		      <xsl:when test="'' != ./@shortform"><xsl:value-of select="./@shortform"/></xsl:when>
 		      <xsl:otherwise><xsl:value-of select="."/></xsl:otherwise>
@@ -70,7 +79,9 @@
 
 <xsl:if test="20 = count (/facets/result/row)">
   <a>
-    <xsl:attribute name="href">/fct/facet.vsp?cmd=next&amp;sid=<xsl:value-of select="$sid"/></xsl:attribute>Next page</a>
+    <xsl:attribute name="href">/fct/facet.vsp?cmd=next&amp;sid=<xsl:value-of select="$sid"/></xsl:attribute>
+    Next page
+  </a>
 </xsl:if>
 
 <div id="result_nfo">
