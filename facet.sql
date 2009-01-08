@@ -60,10 +60,18 @@ fct_short_uri (in x any)
 }
 
 create procedure 
-fct_trunc_uri (in x varchar)
+fct_trunc_uri (in s varchar, in maxlen int := 40)
 {
-  return (x); -- XXX add trunc fun
+  declare _s varchar;
+  declare _h int;
+
+  _s := trim(s);
+
+  if (length(_s) <= maxlen) return _s;
+  _h := floor (maxlen / 2);
+  return sprintf ('%s&#x2026;%s', "LEFT"(_s, _h), "RIGHT"(_s, _h-1));
 }
+;
 
 create procedure 
 fct_short_form (in x any)
