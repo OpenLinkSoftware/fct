@@ -38,7 +38,7 @@ fct_uri_curie (in uri varchar)
           return nsPrefix || ':' || rhs;
         }
     }
-  return uri;
+  return null;
 }
 ;
 
@@ -84,7 +84,7 @@ fct_short_form (in x any)
   sh := fct_uri_curie(x);
 
   if (sh is not null)
-    return sh;
+    return (fct_trunc_uri(sh));
   else return (fct_trunc_uri (x));
 }
 
