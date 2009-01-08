@@ -263,7 +263,9 @@ fct_web (in tree any, in timeout int := 0)
      			    'cmd', 
 			    fct_view_cmd (tp), 
 			    'type', 
-			    fct_view_type (tp))),
+			    fct_view_type (tp),
+			    'timeout',
+			    timeout)),
 	      null, txt);
 
 
