@@ -20,7 +20,7 @@
           <td>
             <xsl:if test="'url' = column[1]/@datatype">
               <a>
-		<xsl:attribute name="href">/about/?url=<xsl:value-of select="urlify (column[1])"/>&amp;sid=<xsl:value-of select="$sid"/></xsl:attribute>open
+		<xsl:attribute name="href">/about/?url=<xsl:value-of select="urlify (column[1])"/>&amp;sid=<xsl:value-of select="$sid"/></xsl:attribute>Describe
               </a><xsl:text>&#160;</xsl:text>
             </xsl:if>
             <a>
