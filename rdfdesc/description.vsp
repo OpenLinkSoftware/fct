@@ -31,7 +31,7 @@
 	   sas := fct_sas_clause (fct_state);
 	   inf := inf || ' ' || sas;
 	 }
-       refr := '/fct/facet.vsp?sid='||sid;	 
+       refr := '/fct/facet.vsp?sid='||sid||'&cmd=refresh';	 
      }
    host := 'b3s.openlinksw.com'; --http_request_header (http_request_header (), 'Host');  
    gr := get_keyword ('g', params, '');
