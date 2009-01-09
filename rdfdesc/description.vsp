@@ -124,7 +124,7 @@
            declare PRED any;
 	   pred := data[0];  
 	   b3s_http_print_l (PRED, odd_position, 0, sid);
-	   exec (sprintf ('sparql %s select ?o where { <%S> <%S> ?o } limit 300', inf, _S, PRED),
+	   exec (sprintf ('sparql %s select distinct ?o where { <%S> <%S> ?o } limit 300', inf, _S, PRED),
 		null, null, vector (), 0, null, null, h2);
 	   while (0 = exec_next (h2, null, null, data))	
 	      {	
@@ -150,7 +150,7 @@
 	   --  }
 	   inx := inx + 1;
 	   b3s_http_print_l (PRED, odd_position, 1, sid);
-	   exec (sprintf ('sparql %s select ?s where { ?s <%S> <%S> } limit 300', inf, PRED, _S),
+	   exec (sprintf ('sparql %s select distinct ?s where { ?s <%S> <%S> } limit 300', inf, PRED, _S),
 		null, null, vector (), 0, null, null, h2);
 	   while (0 = exec_next (h2, null, null, data))	
 	      {	
