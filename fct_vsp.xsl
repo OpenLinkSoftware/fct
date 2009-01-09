@@ -25,7 +25,7 @@
             </xsl:if>
             <a>
 	      <xsl:attribute name="href">
-                /fct/facet.vsp?cmd=<xsl:value-of select="$cmd"/>&amp;iri=<xsl:value-of select="urlify (column[1])"/>&amp;lang=<xsl:value-of select="column[1]/@xml:lang"/>&amp;datatype=<xsl:value-of select="column[1]/@datatype"/>&amp;sid=<xsl:value-of select="$sid"/>
+                /fct/facet.vsp?cmd=<xsl:value-of select="$cmd"/>&amp;iri=<xsl:value-of select="urlify (column[1])"/>&amp;lang=<xsl:value-of select="column[1]/@xml:lang"/>&amp;datatype=<xsl:value-of select="urlify (column[1]/@datatype)"/>&amp;sid=<xsl:value-of select="$sid"/>
               </xsl:attribute>
 	      <xsl:attribute name="title">
 		<xsl:value-of select="column[1]"/>
@@ -53,7 +53,7 @@
           </td>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:for-each select="column"> 
+          <xsl:for-each select="column">
             <td>
               <xsl:choose>
 		<xsl:when test="'url' = ./@datatype">
@@ -89,7 +89,7 @@
     <xsl:when test="/facets/complete = 'yes'">Complete results in </xsl:when>
     <xsl:otherwise>Partial results <a href="/fct/facet.vsp?cmd=refresh&amp;sid={$sid}&amp;timeout={2*$timeout}">Retry with X timeout</a></xsl:otherwise>
   </xsl:choose>
-  <xsl:value-of select="/facets/time"/> msec. Resource utilization: 
+  <xsl:value-of select="/facets/time"/> msec. Resource utilization:
   <xsl:value-of select="/facets/db-activity"/>
 </div> <!-- #result_nfo -->
 </div> <!-- #res -->
