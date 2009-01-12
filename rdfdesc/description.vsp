@@ -50,23 +50,19 @@
    http_header ('Cache-Control: no-cache, must-revalidate\r\nPragma: no-cache\r\n');
    label := ''; _subject := '';
 
-   exec (sprintf ('sparql %s prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> prefix dc: <http://purl.org/dc/elements/1.1/> 
-	select ?o where { <%S> rdfs:label ?o }', inf, _S), null, null, vector (), 0, meta, data);
-   if (length (data)) label := data[0][0];
-
-
-   if (label = '')
-     { 
-       exec (sprintf ('sparql %s prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> prefix dc: <http://purl.org/dc/elements/1.1/> 
-	    select ?o where { <%S> dc:title ?o }', inf, _S), null, null, vector (), 0, meta, data);
-       if (length (data)) label := data[0][0];
-     }
-
-   if (label = '')
-     { 
-       exec (sprintf ('sparql %s prefix fbase: <http://rdf.freebase.com/ns/>  
-	    select ?o where { <%S> fbase:type.object.name ?o }', inf, _S), null, null, vector (), 0, meta, data);
-       if (length (data)) label := data[0][0];
+   exec (sprintf ('sparql  define input:inference "facets" select ?o where { <%S> virtrdf:label ?o }', _S), null, null, vector (), 0, meta, data);
+   if (length (data)) 
+     {
+       declare best_l int;
+       best_l := 0;
+       for (declare i,l int, i := 0, l := length (data); i < l; i := i + 1)
+         {
+           if (best_l < length (data[i][0]))
+	     {
+  	       label := data[i][0];
+	       best_l := length (data[i][0]);
+	     }
+	 }
      }
 
    exec (sprintf ('sparql %s prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> prefix dc: <http://purl.org/dc/elements/1.1/> 
