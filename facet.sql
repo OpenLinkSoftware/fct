@@ -1,7 +1,7 @@
 
--- Facet web service 
+-- Facet web service
 
-create procedure 
+create procedure
 fct_uri_curie (in uri varchar)
 {
   declare delim integer;
@@ -17,23 +17,23 @@ fct_uri_curie (in uri varchar)
     delim := __max (delim, coalesce (strrchr (uriSearch, '#'), 0));
     delim := __max (delim, coalesce (strrchr (uriSearch, ':'), 0));
 
-    nsPrefix := coalesce (__xml_get_ns_prefix (subseq (uriSearch, 0, delim + 1), 2), 
+    nsPrefix := coalesce (__xml_get_ns_prefix (subseq (uriSearch, 0, delim + 1), 2),
                           __xml_get_ns_prefix (subseq (uriSearch, 0, delim), 2));
 
     uriSearch := subseq (uriSearch, 0, delim);
 --    dbg_obj_print(uriSearch);
   }
 
-  if (nsPrefix is not null) 
+  if (nsPrefix is not null)
     {
       declare rhs varchar;
       rhs := subseq (uri, length (uriSearch) + 1, null);
 
-      if (length (rhs) = 0) 
+      if (length (rhs) = 0)
         {
           return null;
-        } 
-      else 
+        }
+      else
         {
           return nsPrefix || ':' || rhs;
         }
@@ -42,24 +42,24 @@ fct_uri_curie (in uri varchar)
 }
 ;
 
-create procedure 
+create procedure
 fct_short_uri (in x any)
 {
   declare loc, pref, sh varchar;
 
   if (not isstring (x))
     return x;
-  
+
   pref := iri_split (x, loc);
 
-  sh := __xml_get_ns_prefix (pref, 2); 
+  sh := __xml_get_ns_prefix (pref, 2);
 
   if (sh is not null)
     return sh || ':' || loc;
   return x;
 }
 
-create procedure 
+create procedure
 fct_trunc_uri (in s varchar, in maxlen int := 40)
 {
   declare _s varchar;
@@ -73,14 +73,14 @@ fct_trunc_uri (in s varchar, in maxlen int := 40)
 }
 ;
 
-create procedure 
+create procedure
 fct_short_form (in x any)
 {
   declare loc, pref, sh varchar;
 
-  if (not isstring (x)) 
+  if (not isstring (x))
     return null;
-  
+
   sh := fct_uri_curie(x);
 
   if (sh is not null)
@@ -88,7 +88,7 @@ fct_short_form (in x any)
   else return (fct_trunc_uri (x));
 }
 
-create procedure 
+create procedure
 fct_long_uri (in x any)
 {
   declare loc, pref, sh varchar;
@@ -97,18 +97,18 @@ fct_long_uri (in x any)
  pref := iri_split (x, loc);
   if ('' = pref or ':' <> subseq (pref, length (pref) - 1))
     return x;
- sh := __xml_get_ns_uri (subseq (pref, 0, length (pref) - 1), 2); 
+ sh := __xml_get_ns_uri (subseq (pref, 0, length (pref) - 1), 2);
   if (sh is not null)
     return sh || loc;
   return x;
 }
 
-cl_exec ('registry_set (''fct_label_iri'', ?)', 
+cl_exec ('registry_set (''fct_label_iri'', ?)',
          vector (cast (iri_id_num (__i2id ('http://www.openlinksw.com/schemas/virtrdf#label')) as varchar)));
 
 cl_exec ('registry_set (''fct_timeout'',''2000'')');
 
-create procedure 
+create procedure
 FCT_LABEL (in x any, in g_id iri_id_8, in ctx varchar)
 {
   declare best_str any;
@@ -138,7 +138,7 @@ FCT_LABEL (in x any, in g_id iri_id_8, in ctx varchar)
   return __ro2sq(best_str);
 }
 
-create procedure 
+create procedure
 FCT_LABEL_DP (in x any, in g_id iri_id_8, in ctx varchar)
 {
   declare best_str any;
@@ -150,8 +150,8 @@ FCT_LABEL_DP (in x any, in g_id iri_id_8, in ctx varchar)
   label_iri := iri_id_from_num (atoi (registry_get ('fct_label_iri')));
   best_str := null;
   best_l := 0;
-  for select o, p 
-        from rdf_quad table option (no cluster) 
+  for select o, p
+        from rdf_quad table option (no cluster)
         where s = x and p in (rdf_super_sub_list (ctx, label_iri, 3)) do
     {
       if (is_rdf_box (o) or isstring (o))
@@ -172,11 +172,11 @@ FCT_LABEL_DP (in x any, in g_id iri_id_8, in ctx varchar)
   return vector (best_str, 1);
 }
 
-create procedure 
+create procedure
 LBL_O_VALUE (in id int)
 {
   set isolation = 'committed';
-  return vector ((select case (isnull (RO_LONG)) when 0 then blob_to_string (RO_LONG) else RO_VAL end 
+  return vector ((select case (isnull (RO_LONG)) when 0 then blob_to_string (RO_LONG) else RO_VAL end
 		   from DB.DBA.RDF_OBJ table option (no cluster) where RO_ID = id), 1);
 }
 
@@ -189,16 +189,18 @@ ttlp ('
 @prefix foaf: <http://xmlns.com/foaf/0.1/>
 @prefix dc: <http://purl.org/dc/elements/1.1/>
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-@prefix virtrdf: <http://www.openlinksw.com/schemas/virtrdf#> 
+@prefix fbase: <http://rdf.freebase.com/ns/>
+@prefix virtrdf: <http://www.openlinksw.com/schemas/virtrdf#>
 
 rdfs:label rdfs:subPropertyOf virtrdf:label .
 dc:title rdfs:subPropertyOf virtrdf:label .
+fbase:type.object.name rdfs:subPropertyOf virtrdf:label .
 foaf:name rdfs:subPropertyOf virtrdf:label .
 foaf:nick rdfs:subPropertyOf virtrdf:label .', 'xx', 'facets');
 
 rdfs_rule_set ('facets', 'facets');
 
-create procedure 
+create procedure
 fct_inf_clause (in tree any)
 {
   declare i varchar;
@@ -208,7 +210,7 @@ fct_inf_clause (in tree any)
   return sprintf (' define input:inference "%s" ', cast (i as varchar));
 }
 
-create procedure 
+create procedure
 fct_sas_clause (in tree any)
 {
   declare i varchar;
@@ -218,7 +220,7 @@ fct_sas_clause (in tree any)
   return sprintf (' define input:same-as "%s" ', cast (i as varchar));
 }
 
-create procedure 
+create procedure
 fct_post (in tree any, in post any, in lim int, in offs int)
 {
   if (lim is not null)
@@ -227,7 +229,7 @@ fct_post (in tree any, in post any, in lim int, in offs int)
     http (sprintf (' offset %d ', cast (offs as int)), post);
 }
 
-create procedure 
+create procedure
 fct_dtp (in x any)
 {
   if (isiri_id (x))
@@ -235,7 +237,7 @@ fct_dtp (in x any)
   return id_to_iri (rdf_datatype_of_long (x));
 }
 
-create procedure 
+create procedure
 fct_lang (in x any)
 {
   if (not is_rdf_box (x))
@@ -245,7 +247,7 @@ fct_lang (in x any)
   return (select rl_id from rdf_language where rl_twobyte = rdf_box_lang (x));
 }
 
-create procedure 
+create procedure
 fct_xml_wrap (in tree any, in txt any)
 {
   declare view_type varchar;
@@ -258,17 +260,17 @@ fct_xml_wrap (in tree any, in txt any)
   n_cols := fct_n_cols(tree);
 
   if (n_cols = 2)
-    http ('select xmlelement ("result", 
-                              xmlagg (xmlelement ("row", 
-                                                  xmlelement ("column", 
-                                                              xmlattributes (fct_lang ("c1") as "xml:lang", 
-                                                                             fct_dtp ("c1") as "datatype", 
-                                                                             fct_short_form(__ro2sq("c1")) as "shortform"), 
-                                                              __ro2sq ("c1")), 
-                                                  xmlelement ("column", 
-                                                              fct_label ("c1", 0, ''facets'' )), 
-                                                  xmlelement ("column", 
-                                                              fct_bold_tags("c2"))))) 
+    http ('select xmlelement ("result",
+                              xmlagg (xmlelement ("row",
+                                                  xmlelement ("column",
+                                                              xmlattributes (fct_lang ("c1") as "xml:lang",
+                                                                             fct_dtp ("c1") as "datatype",
+                                                                             fct_short_form(__ro2sq("c1")) as "shortform"),
+                                                              __ro2sq ("c1")),
+                                                  xmlelement ("column",
+                                                              fct_label ("c1", 0, ''facets'' )),
+                                                  xmlelement ("column",
+                                                              fct_bold_tags("c2")))))
              from (sparql define output:valmode "LONG" ', ntxt);
 
   if (n_cols = 1)
@@ -280,7 +282,7 @@ fct_xml_wrap (in tree any, in txt any)
   return string_output_string (ntxt);
 }
 
-create procedure 
+create procedure
 fct_n_cols (in tree any)
 {
   declare tp varchar;
@@ -291,7 +293,7 @@ fct_n_cols (in tree any)
   signal ('FCT00', 'Unknown facet view type');
 }
 
-create procedure 
+create procedure
 element_split (in val any)
 {
   declare srch_split, el varchar;
@@ -328,7 +330,7 @@ element_split (in val any)
 }
 ;
 
-create procedure 
+create procedure
 fct_view (in tree any, in this_s int, in txt any, in pre any, in post any)
 {
   declare lim, offs int;
@@ -385,9 +387,9 @@ fct_view (in tree any, in this_s int, in txt any, in pre any, in post any)
 
       exp := cast (xpath_eval ('//text', tree) as varchar);
 
-      http (sprintf ('select distinct ?s%d as ?c1, (bif:search_excerpt (bif:vector (%s), ?o%d)) as ?c2 ', 
-            this_s, 
-   	    element_split (exp), 
+      http (sprintf ('select distinct ?s%d as ?c1, (bif:search_excerpt (bif:vector (%s), ?o%d)) as ?c2 ',
+            this_s,
+   	    element_split (exp),
 	    this_s), pre);
 
     }
@@ -400,7 +402,7 @@ fct_view (in tree any, in this_s int, in txt any, in pre any, in post any)
 }
 
 
-create procedure 
+create procedure
 fct_literal (in tree any)
 {
   declare lit, dtp, lang varchar;
@@ -416,12 +418,12 @@ fct_literal (in tree any)
     lit := sprintf ('"%s"', cast (tree as varchar));
   else if (dtp = '' or dtp is null or dtp like '%nteger' or dtp like '%ouble' or dtp like '%loat' or dtp like '%nt')
     lit := cast (tree as varchar);
-  else 
+  else
     lit := sprintf ('"%s"^^<%s>', cast (tree as varchar), dtp);
   return lit;
 }
 
-create procedure 
+create procedure
 fct_cond (in tree any, in this_s int, in txt any)
 {
   declare lit, op varchar;
@@ -436,13 +438,13 @@ fct_cond (in tree any, in this_s int, in txt any)
   http (sprintf (' filter (?s%d %s %s) . ', this_s, op, lit), txt);
 }
 
-create procedure 
-fct_text_1 (in tree any, 
-	    in this_s int, 
-	    inout max_s int, 
-	    in txt any, 
-	    in pre any, 
-	    in post any) 
+create procedure
+fct_text_1 (in tree any,
+	    in this_s int,
+	    inout max_s int,
+	    in txt any,
+	    in pre any,
+	    in post any)
 {
   declare c any;
   declare i, len int;
@@ -455,13 +457,13 @@ fct_text_1 (in tree any,
     }
 }
 
-create procedure 
-fct_text (in tree any, 
-	  in this_s int, 
-	  inout max_s int, 
-	  in txt any, 
-	  in pre any, 
-	  in post any) 
+create procedure
+fct_text (in tree any,
+	  in this_s int,
+	  inout max_s int,
+	  in txt any,
+	  in pre any,
+	  in post any)
 {
   declare n varchar;
 
@@ -486,9 +488,9 @@ fct_text (in tree any,
     prop := cast (xpath_eval ('./@property', tree, 1) as varchar);
       if (prop is not null)
       prop := '<' || prop || '>';
-      else 
+      else
       prop := sprintf ('?s%dtextp', this_s);
-      http (sprintf (' ?s%d %s ?o%d . filter (bif:contains (?o%d, ''%s'')) .', this_s, prop, this_s, this_s, 
+      http (sprintf (' ?s%d %s ?o%d . filter (bif:contains (?o%d, ''%s'')) .', this_s, prop, this_s, this_s,
 		     fti_make_search_string (cast (tree as varchar))), txt);
     }
 
@@ -521,7 +523,7 @@ fct_text (in tree any,
     }
 }
 
-create procedure 
+create procedure
 fct_query (in tree any)
 {
   declare s int;
@@ -544,7 +546,7 @@ fct_query (in tree any)
 }
 
 
-create procedure 
+create procedure
 fct_test (in str varchar, in timeout int := 0)
 {
   declare sqls, msg varchar;
@@ -574,7 +576,7 @@ fct_test (in str varchar, in timeout int := 0)
 }
 
 
-create procedure 
+create procedure
 fct_exec (in tree any, in timeout int)
 {
   declare start_time int;

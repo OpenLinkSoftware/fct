@@ -24,8 +24,13 @@
 
 declare cmd varchar;
 cmd := http_param ('cmd');
-
+declare exit handler for sqlstate '*'
+{
+  http('<div class="error">The operation cannot be completed, please try again later.</div>');
+  goto footer;
+};
 fct_vsp ();
+footer:;
 ?>
 </div><!-- #MD -->
 <div id="FT">
