@@ -6,28 +6,36 @@ body {
   font-size: 9pt; text-align: center;}
 
 a, a:visited {color: #242;}
-
+a.describe {margin-right: 6px}
 #PG { width: 1000px; text-align: left; margin: 10px auto 10px auto;}
 #HD { width: 100%; float: left; text-align: center;}
-#MD { width: 100%; float: left; margin-top: 10px;}
+#MD { width: 100%; float: left; margin-top: 10px; background-color: #eee; }
 #FT { width: 100%; float: left; margin-top: 10px; color: #335; border-top: 1px solid #335; text-align: center;}
 
 #new_srch { margin-top: 40px; margin-bottom: 40px; width: 100%; text-align: center;}
-#res { float: left; clear: left; margin: 0; width: 800px;}
-#res h3 { margin-top: 0;}
-
-table.result { width: 100% }
+#res { float: left; clear: left; margin: 5px 0px 0px 0px; width: 800px;}
+#res h3 { margin-top: 0; margin-left: 5px;}
+#new_srch label.left_txt { margin-right: 10px;}
+table.result { width: 100%; margin: 3px;}
 table.result td { max-width: 350px; overflow: hidden;}
 
 #opl_logo { border: 0; width: 120px; float: left;}
 #HD h1 { float:left; margin: 0 0 0 80px;vertical-align: top; color: #335;}
+
 span.descr { font-size: 9pt; color: 557; margin-top: 0;}
-label.left_txt { margin-right: 5px;}
 
-#result_nfo { margin-top: 8px; color: #446;}
+#result_nfo { float: left; clear: both; margin-top: 8px; margin-left: 5px; color: #446;}
 
-#fct_nav { float: left; margin-left: 10px; padding-left: 3px; width: 186px; border-left: 1px solid #335;}
+#fct_nav { 
+  float: left; 
+  margin-left: 10px;
+  margin-top: 4px; 
+  padding-left: 3px; 
+  width: 186px; 
+  border-left: 1px solid #335;}
+
 #fct_nav h3 { margin: 0; padding: 0;}
+
 #fct_nav ul { list-style-type: none; padding: 0; margin: 0;}
 #fct_nav ul li { list-style-type: none;}
 #fct_nav ul li a { text-decoration: none;}
@@ -36,3 +44,49 @@ label.left_txt { margin-right: 5px;}
 #fct_nav ul.n2 { border-top: 1px solid #ddd;}
 
 #FT img { border: 0;}
+
+div#opts_ctr {
+  margin: auto;
+  text-align: center;
+  background-color: white; 
+}
+
+div#opts {
+  border: 1pt solid #333;
+  text-align: left;
+  font-size: 10pt;
+  width: 650px;
+}
+
+div#opts h2 { margin: 0 5px 5px 5px;}
+div#opts h3 { margin-top: 5px}
+div#opts form {
+  margin: 0 5px 5px 15px;
+}
+
+div#opts label.left_txt { float: left; clear: left; width: 120px;}
+
+div.opt_sect { border-top: 1px solid #335;}
+
+div.dbg { 
+  display: none; }
+
+/*div.dbg { padding: 10px; background-color: yellow; border: 1px solid black}*/
+
+div#pager { margin-top: 10px; float: right;}
+div#pager a { background-color: #ddd; padding: 2px; border: 1px solid #335; padding: 3px 5px 3px 5px; width: auto; text-decoration: none; text-align: center;}
+
+h3#view_info {
+  margin-top: 5px;
+  margin-bottom: 5px;
+  font-size: 10pt;
+}
+
+div#top_ctr { 
+  font-size: 10pt;
+  width: 995px;
+  background-color: #ccc;
+  margin-top: 0px; padding-top: 4px;
+  padding-left: 5px; padding-right: -4px;
+}
+

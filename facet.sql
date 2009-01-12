@@ -73,19 +73,22 @@ fct_trunc_uri (in s varchar, in maxlen int := 40)
 }
 ;
 
-create procedure
-fct_short_form (in x any)
+create procedure 
+fct_short_form (in x any, in ltgt int := 0)
 {
   declare loc, pref, sh varchar;
 
   if (not isstring (x))
     return null;
-
+  
   sh := fct_uri_curie(x);
+
+  if (x like 'NodeID%')
+    return 'Blank' || x;
 
   if (sh is not null)
     return (fct_trunc_uri(sh));
-  else return (fct_trunc_uri (x));
+  else return (case when ltgt then '&lt;' || fct_trunc_uri (x) || '&gt;' else fct_trunc_uri (x) end);
 }
 
 create procedure
@@ -394,8 +397,8 @@ fct_view (in tree any, in this_s int, in txt any, in pre any, in post any)
 
     }
 
-  dbg_printf ('Pre : %s', string_output_string (pre));
-  dbg_printf ('Post: %s', string_output_string(post));
+--  dbg_printf ('Pre : %s', string_output_string (pre));
+--  dbg_printf ('Post: %s', string_output_string(post));
 
   fct_post (tree, post, lim, offs);
 
@@ -411,7 +414,7 @@ fct_literal (in tree any)
   lang := cast (xpath_eval ('./@xml:lang', tree) as varchar);
 
   if (lang is not null and lang <> '')
-    lit := sprintf ('"%s"@%s"', cast (tree as varchar), lang);
+    lit := sprintf ('"%s"@%s', cast (tree as varchar), lang);
   else if ('uri' = dtp or 'url' = dtp or 'iri' = dtp)
     lit := sprintf ('<%s>', cast (tree as varchar));
   else if (dtp like '%tring')
@@ -423,7 +426,9 @@ fct_literal (in tree any)
   return lit;
 }
 
-create procedure
+-- XXX (ghard) should ensure the literal is correctly quoted in the SPARQL statement
+
+create procedure 
 fct_cond (in tree any, in this_s int, in txt any)
 {
   declare lit, op varchar;
@@ -552,6 +557,7 @@ fct_test (in str varchar, in timeout int := 0)
   declare sqls, msg varchar;
   declare start_time int;
   declare reply, tree, md, res, qr, qr2 any;
+  declare cplete varchar;
 
   tree := xtree_doc (str);
   qr := fct_query (xpath_eval ('//query', tree, 1));
@@ -567,9 +573,15 @@ fct_test (in str varchar, in timeout int := 0)
   if (sqls <> '00000' and sqls <> 'S1TAT')
     signal (sqls, msg);
 
+
+  if (sqls = 'S1TAT') {
+    cplete := 'yes';
+  }
+
   reply := xmlelement ("facets", xmlelement ("sparql", qr), xmlelement ("time", msec_time () - start_time),
-		       xmlelement ("complete", case when sqls = 'S1TAT' then 'no' else 'yes' end),
+		       xmlelement ("complete", cplete),
 		       xmlelement ("db-activity", db_activity ()), res[0][0]);
+
   --dbg_obj_print (reply);
 
   return xslt ('file://facet_text.xsl', reply);
@@ -588,7 +600,11 @@ fct_exec (in tree any, in timeout int)
   -- db_activity ();
 
   sqls := '00000';
+
   qr := fct_query (xpath_eval ('//query', tree, 1));
+
+--  dbg_obj_print (qr);
+
   qr2 := fct_xml_wrap (tree, qr);
 
   start_time := msec_time ();
@@ -598,10 +614,14 @@ fct_exec (in tree any, in timeout int)
   exec (qr2, sqls, msg, vector (), 0, md, res);
   act := db_activity ();
 
-  set result_timeout = 0;
 
   if (sqls <> '00000' and sqls <> 'S1TAT')
     signal (sqls, msg);
+
+-- XXX: UNfinished add TIMEOUT code handling
+
+  set result_timeout = 0;
+
 
   if (not isarray (res) or 0 = length (res) or not isarray (res[0]) or 0 = length (res[0]))
     res := vector (vector (xtree_doc ('<result/>')));
@@ -610,6 +630,7 @@ fct_exec (in tree any, in timeout int)
 
   return xmlelement ("facets", xmlelement ("sparql", qr), xmlelement ("time", msec_time () - start_time),
 		       xmlelement ("complete", case when sqls = 'S1TAT' then 'no' else 'yes' end),
+		       xmlelement ("timeout", timeout),
 		       xmlelement ("db-activity", act), res[0][0]);
 }
 ;
