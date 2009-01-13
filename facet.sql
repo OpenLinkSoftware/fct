@@ -421,7 +421,6 @@ fct_view (in tree any, in this_s int, in txt any, in pre any, in post any)
 
 }
 
-
 create procedure
 fct_literal (in tree any)
 {
@@ -431,11 +430,11 @@ fct_literal (in tree any)
   lang := cast (xpath_eval ('./@xml:lang', tree) as varchar);
 
   if (lang is not null and lang <> '')
-    lit := sprintf ('"%s"@%s', cast (tree as varchar), lang);
+    lit := sprintf ('"""%s"""@%s', cast (tree as varchar), lang);
   else if ('uri' = dtp or 'url' = dtp or 'iri' = dtp)
     lit := sprintf ('<%s>', cast (tree as varchar));
   else if (dtp like '%tring')
-    lit := sprintf ('"%s"', cast (tree as varchar));
+    lit := sprintf ('"""%s"""', cast (tree as varchar));
   else if (dtp = '' or dtp is null or dtp like '%nteger' or dtp like '%ouble' or dtp like '%loat' or dtp like '%nt')
     lit := cast (tree as varchar);
   else
