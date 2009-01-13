@@ -73,14 +73,14 @@ fct_trunc_uri (in s varchar, in maxlen int := 40)
 }
 ;
 
-create procedure 
+create procedure
 fct_short_form (in x any, in ltgt int := 0)
 {
   declare loc, pref, sh varchar;
 
   if (not isstring (x))
     return null;
-  
+
   sh := fct_uri_curie(x);
 
   if (x like 'NodeID%')
@@ -224,8 +224,20 @@ fct_sas_clause (in tree any)
 }
 
 create procedure
+fct_graph_clause (in tree any)
+{
+  declare i varchar;
+ i := cast (xpath_eval ('/query/@graph', tree) as varchar);
+  if (i is null or '' = i)
+    return '';
+  return sprintf (' define input:default-graph-uri <%s> ', cast (i as varchar));
+}
+
+create procedure
 fct_post (in tree any, in post any, in lim int, in offs int)
 {
+  if (xpath_eval ('//view[@type="graphs"]', tree) is not null)
+    http (' order by desc (2) ' , post);
   if (lim is not null)
     http (sprintf (' limit %d ', cast (lim as int)), post);
   if (offs is not null)
@@ -342,7 +354,7 @@ fct_view (in tree any, in this_s int, in txt any, in pre any, in post any)
   offs := xpath_eval ('./@offset', tree, 1);
   lim  := xpath_eval ('./@limit', tree, 1);
 
-  http (sprintf (' %s %s ', fct_inf_clause (tree), fct_sas_clause (tree)), pre);
+  http (sprintf (' %s %s %s ', fct_graph_clause (tree), fct_inf_clause (tree), fct_sas_clause (tree)), pre);
 
   mode := cast (xpath_eval ('./@type', tree, 1) as varchar);
 
@@ -397,6 +409,11 @@ fct_view (in tree any, in this_s int, in txt any, in pre any, in post any)
 
     }
 
+  if ('graphs' = mode)
+    {
+      http ('select ?g as ?c1, count(*) as ?c2 ', pre);
+    }
+
 --  dbg_printf ('Pre : %s', string_output_string (pre));
 --  dbg_printf ('Post: %s', string_output_string(post));
 
@@ -428,7 +445,7 @@ fct_literal (in tree any)
 
 -- XXX (ghard) should ensure the literal is correctly quoted in the SPARQL statement
 
-create procedure 
+create procedure
 fct_cond (in tree any, in this_s int, in txt any)
 {
   declare lit, op varchar;
@@ -531,7 +548,7 @@ fct_text (in tree any,
 create procedure
 fct_query (in tree any)
 {
-  declare s int;
+  declare s, add_graph int;
   declare txt, pre, post any;
 
   txt := string_output ();
@@ -539,12 +556,17 @@ fct_query (in tree any)
   post := string_output ();
 
   s := 0;
+  add_graph := 0;
+  if (xpath_eval ('//view[@type="graphs"]', tree) is not null)
+    add_graph := 1;
 
   fct_text (xpath_eval ('//query', tree), 0, s, txt, pre, post);
 
   http (' where {', pre);
+  if (add_graph) http (' graph ?g { ', pre);
   http (txt, pre);
   http (' }', pre);
+  if (add_graph) http (' }', pre);
   http (post, pre);
 
   return string_output_string (pre);
