@@ -217,6 +217,18 @@ vhost_define (lpath=>'/fct',ppath=>'/fct/',vsp_user=>'dba', def_page=>'index.vsp
 create table fct_state (fct_sid int primary key, fct_state xmltype);
 alter index fct_state on fct_state partition (fct_sid int);
 
+create table fct_log (
+  fl_sid int, 
+  fl_ts timestamp, 
+  fl_cli_ip varchar,
+  fl_where varchar, 
+  fl_state xmltype, 
+  fl_cmd varchar,
+  fl_sqlstate varchar,
+  fl_sqlmsg varchar,
+  fl_parms varchar,
+  primary key (fl_sid, fl_ts));
+
 sequence_next ('fct_seq');
 
 create procedure
@@ -581,7 +593,7 @@ fct_set_inf (in tree any, in sid int)
 --  if (isstring (sas) and isstring (inf) and
   if (isstring (tlogy))
     {
-      dbg_printf ('tlogy: %s', tlogy);
+--      dbg_printf ('tlogy: %s', tlogy);
 
 --      if (inf <> '' and not exists (select 1 from sys_rdf_schema where rs_name = inf))
 --	{
@@ -670,20 +682,28 @@ fct_select_value (in tree any,
 {
   declare pos int;
 
+--  dbg_printf ('in fct_select_value()');
+
   if (op is null or op = '' or op = 0)
     op := '=';
 
   pos := fct_view_pos (tree);
+
   tree := xslt ('file://fct/fct_set_view.xsl',
                 tree,
 		vector ('pos', pos, 'op', 'value', 'iri', val, 'lang', lang, 'datatype', dtp, 'cmp', op));
+
+--  dbg_obj_print (tree);
 
   if (op = '=')
     tree := xslt ('file://fct/fct_set_view.xsl',
                   tree,
 		  vector ('pos', 0, 'op', 'view', 'type', 'list', 'limit', 20, 'offset', 0));
 
+--  dbg_obj_print (tree);
+
   update fct_state set fct_state = tree where fct_sid = sid;
+
   commit work;
   fct_web (tree);
 }
@@ -738,6 +758,9 @@ fct_vsp ()
   if ('' = c_term) c_term := 'class';
   connection_set ('c_term', c_term);
 
+  insert into fct_log (fl_sid, fl_cli_ip, fl_where, fl_state, fl_cmd)
+         values (sid, http_client_ip(), 'DISPATCH', tree, cmd);
+
   if ('text' = cmd)
     fct_set_text (tree, sid, http_param ('search_for'));
   else if ('set_focus' = cmd)
@@ -780,7 +803,16 @@ fct_vsp ()
       http ('Unrecognized command');
       return;
     }
+
+  declare _state any;
+
+  select fct_state into _state from fct_state where fct_sid = http_param ('sid');
+
+  insert into fct_log (fl_sid, fl_cli_ip, fl_where, fl_state, fl_cmd)
+         values (sid, http_client_ip(), 'RETURN', _state, cmd);
+  
   return;
+
  no_ses:
   http ('<div class="ses_info">Session lost. New search started</div>');
   fct_new ();
