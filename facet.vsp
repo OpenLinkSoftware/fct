@@ -33,8 +33,8 @@ declare exit handler for sqlstate '*'
   http('  <div class="nav"><a href="/fct/facet.vsp?qq=ww">New Search</a></div>\n');
   http('  <div class="diag">\n');
   http('  <h3>Diagnostics</h3>\n');
-  http(sprintf ('    SQLSTATE: %s<br/>\n', __SQL_STATE));
-  http(sprintf ('    SQLMSG  : %s<br/>\n', __SQL_MESSAGE));
+  http(sprintf ('<pre>SQLSTATE: %s</pre><br/>\n', __SQL_STATE));
+  http(sprintf ('<pre>SQLMSG  : %s</pre><br/>\n', __SQL_MESSAGE));
   http('  </div>\n');
   http('</div>\n');
   goto footer;
