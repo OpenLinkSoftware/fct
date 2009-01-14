@@ -27,7 +27,16 @@ declare cmd varchar;
 cmd := http_param ('cmd');
 declare exit handler for sqlstate '*'
 {
-  http('<div class="error">The operation cannot be completed, please try again later.</div>');
+  http('<div class="error_msg">\n');
+  http('  <h2>Oops!</h2>\n');
+  http('  <div class="body">An unexpected error was encountered while processing your request.</div>\n');
+  http('  <div class="nav"><a href="/fct/facet.vsp?qq=ww">New Search</a></div>\n');
+  http('  <div class="diag">\n');
+  http('  <h3>Diagnostics</h3>\n');
+  http(sprintf ('    SQLSTATE: %s<br/>\n', __SQL_STATE));
+  http(sprintf ('    SQLMSG  : %s<br/>\n', __SQL_MESSAGE));
+  http('  </div>\n');
+  http('</div>\n');
   goto footer;
 };
 fct_vsp ();

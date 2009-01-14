@@ -90,3 +90,9 @@ div#top_ctr {
   padding-left: 5px; padding-right: -4px;
 }
 
+div.error_msg { margin: 5px; }
+div.error_msg h2 {}
+div.error_msg div.body {}
+div.error_msg div.nav { margin-top: 10px;}
+div.error_msg div.diag { font-size: 8pt }
+div.error_msg div.diag h3 {}
