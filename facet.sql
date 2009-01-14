@@ -236,8 +236,6 @@ fct_graph_clause (in tree any)
 create procedure
 fct_post (in tree any, in post any, in lim int, in offs int)
 {
-  if (xpath_eval ('//view[@type="graphs"]', tree) is not null)
-    http (' order by desc (2) ' , post);
   if (lim is not null)
     http (sprintf (' limit %d ', cast (lim as int)), post);
   if (offs is not null)
@@ -289,7 +287,30 @@ fct_xml_wrap (in tree any, in txt any)
              from (sparql define output:valmode "LONG" ', ntxt);
 
   if (n_cols = 1)
-    http ('select xmlelement ("result", xmlagg (xmlelement ("row", xmlelement ("column", xmlattributes (fct_lang ("c1") as "xml:lang", fct_dtp ("c1") as "datatype", fct_short_form(__ro2sq("c1")) as "shortform"), __ro2sq ("c1")), xmlelement ("column", fct_label ("c1", 0, ''facets'' ))))) from (sparql define output:valmode "LONG"', ntxt);
+    http ('select xmlelement ("result",
+    			xmlagg (xmlelement ("row",
+				xmlelement ("column",
+						xmlattributes (fct_lang ("c1") as "xml:lang",
+							       fct_dtp ("c1") as "datatype",
+							       fct_short_form(__ro2sq("c1")) as "shortform"),
+							       __ro2sq ("c1")),
+				xmlelement ("column", fct_label ("c1", 0, ''facets'' )))))
+	     from (sparql define output:valmode "LONG"', ntxt);
+  if (n_cols = 3)
+    http ('select xmlelement ("result",
+                              xmlagg (xmlelement ("row",
+                                                  xmlelement ("column",
+                                                              xmlattributes (fct_lang ("c1") as "xml:lang",
+                                                                             fct_dtp ("c1") as "datatype",
+                                                                             fct_short_form(__ro2sq("c1")) as "shortform"),
+                                                              __ro2sq ("c1")),
+                                                  xmlelement ("column",
+                                                              fct_label ("c1", 0, ''facets'' )),
+                                                  xmlelement ("column", "c2"),
+                                                  xmlelement ("column", "c3")
+						  	)))
+             from (sparql define output:valmode "LONG" ', ntxt);
+
 
   http (txt, ntxt);
   http (') xx option (quietcast)', ntxt);
@@ -304,6 +325,8 @@ fct_n_cols (in tree any)
   tp := cast (xpath_eval ('//view/@type', tree, 1) as varchar);
   if ('list' = tp)
     return 1;
+  else if ('geo' = tp)
+    return 3;
   return 2;
   signal ('FCT00', 'Unknown facet view type');
 }
@@ -412,6 +435,13 @@ fct_view (in tree any, in this_s int, in txt any, in pre any, in post any)
   if ('graphs' = mode)
     {
       http ('select ?g as ?c1, count(*) as ?c2 ', pre);
+      http (' order by desc (2) ' , post);
+    }
+
+  if ('geo' = mode)
+    {
+      http (sprintf ('select ?s%d as ?c1 ?lat%d as ?c2 ?lng%d as ?c3 ', this_s, this_s, this_s), pre);
+      http (sprintf (' ?s%d pos:lat ?lat%d ; pos:long ?lng%d .', this_s, this_s, this_s), txt);
     }
 
 --  dbg_printf ('Pre : %s', string_output_string (pre));

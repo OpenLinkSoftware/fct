@@ -4,7 +4,19 @@ cl_exec ('registry_set (''fct_max_timeout'',''10000'')');
 DB.DBA.VHOST_REMOVE (lpath=>'/fct/service');
 DB.DBA.VHOST_DEFINE (lpath=>'/fct/service', ppath=>'/SOAP/Http/FCT_SVC', soap_user=>'dba');
 
-create procedure fct_svc_exec (in tree any, in timeout int, in accept varchar)
+create procedure fct_svc_log (in qr varchar, in lines varchar)
+{
+  declare fname, ua any;
+  if (not (sys_dir_is_allowed ('fctlogs/') and file_stat ('fctlogs/') <> 0))
+    return;
+  ua := http_request_header (lines, 'User-Agent');
+  fname := sprintf ('fctlogs/fct%02d%02d%04d.log', dayofmonth(now ()), month (now()), year (now ()));
+  string_to_file (fname, sprintf ('***\n* %s\n* %s\n* %s\n* %s\n', date_rfc1123 (now ()), http_client_ip (), qr, ua
+      ), -1);
+}
+;
+
+create procedure fct_svc_exec (in tree any, in timeout int, in accept varchar, in lines any)
 {
   declare start_time int;
   declare sqls, msg, qr, qr2, act varchar;
@@ -23,6 +35,7 @@ create procedure fct_svc_exec (in tree any, in timeout int, in accept varchar)
     qr2 := 'sparql define output:valmode "LONG" ' || qr;
   start_time := msec_time ();
   --http (qr2);
+  fct_svc_log (qr, lines);
   exec (qr2, sqls, msg, vector (), 0, md, res);
   act := db_activity ();
   if (sqls <> '00000' and sqls <> 'S1TAT')
@@ -88,7 +101,7 @@ create procedure fct_svc () __soap_http 'text/xml'
   maxt := atoi (registry_get ('fct_max_timeout'));
   if (timeout > maxt)
     timeout := maxt;
-  ret := fct_svc_exec (xslt, timeout, accept);
+  ret := fct_svc_exec (xslt, timeout, accept, lines);
   return ret;
 }
 ;
@@ -121,7 +134,8 @@ create procedure fct.fct.query (
 	)
 __SOAP_DOC 'http://openlinksw.com/services/facets/1.0/:facets'
 {
-  declare cnt, tp, ret, timeout, xt, xslt, maxt, tmp any;
+  declare cnt, tp, ret, timeout, xt, xslt, maxt, tmp, lines, qr any;
+  lines := http_request_header ();
   xt := xml_cut (xpath_eval ('/Envelope/Body/query', xml_tree_doc (ws_soap_request)));
   xslt := xslt ('file:///fct/fct_req.xsl', xt);
 
@@ -134,6 +148,8 @@ __SOAP_DOC 'http://openlinksw.com/services/facets/1.0/:facets'
   maxt := atoi (registry_get ('fct_max_timeout'));
   if (timeout > maxt)
     timeout := maxt;
+  qr := fct_query (xpath_eval ('//query', xslt, 1));
+  fct_svc_log (qr, lines);
   ret := fct_exec (xslt, timeout);
   ret := xslt ('file:///fct/fct_resp.xsl', ret);
   return ret;
