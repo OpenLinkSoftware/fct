@@ -12,6 +12,9 @@ a.describe {margin-right: 6px}
 #MD { width: 100%; float: left; margin-top: 10px; background-color: #eee; }
 #FT { width: 100%; float: left; margin-top: 10px; color: #335; border-top: 1px solid #335; text-align: center;}
 
+span.iri { font-weight: bold }
+span.value { font-weight: bold }
+
 #new_srch { margin-top: 40px; margin-bottom: 40px; width: 100%; text-align: center;}
 #res { float: left; clear: left; margin: 5px 0px 0px 0px; width: 800px;}
 #res h3 { margin-top: 0; margin-left: 5px;}

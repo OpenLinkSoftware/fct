@@ -139,7 +139,7 @@ fct_query_info (in tree any,
 
   if ('class' = n)
     {
-      http (sprintf ('%s a %s . <a href="/fct/facet.vsp?sid=%d&cmd=drop_cond&cno=%d">Drop</a>',
+      http (sprintf ('%s is a <span class="iri">%s</span> . <a href="/fct/facet.vsp?sid=%d&cmd=drop_cond&cno=%d">Drop</a>',
                      fct_var_tag (this_s, ctx),
 		     fct_short_form (cast (xpath_eval ('./@iri', tree) as varchar)),
 		     connection_get ('sid'),
@@ -158,20 +158,30 @@ fct_query_info (in tree any,
       declare prop varchar;
       prop := cast (xpath_eval ('./@property', tree, 1) as varchar);
 
-      if (prop is null)
-        prop := 'any property';
-
-      http (sprintf (' %s contains "%s" in %s value.',
+      http (sprintf (' %s has %s whose value contains <span class="value">"%s"</span>. ',
                      fct_var_tag (this_s, ctx),
-		     cast (tree as varchar),
-		     prop), txt);
+		     case 
+		       when prop is not null 
+		       then 'property <span class="iri">' || fct_short_form (prop) || '</span>' 
+		       else 'any property' 
+                     end, 
+		     cast (tree as varchar)),
+	    txt);
+
+--      if (prop is not null)
+--        {
+--	  http (sprintf (' <a href="/fct/facet.vsp?sid=%d&cmd=drop_cond&cno=%d">Drop</a>',
+--		     connection_get ('sid'),
+--		     cno)
+--               ,txt);
+--        }	         	   
     }
   else if ('property' = n)
     {
       declare new_s int;
       max_s := max_s + 1;
       new_s := max_s;
-      http (sprintf (' %s %s %s . ',
+      http (sprintf (' %s <span class="iri">%s</span> %s . ',
                      fct_var_tag (this_s, ctx),
 		     fct_short_form (cast (xpath_eval ('./@iri', tree, 1) as varchar)), fct_var_tag (new_s, ctx)), txt);
       if (ctx)
@@ -184,7 +194,7 @@ fct_query_info (in tree any,
       declare new_s int;
       max_s := max_s + 1;
       new_s := max_s;
-      http (sprintf (' %s %s %s . ',
+      http (sprintf (' %s <span class="iri">%s</span> %s . ',
                      fct_var_tag (new_s, ctx),
 		     fct_short_form (cast (xpath_eval ('./@iri', tree, 1) as varchar), 1),
 		     fct_var_tag (this_s, ctx)),

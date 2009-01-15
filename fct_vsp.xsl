@@ -66,7 +66,7 @@
 		  </xsl:attribute>
 		  <xsl:attribute name="class">describe</xsl:attribute>
 		    Describe
-		</a>&#160;
+		</a>
 	      </xsl:if>
 	      <a>
 		<xsl:attribute name="href">
