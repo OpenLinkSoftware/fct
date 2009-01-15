@@ -760,6 +760,7 @@ fct_vsp ()
 
   insert into fct_log (fl_sid, fl_cli_ip, fl_where, fl_state, fl_cmd)
          values (sid, http_client_ip(), 'DISPATCH', tree, cmd);
+  commit work;
 
   if ('text' = cmd)
     fct_set_text (tree, sid, http_param ('search_for'));
@@ -810,6 +811,7 @@ fct_vsp ()
 
   insert into fct_log (fl_sid, fl_cli_ip, fl_where, fl_state, fl_cmd)
          values (sid, http_client_ip(), 'RETURN', _state, cmd);
+  commit work;
   
   return;
 
