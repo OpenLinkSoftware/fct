@@ -160,11 +160,11 @@ fct_query_info (in tree any,
 
       http (sprintf (' %s has %s whose value contains <span class="value">"%s"</span>. ',
                      fct_var_tag (this_s, ctx),
-		     case 
-		       when prop is not null 
-		       then 'property <span class="iri">' || fct_short_form (prop) || '</span>' 
-		       else 'any property' 
-                     end, 
+		     case
+		       when prop is not null
+		       then 'property <span class="iri">' || fct_short_form (prop) || '</span>'
+		       else 'any property'
+                     end,
 		     cast (tree as varchar)),
 	    txt);
 
@@ -174,7 +174,7 @@ fct_query_info (in tree any,
 --		     connection_get ('sid'),
 --		     cno)
 --               ,txt);
---        }	         	   
+--        }
     }
   else if ('property' = n)
     {
@@ -228,11 +228,11 @@ create table fct_state (fct_sid int primary key, fct_state xmltype);
 alter index fct_state on fct_state partition (fct_sid int);
 
 create table fct_log (
-  fl_sid int, 
-  fl_ts timestamp, 
+  fl_sid int,
+  fl_ts timestamp,
   fl_cli_ip varchar,
-  fl_where varchar, 
-  fl_state xmltype, 
+  fl_where varchar,
+  fl_state xmltype,
   fl_cmd varchar,
   fl_sqlstate varchar,
   fl_sqlmsg varchar,
@@ -315,6 +315,9 @@ fct_nav (in tree any,
     if (connection_get('c_term') = 'class') fct_view_link ('classes', 'Classes', txt);
     else fct_view_link ('classes', 'Types', txt);
 
+  if ('geo' <> tp)
+    fct_view_link ('geo', 'Show map', txt);
+
   http ('</ul>\n<ul class="n2">', txt);
   http (sprintf ('<li><a href="/fct/facet.vsp?cmd=set_inf&sid=%d">Options</a></li>', connection_get ('sid')), txt);
   http ('<li><a href=/fct/facet.vsp?qq=ww">New Search</a></li>', txt);
@@ -328,6 +331,8 @@ fct_view_type (in vt varchar)
 {
   if (vt in ('properties', 'classes', 'properties-in', 'text-properties', 'list', 'list-count'))
     return 'properties';
+  if (vt = 'geo')
+    return 'geo';
   return 'default';
 }
 
@@ -825,7 +830,7 @@ fct_vsp ()
   insert into fct_log (fl_sid, fl_cli_ip, fl_where, fl_state, fl_cmd)
          values (sid, http_client_ip(), 'RETURN', _state, cmd);
   commit work;
-  
+
   return;
 
  no_ses:

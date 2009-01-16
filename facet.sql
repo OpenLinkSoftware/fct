@@ -441,7 +441,7 @@ fct_view (in tree any, in this_s int, in txt any, in pre any, in post any)
   if ('geo' = mode)
     {
       http (sprintf ('select ?s%d as ?c1 ?lat%d as ?c2 ?lng%d as ?c3 ', this_s, this_s, this_s), pre);
-      http (sprintf (' ?s%d pos:lat ?lat%d ; pos:long ?lng%d .', this_s, this_s, this_s), txt);
+      http (sprintf (' ?s%d geo:lat ?lat%d ; geo:long ?lng%d .', this_s, this_s, this_s), txt);
     }
 
 --  dbg_printf ('Pre : %s', string_output_string (pre));

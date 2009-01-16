@@ -7,6 +7,10 @@
 <head>
 <title>OpenLink Faceted Data Browser</title>
 <link rel="stylesheet" media="screen" type="text/css" href="styles/default.css"/>
+<script type="text/javascript" >
+    var featureList=["map"];
+</script>
+<script type="text/javascript" src="oat/toolkit/loader.js"></script>
 </head>
 <body>
 <div id="PG">

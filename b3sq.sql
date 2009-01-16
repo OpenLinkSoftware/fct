@@ -735,7 +735,7 @@ where
   } order by ?dist desc 3 limit 50
 ;
 
--- with sas and blank nodes 
+-- with sas and blank nodes
 sparql define input:same-as "yes"
 select ?o ?dist ((select count (*) where {{select distinct ?other where {?o foaf:knows ?other}}}))
 where
@@ -833,9 +833,9 @@ limit 100
 
 -- how many really distinct knows relations?
 
-sparql define input:same-as "YES" 
-select count (*) where 
-  {{select distinct ?s ?o 
+sparql define input:same-as "YES"
+select count (*) where
+  {{select distinct ?s ?o
 where { ?s foaf:knows ?o}}};
 
 sparql
@@ -870,29 +870,29 @@ alter index sas_attr on sas_attr partition (sn_name varchar);
 insert into sas_attr select distinct __ro2sq ("n"), "bn"  from (sparql define output:valmode "LONG" select ?n ?bn where { ?bn foaf:name ?n . filter (bif:length (?n) > 7)}) x;
 
 
--- for checking 
+-- for checking
 select top 10 sn_name, sn_iri, min_iri from (
-select a.sn_name, a.sn_iri, (select min (sn_iri) from sas_attr b where a.sn_name = b.sn_name) as min_iri 
+select a.sn_name, a.sn_iri, (select min (sn_iri) from sas_attr b where a.sn_name = b.sn_name) as min_iri
 from sas_attr a) x where sn_iri <> min_iri;
 
 
--- for making the sas 
+-- for making the sas
 
 log_enable (2);
 insert soft rdf_quad (g, s, p, o)
 select iri_to_id ('b3s_inf_sas'),  sn_iri, rdf_sas_iri (), min_iri from (
-select  a.sn_iri, (select min (sn_iri) from sas_attr b where a.sn_name = b.sn_name) as min_iri 
+select  a.sn_iri, (select min (sn_iri) from sas_attr b where a.sn_name = b.sn_name) as min_iri
 from sas_attr a) x where sn_iri <> min_iri;
 
 
 
 select iri_to_id ('b3s_inf_sas'),  sn_iri, rdf_sas_iri (), min_iri from (
-select  a.sn_iri, (select min (sn_iri) from sas_attr b where a.sn_name = b.sn_name) as min_iri 
+select  a.sn_iri, (select min (sn_iri) from sas_attr b where a.sn_name = b.sn_name) as min_iri
 from sas_attr a) x where sn_iri <> min_iri;
 
 log_enable (2);
 insert into rdf_quad (g,s,p, o)
-select iri_to_id ('b3s_inf_sas'), min_iri, rdf_sas_iri (), sn_iri from  
+select iri_to_id ('b3s_inf_sas'), min_iri, rdf_sas_iri (), sn_iri from
 (select sn_name, min (sn_iri) as min_iri from sas_attr group by sn_name) mn, sas_attr b where b.sn_iri > min_iri and b.sn_name = mn.sn_name;
 
 
@@ -902,18 +902,18 @@ select iri_to_id ('b3s_inf_sas'), min_iri, rdf_sas_iri (), sn_iri from
 
 
 
--- Blank nodes ifp sameness 
+-- Blank nodes ifp sameness
 
 sparql define input:inference "b3sifp" select distinct ?k where { ?k foaf:name ?n . ?n bif:contains "'Kjetil Kjernsmo'" };
 
-sparql define input:inference "b3sifp" 
+sparql define input:inference "b3sifp"
 select distinct ?k ?f1 ?f2 where { ?k foaf:name ?n . ?n bif:contains "'Kjetil Kjernsmo'" . ?k foaf:knows ?f1 . ?f1 foaf:knows ?f2 };
 
-sparql define input:same-as "yes" 
+sparql define input:same-as "yes"
 select distinct ?k ?f1 ?f2 where { ?k foaf:name ?n . ?n bif:contains "'Kjetil Kjernsmo'" . ?k foaf:knows ?f1 . ?f1 foaf:knows ?f2 };
 
 
-sparql define input:inference "b3sifp" 
+sparql define input:inference "b3sifp"
 select count (*) where { ?x a foaf:Person . ?x foaf:knows ?y};
 
 
@@ -924,7 +924,7 @@ sparql select distinct ?p where {?p a foaf:Person option (same-as "yes")};
 
 -- What person has the most sameAs aliases?
 
-sparql select ?person count (*) where  
+sparql select ?person count (*) where
 {{select distinct ?person where {?person a foaf:Person } limit 1000}
  {select ?x ?alias where {{ ?x owl:sameAs ?alias } union {?alias owl:sameAs ?x}}}
 	option (transitive, t_in (?x), t_out (?alias), t_distinct) .
@@ -941,7 +941,7 @@ sparql select ?g count (*) where {
 } group by ?g order by desc 2 limit 30;
 
 
--- Smoosh 
+-- Smoosh
 
 create table name_prop (np_name any, np_p iri_id_8, np_o any, primary key (np_name, np_p, np_o));
 alter index name_prop on name_prop partition (np_name varchar (-1, 0hexffff));
@@ -971,14 +971,14 @@ insert soft rdf_quad (g,s,p,o) select iri_to_id ('psmoosh'), s, np_p, np_o from 
 -- Make smartSmoosh.  When inserting an O, look up the right one.
 
 
-insert soft rdf_quad (g,s,p,o) select iri_to_id ('psmoosh'), ni_s, np_p, 
+insert soft rdf_quad (g,s,p,o) select iri_to_id ('psmoosh'), ni_s, np_p,
   coalesce ((select pref from pref_iri where i = np_o), np_o)
 from name_prop, name_iri where ni_name = np_name option (loop, quietcast);
 
 
 -- How many tripoles in the original?
 
-sparql select count (*) where { graph ?g { ?x a foaf:Person . ?x foaf:name ?n . ?x ?p ?o}}; 
+sparql select count (*) where { graph ?g { ?x a foaf:Person . ?x foaf:name ?n . ?x ?p ?o}};
 
 sparql select  count (*) where {{select distinct ?person where {?person a foaf:Person}} . filter (bif:exists ((select (1) where { ?person foaf:name ?nn}))) . ?person ?p ?o};
 

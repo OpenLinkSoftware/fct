@@ -13,8 +13,57 @@
   <xsl:when test="$type = 'properties-in'"><h3>Referencing Properties</h3></xsl:when>
   <xsl:when test="$type = 'list'"><h3>List</h3></xsl:when>
   <xsl:when test="$type = 'list-count'"><h3>Distinct values</h3></xsl:when>
+  <xsl:when test="$type = 'geo'"><h3>Location</h3></xsl:when>
 </xsl:choose>
+<!--xsl:message terminate="no"><xsl:value-of select="$type"/></xsl:message-->
+<xsl:choose>
+    <xsl:when test="$type = 'geo'">
+	<script type="text/javascript" ><![CDATA[
+		OAT.Preferences.imagePath = "oat/images/";
+		function init(){
+			var callback = function(commonMapObj) {
+				var click = function (href, label) {
+				    return function(marker) {
+                                           var x;
+					   if (href.length > 0) {
+					     x = OAT.Dom.create ("a");
+					     x.href = '/about/?url='+escape (href);
+				             x.innerHTML = label;
+					   }
+				           else
+				             x = OAT.Dom.text(label);
+				           commonMapObj.openWindow (marker, x);
+					}
+				  }
+				window.m = commonMapObj;
+				commonMapObj.centerAndZoom(0,0,0);
+				commonMapObj.addTypeControl();
+				commonMapObj.addMapControl();
+				commonMapObj.setMapType(OAT.MapData.MAP_HYB);
 
+				var markersArr = []; ]]>
+				<xsl:for-each select="result/row">
+				    commonMapObj.addMarker(1,<xsl:value-of select="column[3]"/>,<xsl:value-of select="column[4]"/>,
+				    "oat/images/markers/01.png",18,41,
+				    	click ("<xsl:value-of select="column[1]"/>", "<xsl:value-of select="column[2]"/>"));
+				    markersArr.push([<xsl:value-of select="column[3]"/>,<xsl:value-of select="column[4]"/>]);
+			        </xsl:for-each>
+
+				<![CDATA[
+				commonMapObj.optimalPosition(markersArr);
+				return;
+			}
+			window.YMAPPID = "";
+
+			var providerType = OAT.MapData.TYPE_Y;
+			var containerDiv = document.getElementById('user_map');
+			var map = new OAT.Map(containerDiv,providerType,{fix:OAT.MapData.FIX_ROUND1});
+			map.loadApi(providerType, callback);
+		}
+	]]></script>
+    <div id="user_map" style="position:relative; width:600px; height:400px;"></div>
+    </xsl:when>
+    <xsl:otherwise>
 <table class="result">
   <thead>
     <xsl:choose>
@@ -52,10 +101,10 @@
     <xsl:for-each select="result/row">
       <tr>
 	<xsl:choose>
-	  <xsl:when test="$type = 'properties' or 
+	  <xsl:when test="$type = 'properties' or
 			  $type = 'classes' or
-			  $type = 'properties-in' or 
-			  $type = 'text-properties' or 
+			  $type = 'properties-in' or
+			  $type = 'text-properties' or
 			  $type = 'list' or
 			  $type = 'list-count'">
 	    <td>
@@ -98,7 +147,7 @@
 	    </td>
 	  </xsl:when>
 	  <xsl:otherwise>
-	    <xsl:for-each select="column"> 
+	    <xsl:for-each select="column">
 	      <td>
 		<xsl:choose>
 		  <xsl:when test="'url' = ./@datatype">
@@ -132,12 +181,13 @@
     </a>
   </div> <!-- #pager -->
 </xsl:if>
-
+</xsl:otherwise>
+</xsl:choose>
 <div id="result_nfo">
   <xsl:choose>
     <xsl:when test="/facets/complete = 'yes'">Complete results in </xsl:when>
     <xsl:otherwise>
-      Partial results 
+      Partial results
       <a href="/fct/facet.vsp?cmd=refresh&amp;sid={$sid}&amp;timeout=$timeout">Retry with <xsl:value-of select="($timeout div 1000)"/>seconds timeout</a>
     </xsl:otherwise>
   </xsl:choose>
