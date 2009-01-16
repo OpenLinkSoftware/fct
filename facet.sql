@@ -440,8 +440,16 @@ fct_view (in tree any, in this_s int, in txt any, in pre any, in post any)
 
   if ('geo' = mode)
     {
+      declare loc any;
+      loc := xpath_eval ('@location-prop', tree);
+      if (loc = 'any')
+	loc := '?anyloc';
       http (sprintf ('select ?s%d as ?c1 ?lat%d as ?c2 ?lng%d as ?c3 ', this_s, this_s, this_s), pre);
-      http (sprintf (' ?s%d geo:lat ?lat%d ; geo:long ?lng%d .', this_s, this_s, this_s), txt);
+      if (length (loc) < 2)
+         http (sprintf (' ?s%d geo:lat ?lat%d ; geo:long ?lng%d .', this_s, this_s, this_s), txt);
+      else
+         http (sprintf (' ?s%d %s ?location . ?location geo:lat ?lat%d ; geo:long ?lng%d .', this_s, loc, this_s, this_s), txt);
+
     }
 
 --  dbg_printf ('Pre : %s', string_output_string (pre));

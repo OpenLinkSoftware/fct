@@ -316,7 +316,25 @@ fct_nav (in tree any,
     else fct_view_link ('classes', 'Types', txt);
 
   if ('geo' <> tp)
-    fct_view_link ('geo', 'Show map', txt);
+    {
+      --fct_view_link ('geo', 'Map', txt);
+      http (sprintf ('<li><a id="map_link" href="/fct/facet.vsp?cmd=set_view&sid=%d&type=%s&limit=20&offset=0">%s</a>&nbsp;'||
+	    		'<select name="map_of" onchange="javascript:link_change(this.value)">'||
+	    		'<option value="">Shown items</option>'||
+	    		'<option value="any">Any location</option>'||
+	    		'<option value="dbpprop:location">dbpedia:location</option>'||
+	    		'<option value="dbpprop:place">dbpedia:place</option>'||
+	    		'<option value="foaf:based_near">foaf:based_near</option>'||
+	    		'<option value="geo:location">geo:location</option>'||
+	    		'<option value="geo:Point">geo:Point</option>'||
+	    		'<option value="dbpprop:birthPlace">dbpedia:birthPlace</option>'||
+	    		'<option value="dbpprop:placeOfBirth">dbpedia:placeOfBirth</option>'||
+	    		'<option value="dbpprop:birthplace">dbpedia:birthplace</option>'||
+	    		'<option value="dbpprop:placeOfDeath">dbpedia:placeOfDeath</option>'||
+	    		'<option value="dbpprop:deathPlace">dbpedia:deathPlace</option>'||
+			'</select></li>\n',
+                 connection_get ('sid'), 'geo', 'Map'), txt);
+    }
 
   http ('</ul>\n<ul class="n2">', txt);
   http (sprintf ('<li><a href="/fct/facet.vsp?cmd=set_inf&sid=%d">Options</a></li>', connection_get ('sid')), txt);
@@ -467,7 +485,7 @@ fct_drop_cond (in tree any, in sid int, in cno int)
 }
 
 create procedure
-fct_set_view (in tree any, in sid int, in tp varchar, in lim int, in offs int)
+fct_set_view (in tree any, in sid int, in tp varchar, in lim int, in offs int, in loc_prop varchar := null)
 {
   declare pos int;
   pos := fct_view_pos (tree);
@@ -484,7 +502,7 @@ fct_set_view (in tree any, in sid int, in tp varchar, in lim int, in offs int)
 
   tree := xslt ('file://fct/fct_set_view.xsl',
                 tree,
-		vector ('pos', pos, 'op', 'view', 'type', tp, 'limit', lim, 'offset', offs));
+		vector ('pos', pos, 'op', 'view', 'type', tp, 'limit', lim, 'offset', offs, 'location-prop', loc_prop));
 
   update fct_state set fct_state = tree where fct_sid = sid;
   commit work;
@@ -591,8 +609,8 @@ fct_set_inf (in tree any, in sid int)
              <form action="/fct/facet.vsp?cmd=set_inf&sid=<?= sid ?>" method=post>
 	       <div class="opt_sect">
 <h3>Inference</h3>
-Inference: <input type=text name="inference" value="<?=selected_inf ?>"> <br> 
-Same As: <input type=text name="same-as" value="<?=selected_sas ?>"> <br> 
+Inference: <input type=text name="inference" value="<?=selected_inf ?>"> <br>
+Same As: <input type=text name="same-as" value="<?=selected_sas ?>"> <br>
 	         <h3>User Interface</h3>
 	         <label class="left_txt" for="tlogy">Terminology</label>
                  <select name="tlogy">
@@ -789,7 +807,8 @@ fct_vsp ()
     		  sid,
 		  http_param ('type'),
                   atoi (http_param ('limit')),
-		  atoi (http_param ('offset')));
+		  atoi (http_param ('offset')),
+		  http_param ('location-prop'));
   else if ('next' = cmd)
     fct_next (tree, sid);
 	else if ('set_text_property' = cmd)
