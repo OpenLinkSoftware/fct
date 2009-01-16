@@ -192,12 +192,10 @@ ttlp ('
 @prefix foaf: <http://xmlns.com/foaf/0.1/>
 @prefix dc: <http://purl.org/dc/elements/1.1/>
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-@prefix fbase: <http://rdf.freebase.com/ns/>
 @prefix virtrdf: <http://www.openlinksw.com/schemas/virtrdf#>
 
 rdfs:label rdfs:subPropertyOf virtrdf:label .
 dc:title rdfs:subPropertyOf virtrdf:label .
-fbase:type.object.name rdfs:subPropertyOf virtrdf:label .
 foaf:name rdfs:subPropertyOf virtrdf:label .
 foaf:nick rdfs:subPropertyOf virtrdf:label .', 'xx', 'facets');
 
