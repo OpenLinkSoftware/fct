@@ -568,8 +568,8 @@ fct_set_inf (in tree any, in sid int)
   tlogy := http_param ('tlogy');
 
 
---  if (0 = sas or 0 = inf or
-  if (0 = tlogy)
+  if (0 = sas or 0 = inf or
+  	0 = tlogy)
     {
       declare selected_inf, selected_sas, sel_c_term, sel_s_term  varchar;
 
@@ -585,6 +585,9 @@ fct_set_inf (in tree any, in sid int)
              <h2>Options</h2>
              <form action="/fct/facet.vsp?cmd=set_inf&sid=<?= sid ?>" method=post>
 	       <div class="opt_sect">
+<h3>Inference</h3>
+Inference: <input type=text name="inference" value="<?=selected_inf ?>"> <br> 
+Same As: <input type=text name="same-as" value="<?=selected_sas ?>"> <br> 
 	         <h3>User Interface</h3>
 	         <label class="left_txt" for="tlogy">Terminology</label>
                  <select name="tlogy">
@@ -600,24 +603,24 @@ fct_set_inf (in tree any, in sid int)
      return;
     }
 
---  if (isstring (sas) and isstring (inf) and
-  if (isstring (tlogy))
+  if (isstring (sas) and isstring (inf) and
+  isstring (tlogy))
     {
 --      dbg_printf ('tlogy: %s', tlogy);
 
---      if (inf <> '' and not exists (select 1 from sys_rdf_schema where rs_name = inf))
---	{
---	  http ('<div class="err">Incorrect inference context name</div>');
---	  inf := 0;
---	  goto again;
---	}
+      if (inf <> '' and not exists (select 1 from sys_rdf_schema where rs_name = inf))
+	{
+	  http ('<div class="err">Incorrect inference context name</div>');
+	  inf := 0;
+	  goto again;
+	}
 
       c_term := case when 'eav' = tlogy then 'type' else 'class' end;
       s_term := case when 'eav' = tlogy then 'e' else 's' end;
 
       tree := xmlupdate (tree,
---      	         '/query/@inference', inf,
---		         '/query/@same-as',   sas,
+      	         '/query/@inference', inf,
+		         '/query/@same-as',   sas,
 			 '/query/@s-term',    s_term,
 			 '/query/@c-term',    c_term);
 
