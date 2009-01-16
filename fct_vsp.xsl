@@ -28,7 +28,10 @@
 					   if (href.length > 0) {
 					     x = OAT.Dom.create ("a");
 					     x.href = '/about/?url='+escape (href);
-				             x.innerHTML = label;
+					     if (label.length > 0)
+				               x.innerHTML = label;
+					     else
+				               x.innerHTML = href;
 					   }
 				           else
 				             x = OAT.Dom.text(label);
