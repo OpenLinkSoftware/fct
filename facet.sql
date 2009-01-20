@@ -682,7 +682,7 @@ fct_exec (in tree any, in timeout int)
   inx := 1;
   foreach (varchar tp in more) do
     {
-      tree := XMLUpdate (tree, '/query/view/@type', tp);
+      tree := XMLUpdate (tree, '/query/view/@type', tp, '/query/view/@limit', '40', '/query/view/@offset', '0');
       qr := fct_query (xpath_eval ('//query', tree, 1));
       qr2 := fct_xml_wrap (tree, qr);
       sqls := '00000';

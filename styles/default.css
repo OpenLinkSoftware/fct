@@ -19,7 +19,7 @@ span.value { font-weight: bold }
 #res { float: left; clear: left; margin: 5px 0px 0px 0px; width: 800px;}
 #res h3 { margin-top: 0; margin-left: 5px;}
 #new_srch label.left_txt { margin-right: 10px;}
-table.result { width: 100%; margin: 3px;}
+table.result { clear:left; width: 100%; margin: 3px;}
 table.result td { max-width: 350px; overflow: hidden;}
 
 #opl_logo { border: 0; width: 120px; float: left;}
@@ -99,3 +99,11 @@ div.error_msg div.body {}
 div.error_msg div.nav { margin-top: 10px;}
 div.error_msg div.diag { font-size: 8pt }
 div.error_msg div.diag h3 {}
+
+div.facet { 
+    	float:left; 
+	height: 20em;  
+	width: 400px; 
+        overflow-y: scroll; 
+        overflow-x: hidden; 
+	}
