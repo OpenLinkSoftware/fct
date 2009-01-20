@@ -271,7 +271,7 @@ fct_xml_wrap (in tree any, in txt any)
   n_cols := fct_n_cols(tree);
 
   if (n_cols = 2)
-    http ('select xmlelement ("result",
+    http ('select xmlelement ("result", xmlattributes ('''' as "type"),
                               xmlagg (xmlelement ("row",
                                                   xmlelement ("column",
                                                               xmlattributes (fct_lang ("c1") as "xml:lang",
@@ -285,7 +285,7 @@ fct_xml_wrap (in tree any, in txt any)
              from (sparql define output:valmode "LONG" ', ntxt);
 
   if (n_cols = 1)
-    http ('select xmlelement ("result",
+    http ('select xmlelement ("result", xmlattributes ('''' as "type"),
     			xmlagg (xmlelement ("row",
 				xmlelement ("column",
 						xmlattributes (fct_lang ("c1") as "xml:lang",
@@ -648,46 +648,67 @@ fct_test (in str varchar, in timeout int := 0)
 create procedure
 fct_exec (in tree any, in timeout int)
 {
-  declare start_time int;
-  declare sqls, msg, qr, qr2, act varchar;
-  declare md, res any;
+  declare start_time, view3, inx int;
+  declare sqls, msg, qr, qr2, act, query varchar;
+  declare md, res, results, more any;
+  declare tmp any;
 
   set result_timeout = timeout;
 
   -- db_activity ();
+  results := vector (null, null, null);
+  more := vector ();
+  if (xpath_eval ('//query[@view3="yes"]//view[@type="text"]', tree) is not null)
+    {
+      more := vector ('properties', 'classes');
+    }
 
   sqls := '00000';
-
   qr := fct_query (xpath_eval ('//query', tree, 1));
-
+  query := qr;
 --  dbg_obj_print (qr);
-
   qr2 := fct_xml_wrap (tree, qr);
-
   start_time := msec_time ();
-
   dbg_printf('query: %s', qr2);
-
   exec (qr2, sqls, msg, vector (), 0, md, res);
-  act := db_activity ();
-
 
   if (sqls <> '00000' and sqls <> 'S1TAT')
     signal (sqls, msg);
+  if (not isarray (res) or 0 = length (res) or not isarray (res[0]) or 0 = length (res[0]))
+    results[0] := xtree_doc ('<result/>');
+  else
+    results[0] := res[0][0];
+
+  inx := 1;
+  foreach (varchar tp in more) do
+    {
+      tree := XMLUpdate (tree, '/query/view/@type', tp);
+      qr := fct_query (xpath_eval ('//query', tree, 1));
+      qr2 := fct_xml_wrap (tree, qr);
+      sqls := '00000';
+      exec (qr2, sqls, msg, vector (), 0, md, res);
+      if (sqls <> '00000' and sqls <> 'S1TAT')
+	signal (sqls, msg);
+      if (isarray (res) and length (res) and isarray (res[0]) and length (res[0]))
+	{
+	  tmp := res[0][0];
+	  tmp := XMLUpdate (tmp, '/result/@type', tp);
+	  results[inx] := tmp;
+	}
+      inx := inx + 1;
+    }
+
+  act := db_activity ();
 
 -- XXX: UNfinished add TIMEOUT code handling
 
   set result_timeout = 0;
 
-
-  if (not isarray (res) or 0 = length (res) or not isarray (res[0]) or 0 = length (res[0]))
-    res := vector (vector (xtree_doc ('<result/>')));
-
---  dbg_obj_print (res[0][0]);
-
-  return xmlelement ("facets", xmlelement ("sparql", qr), xmlelement ("time", msec_time () - start_time),
+  res := xmlelement ("facets", xmlelement ("sparql", query), xmlelement ("time", msec_time () - start_time),
 		       xmlelement ("complete", case when sqls = 'S1TAT' then 'no' else 'yes' end),
 		       xmlelement ("timeout", timeout),
-		       xmlelement ("db-activity", act), res[0][0]);
+		       xmlelement ("db-activity", act), results[0], results[1], results[2]);
+  --string_to_file ('ret.xml', serialize_to_UTF8_xml (res), -2);
+  return res;
 }
 ;

@@ -222,7 +222,8 @@ fct_query_info (in tree any,
     http ('\n', txt);
 }
 
-vhost_define (lpath=>'/fct',ppath=>'/fct/',vsp_user=>'dba', def_page=>'index.vsp;index.vspx;');
+vhost_remove (lpath=>'/fct');
+vhost_define (lpath=>'/fct',ppath=>'/fct/',vsp_user=>'dba', def_page=>'facet.vsp');
 
 create table fct_state (fct_sid int primary key, fct_state xmltype);
 alter index fct_state on fct_state partition (fct_sid int);
@@ -338,7 +339,7 @@ fct_nav (in tree any,
 
   http ('</ul>\n<ul class="n2">', txt);
   http (sprintf ('<li><a href="/fct/facet.vsp?cmd=set_inf&sid=%d">Options</a></li>', connection_get ('sid')), txt);
-  http ('<li><a href=/fct/facet.vsp?qq=ww">New Search</a></li>', txt);
+  http (sprintf ('<li><a href="/fct/facet.vsp?sid=%d">New Search</a></li>', connection_get ('sid')), txt);
   http ('</ul>', txt);
   http ('</div> <!-- #fct_nav -->', txt);
 }
@@ -556,8 +557,21 @@ create procedure fct_set_class (in tree any, in sid int, in iri varchar)
 create procedure fct_new ()
 {
   declare sid int;
-  sid := sequence_next ('fct_seq');
-  insert into fct_state (fct_sid, fct_state) values (sid, '<query inference="" same-as="" s-term="" c-term=""/>');
+  sid := http_param ('sid');
+  if (sid = 0)
+    {
+      no_ses:
+      sid := sequence_next ('fct_seq');
+      insert into fct_state (fct_sid, fct_state) values (sid, '<query inference="" same-as="" view3="" s-term="" c-term=""/>');
+    }
+  else
+    {
+      declare tree any;
+      whenever not found goto no_ses;
+      select fct_state into tree from fct_state where fct_sid = sid;
+      tree := XMLUpdate (tree, '/query/*', null);
+      update fct_state set fct_state = tree where fct_sid = sid;
+    }
   ?>
   <form method="post"
         action="/fct/facet.vsp?cmd=text&sid=<?= sid ?>" >
@@ -585,21 +599,24 @@ create procedure fct_new ()
 create procedure
 fct_set_inf (in tree any, in sid int)
 {
-  declare inf, sas, tlogy, s_term, c_term varchar;
+  declare inf, sas, view3, tlogy, s_term, c_term varchar;
   inf := http_param ('inference');
   sas := http_param ('same-as');
+  if (sas = 0) sas := '';
+  view3 := http_param ('view3');
+  if (view3 = 0) view3 := '';
   tlogy := http_param ('tlogy');
 
 
-  if (0 = sas or 0 = inf or
-  	0 = tlogy)
+  if (0 = sas or 0 = inf or 0 = tlogy)
     {
-      declare selected_inf, selected_sas, sel_c_term, sel_s_term  varchar;
+      declare selected_inf, selected_sas, selected_view3, sel_c_term, sel_s_term  varchar;
 
      again:
 
       selected_inf := cast (xpath_eval ('/query/@inference', tree) as varchar);
       selected_sas := cast (xpath_eval ('/query/@same-as',   tree) as varchar);
+      selected_view3 := cast (xpath_eval ('/query/@view3',   tree) as varchar);
       sel_c_term   := cast (xpath_eval ('/query/@c-term',    tree) as varchar);
       sel_s_term   := cast (xpath_eval ('/query/@s-term',    tree) as varchar);
 
@@ -609,8 +626,16 @@ fct_set_inf (in tree any, in sid int)
              <form action="/fct/facet.vsp?cmd=set_inf&sid=<?= sid ?>" method=post>
 	       <div class="opt_sect">
 <h3>Inference</h3>
-Inference: <input type=text name="inference" value="<?=selected_inf ?>"> <br>
-Same As: <input type=text name="same-as" value="<?=selected_sas ?>"> <br>
+Inference:
+	<select name="inference">
+		<option value="">none</option>
+		<?vsp for select RS_NAME from SYS_RDF_SCHEMA do { ?>
+		  <option value="<?V RS_NAME ?>" <?V case when selected_inf = RS_NAME then 'selected' else '' end ?>><?V RS_NAME ?></option>
+		<?vsp } ?>
+	</select>
+<br>
+<input type=checkbox name="same-as" value="yes" id="same-as" <?= case when selected_sas = 'yes' then 'checked' end  ?>> <label for="same-as">Same As</label><br>
+<input type="checkbox" name="view3" value="yes" id="view3" <?= case when selected_view3 = 'yes' then 'checked' end  ?>> <label for="view3">Show Values, Types, Properties simultaneously</label><br>
 	         <h3>User Interface</h3>
 	         <label class="left_txt" for="tlogy">Terminology</label>
                  <select name="tlogy">
@@ -641,9 +666,10 @@ Same As: <input type=text name="same-as" value="<?=selected_sas ?>"> <br>
       c_term := case when 'eav' = tlogy then 'type' else 'class' end;
       s_term := case when 'eav' = tlogy then 'e' else 's' end;
 
-      tree := xmlupdate (tree,
+      tree := XMLUpdate (tree,
       	         '/query/@inference', inf,
 		         '/query/@same-as',   sas,
+		         '/query/@view3',     view3,
 			 '/query/@s-term',    s_term,
 			 '/query/@c-term',    c_term);
 

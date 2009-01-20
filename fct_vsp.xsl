@@ -67,51 +67,90 @@
     <div id="user_map" style="position:relative; width:600px; height:400px;"></div>
     </xsl:when>
     <xsl:otherwise>
+
+	<xsl:for-each select="result[@type = '']">
+	    <xsl:call-template name="render-result">
+		<xsl:with-param name="view-type"><xsl:value-of select="$type"/></xsl:with-param>
+	    </xsl:call-template>
+	</xsl:for-each>
+
+	<xsl:for-each select="result[@type != '']">
+	    <xsl:call-template name="render-result">
+		<xsl:with-param name="view-type"><xsl:value-of select="@type"/></xsl:with-param>
+	    </xsl:call-template>
+	</xsl:for-each>
+
+	<xsl:if test="20 = count (/facets/result[@type='']/row)">
+	    <div id="pager">
+		<a>
+		    <xsl:attribute name="class">pager</xsl:attribute>
+		    <xsl:attribute name="href">/fct/facet.vsp?cmd=next&amp;sid=<xsl:value-of select="$sid"/>
+		    </xsl:attribute>&#10140;Next page
+		</a>
+	    </div> <!-- #pager -->
+	</xsl:if>
+    </xsl:otherwise>
+</xsl:choose>
+<div id="result_nfo">
+  <xsl:choose>
+    <xsl:when test="/facets/complete = 'yes'">Complete results in </xsl:when>
+    <xsl:otherwise>
+      Partial results
+      <a href="/fct/facet.vsp?cmd=refresh&amp;sid={$sid}&amp;timeout=$timeout">Retry with <xsl:value-of select="($timeout div 1000)"/>seconds timeout</a>
+    </xsl:otherwise>
+  </xsl:choose>
+  <xsl:value-of select="/facets/time"/> msec. Resource utilization:
+  <xsl:value-of select="/facets/db-activity"/>
+</div> <!-- #result_nfo -->
+</div> <!-- #res -->
+</xsl:template>
+
+<xsl:template name="render-result">
 <table class="result">
   <thead>
     <xsl:choose>
-      <xsl:when test="$type = 'properties'">
-	<div class="dbg"><xsl:value-of select="$type"/></div>
+      <xsl:when test="$view-type = 'properties'">
+	<div class="dbg"><xsl:value-of select="$view-type"/></div>
 	<tr><th>Property</th><th></th><th>Count</th></tr>
       </xsl:when>
-      <xsl:when test="$type = 'list-count'">
-	<div class="dbg"><xsl:value-of select="$type"/></div>
+      <xsl:when test="$view-type = 'list-count'">
+	<div class="dbg"><xsl:value-of select="$view-type"/></div>
 	<tr><th>Entity</th><th>Title</th><th>Count</th></tr>
       </xsl:when>
-      <xsl:when test="$type = 'text-properties'">
-	<div class="dbg"><xsl:value-of select="$type"/></div>
+      <xsl:when test="$view-type = 'text-properties'">
+	<div class="dbg"><xsl:value-of select="$view-type"/></div>
 	<tr><th>Property</th><th>Label</th><th>Count</th></tr>
       </xsl:when>
-      <xsl:when test="$type = 'properties-in'">
-	<div class="dbg"><xsl:value-of select="$type"/></div>
+      <xsl:when test="$view-type = 'properties-in'">
+	<div class="dbg"><xsl:value-of select="$view-type"/></div>
 	<tr><th>Property</th><th>Label</th><th>Count</th></tr>
       </xsl:when>
-      <xsl:when test="$type = 'list'">
-	<div class="dbg"><xsl:value-of select="$type"/></div>
+      <xsl:when test="$view-type = 'list'">
+	<div class="dbg"><xsl:value-of select="$view-type"/></div>
 	<tr><th></th><th></th><th></th></tr>
       </xsl:when>
-      <xsl:when test="$type = 'classes'">
-	<div class="dbg"><xsl:value-of select="$type"/></div>
+      <xsl:when test="$view-type = 'classes'">
+	<div class="dbg"><xsl:value-of select="$view-type"/></div>
 	<tr><th>Type</th><th>Label</th><th>Count</th></tr>
       </xsl:when>
-      <xsl:when test="$type = 'text'">
-	<div class="dbg"><xsl:value-of select="$type"/></div>
+      <xsl:when test="$view-type = 'text'">
+	<div class="dbg"><xsl:value-of select="$view-type"/></div>
 	<tr><th>Entity</th><th>Title</th><th>Text excerpt</th></tr>
       </xsl:when>
     </xsl:choose>
   </thead>
   <tbody>
-    <xsl:for-each select="result/row">
+    <xsl:for-each select="row">
       <tr>
 	<xsl:choose>
-	  <xsl:when test="$type = 'properties' or
-			  $type = 'classes' or
-			  $type = 'properties-in' or
-			  $type = 'text-properties' or
-			  $type = 'list' or
-			  $type = 'list-count'">
+	  <xsl:when test="$view-type = 'properties' or
+			  $view-type = 'classes' or
+			  $view-type = 'properties-in' or
+			  $view-type = 'text-properties' or
+			  $view-type = 'list' or
+			  $view-type = 'list-count'">
 	    <td>
-	      <xsl:if test="'url' = column[1]/@datatype">
+	      <xsl:if test="'url' = column[1]/@dataview-type">
 		<a>
 		  <xsl:attribute name="href">
 		    /about/?url=<xsl:value-of select="urlify (column[1])"/>&amp;sid=<xsl:value-of select="$sid"/>
@@ -174,30 +213,6 @@
     </xsl:for-each>
   </tbody>
 </table>
-
-<xsl:if test="20 = count (/facets/result/row)">
-  <div id="pager">
-    <a>
-      <xsl:attribute name="class">pager</xsl:attribute>
-      <xsl:attribute name="href">/fct/facet.vsp?cmd=next&amp;sid=<xsl:value-of select="$sid"/>
-      </xsl:attribute>&#10140;Next page
-    </a>
-  </div> <!-- #pager -->
-</xsl:if>
-</xsl:otherwise>
-</xsl:choose>
-<div id="result_nfo">
-  <xsl:choose>
-    <xsl:when test="/facets/complete = 'yes'">Complete results in </xsl:when>
-    <xsl:otherwise>
-      Partial results
-      <a href="/fct/facet.vsp?cmd=refresh&amp;sid={$sid}&amp;timeout=$timeout">Retry with <xsl:value-of select="($timeout div 1000)"/>seconds timeout</a>
-    </xsl:otherwise>
-  </xsl:choose>
-  <xsl:value-of select="/facets/time"/> msec. Resource utilization:
-  <xsl:value-of select="/facets/db-activity"/>
-</div> <!-- #result_nfo -->
-</div> <!-- #res -->
 </xsl:template>
 
 <xsl:template match="@* | node()">
