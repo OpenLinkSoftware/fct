@@ -660,7 +660,7 @@ fct_exec (in tree any, in timeout int)
   more := vector ();
   if (xpath_eval ('//query[@view3="yes"]//view[@type="text"]', tree) is not null)
     {
-      more := vector ('properties', 'classes');
+      more := vector ('classes', 'properties');
     }
 
   sqls := '00000';

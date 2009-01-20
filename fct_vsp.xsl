@@ -68,15 +68,18 @@
     </xsl:when>
     <xsl:otherwise>
 
+
+	<xsl:for-each select="result[@type != '']">
+	    <div class="facet">
+		<xsl:call-template name="render-result">
+		    <xsl:with-param name="view-type"><xsl:value-of select="@type"/></xsl:with-param>
+		</xsl:call-template>
+	    </div>
+	</xsl:for-each>
+
 	<xsl:for-each select="result[@type = '']">
 	    <xsl:call-template name="render-result">
 		<xsl:with-param name="view-type"><xsl:value-of select="$type"/></xsl:with-param>
-	    </xsl:call-template>
-	</xsl:for-each>
-
-	<xsl:for-each select="result[@type != '']">
-	    <xsl:call-template name="render-result">
-		<xsl:with-param name="view-type"><xsl:value-of select="@type"/></xsl:with-param>
 	    </xsl:call-template>
 	</xsl:for-each>
 
