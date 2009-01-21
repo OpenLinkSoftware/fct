@@ -392,7 +392,10 @@ fct_view (in tree any, in this_s int, in txt any, in pre any, in post any)
 
   if ('properties' = mode)
     {
-      http (sprintf ('select ?s%dp as ?c1 count (*) as ?c2 ', this_s), pre);
+      if (length (fct_inf_clause (tree)) > 0)
+	http (sprintf ('select ?s%dp as ?c1 count (distinct (?s%d)) as ?c2 ', this_s, this_s), pre);
+      else
+	http (sprintf ('select ?s%dp as ?c1 count (*) as ?c2 ', this_s), pre);
       http (sprintf (' ?s%d ?s%dp ?s%do .', this_s, this_s, this_s), txt);
       http (sprintf (' group by ?s%dp order by desc 2', this_s), post);
     }
@@ -412,7 +415,10 @@ fct_view (in tree any, in this_s int, in txt any, in pre any, in post any)
 
   if ('classes' = mode)
     {
-      http (sprintf ('select ?s%dc as ?c1 count (*) as ?c2 ', this_s), pre);
+      if (length (fct_inf_clause (tree)) > 0)
+	http (sprintf ('select ?s%dc as ?c1 count (distinct (?s%d)) as ?c2 ', this_s, this_s), pre);
+      else
+	http (sprintf ('select ?s%dc as ?c1 count (*) as ?c2 ', this_s), pre);
       http (sprintf (' ?s%d a ?s%dc .', this_s, this_s), txt);
       http (sprintf (' group by ?s%dc order by desc 2', this_s), post);
     }

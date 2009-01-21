@@ -107,3 +107,6 @@ div.facet {
         overflow-y: scroll; 
         overflow-x: hidden; 
 	}
+
+div#sparql_link { margin-top: 10px; float: right;}
+div#sparql_link a { background-color: #ddd; padding: 2px; border: 1px solid #335; padding: 3px 5px 3px 5px; width: auto; text-decoration: none; text-align: center;}

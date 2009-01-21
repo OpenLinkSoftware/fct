@@ -73,6 +73,12 @@
 	    <div class="facet">
 		<xsl:call-template name="render-result">
 		    <xsl:with-param name="view-type"><xsl:value-of select="@type"/></xsl:with-param>
+		    <xsl:with-param name="command">
+			<xsl:choose>
+			    <xsl:when test="@type = 'classes'">set_class</xsl:when>
+			    <xsl:otherwise><xsl:value-of select="$cmd"/></xsl:otherwise>
+			</xsl:choose>
+		    </xsl:with-param>
 		</xsl:call-template>
 	    </div>
 	</xsl:for-each>
@@ -80,7 +86,11 @@
 	<xsl:for-each select="result[@type = '']">
 	    <xsl:call-template name="render-result">
 		<xsl:with-param name="view-type"><xsl:value-of select="$type"/></xsl:with-param>
+		<xsl:with-param name="command"><xsl:value-of select="$cmd"/></xsl:with-param>
 	    </xsl:call-template>
+	    <div id="sparql_link">
+		<a class="sparql_link" href="sparql.vsp?q={urlify (/facets/sparql)}">SPARQL</a>
+	    </div>
 	</xsl:for-each>
 
 	<xsl:if test="20 = count (/facets/result[@type='']/row)">
@@ -164,7 +174,7 @@
 	      </xsl:if>
 	      <a>
 		<xsl:attribute name="href">
-		  /fct/facet.vsp?cmd=<xsl:value-of select="$cmd"/>&amp;iri=<xsl:value-of select="urlify (column[1])"/>&amp;lang=<xsl:value-of select="column[1]/@xml:lang"/>&amp;datatype=<xsl:value-of select="urlify (column[1]/@datatype)"/>&amp;sid=<xsl:value-of select="$sid"/>
+		  /fct/facet.vsp?cmd=<xsl:value-of select="$command"/>&amp;iri=<xsl:value-of select="urlify (column[1])"/>&amp;lang=<xsl:value-of select="column[1]/@xml:lang"/>&amp;datatype=<xsl:value-of select="urlify (column[1]/@datatype)"/>&amp;sid=<xsl:value-of select="$sid"/>
 		</xsl:attribute>
 		<xsl:attribute name="title">
 		  <xsl:value-of select="column[1]"/>
