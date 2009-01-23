@@ -2,7 +2,7 @@
 cl_exec ('registry_set (''fct_max_timeout'',''10000'')');
 
 DB.DBA.VHOST_REMOVE (lpath=>'/fct/service');
-DB.DBA.VHOST_DEFINE (lpath=>'/fct/service', ppath=>'/SOAP/Http/FCT_SVC', soap_user=>'dba');
+DB.DBA.VHOST_DEFINE (lpath=>'/fct/service', ppath=>'/SOAP/Http/fct_svc', soap_user=>'dba');
 
 create procedure fct_svc_log (in qr varchar, in lines varchar)
 {
