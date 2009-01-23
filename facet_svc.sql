@@ -59,7 +59,14 @@ create procedure fct_svc_exec (in tree any, in timeout int, in accept varchar, i
       declare ses, tmp any;
       ses := string_output ();
       DB.DBA.SPARQL_RESULTS_WRITE (ses, md, res, accept, 1);
-      ret := ses;
+      tmp := string_output_string (ses);
+      if (accept like '%/json' or accept like '%+json')
+      	{
+      	  tmp := rtrim (tmp, '}');
+      	  tmp := tmp || sprintf (', "facets": { "sparql":"%s", "complete":"%s", "time":"%d",  "timeout":"%d", "db-activity":"%s" } }',
+      	    replace (qr,'"', '\\"', case when sqls = 'S1TAT' then 'no' else 'yes' end, msec_time () - start_time, timeout, act);
+      	}
+      ret := tmp;
     }
   return ret;
 }
