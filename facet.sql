@@ -715,6 +715,7 @@ fct_exec (in tree any, in timeout int)
 		       xmlelement ("timeout", timeout),
 		       xmlelement ("db-activity", act), results[0], results[1], results[2]);
   --string_to_file ('ret.xml', serialize_to_UTF8_xml (res), -2);
+  dbg_obj_print (res);
   return res;
 }
 ;

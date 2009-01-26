@@ -100,12 +100,19 @@ div.error_msg div.nav { margin-top: 10px;}
 div.error_msg div.diag { font-size: 8pt }
 div.error_msg div.diag h3 {}
 
+div.facet_ctr {
+  float: left;
+}
+
+h4.facet_hd { margin: 0; }
 div.facet { 
     	float:left; 
 	height: 20em;  
-	width: 400px; 
-        overflow-y: scroll; 
+	width: 394px; 
+        overflow-y: auto; 
         overflow-x: hidden; 
+	border: 1px solid #334;
+	margin: 2px;
 	}
 
 div#sparql_link { margin-top: 10px; float: right;}

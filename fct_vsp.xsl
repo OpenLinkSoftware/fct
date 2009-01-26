@@ -5,7 +5,7 @@
 <xsl:template match = "facets">
 
 <div id="res">
-<xsl:choose>
+<!--xsl:choose>
   <xsl:when test="$type = 'text'"><h3>Text match results</h3></xsl:when>
   <xsl:when test="$type = 'text-properties'"><h3>List of Properties With Matching Text</h3></xsl:when>
   <xsl:when test="$type = 'classes'"><h3>Types</h3></xsl:when>
@@ -14,7 +14,7 @@
   <xsl:when test="$type = 'list'"><h3>List</h3></xsl:when>
   <xsl:when test="$type = 'list-count'"><h3>Distinct values</h3></xsl:when>
   <xsl:when test="$type = 'geo'"><h3>Location</h3></xsl:when>
-</xsl:choose>
+</xsl:choose-->
 <!--xsl:message terminate="no"><xsl:value-of select="$type"/></xsl:message-->
 <xsl:choose>
     <xsl:when test="$type = 'geo'">
@@ -64,45 +64,77 @@
 			map.loadApi(providerType, callback);
 		}
 	]]></script>
-    <div id="user_map" style="position:relative; width:600px; height:400px;"></div>
+      <div id="user_map" style="position:relative; width:600px; height:400px;"></div>
     </xsl:when>
     <xsl:otherwise>
-
-
-	<xsl:for-each select="result[@type != '']">
-	    <div class="facet">
+      
+      <xsl:choose>
+	<xsl:when test="count (/facets/result) &gt; 1">
+	  <xsl:for-each select="result[@type = 'classes' or @type = 'properties']">
+	    <div class="facet_ctr">
+	      <xsl:choose>
+		<xsl:when test="@type='properties'">
+		  <h4 class="facet_hd">Properties</h4>
+		</xsl:when>
+		<xsl:otherwise>
+		  <h4 class="facet_hd">Types</h4>
+		</xsl:otherwise>
+	      </xsl:choose>
+	      <div class="facet">
 		<xsl:call-template name="render-result">
-		    <xsl:with-param name="view-type"><xsl:value-of select="@type"/></xsl:with-param>
-		    <xsl:with-param name="command">
-			<xsl:choose>
-			    <xsl:when test="@type = 'classes'">set_class</xsl:when>
-			    <xsl:when test="@type = 'properties'">open_property</xsl:when>
-			    <xsl:otherwise><xsl:value-of select="$cmd"/></xsl:otherwise>
-			</xsl:choose>
-		    </xsl:with-param>
+		  <xsl:with-param name="view-type"><xsl:value-of select="@type"/></xsl:with-param>
+		  <xsl:with-param name="command">
+		    <xsl:choose>
+		      <xsl:when test="@type = 'classes'">set_class</xsl:when>
+		      <xsl:when test="@type = 'properties'">open_property</xsl:when>
+		      <xsl:otherwise><xsl:value-of select="$cmd"/></xsl:otherwise>
+		    </xsl:choose>
+		  </xsl:with-param>
 		</xsl:call-template>
-	    </div>
-	</xsl:for-each>
-
-	<xsl:for-each select="result[@type = '']">
+	      </div>
+	    </div> <!-- facet_ctr -->
+	  </xsl:for-each>
+	  <xsl:for-each select="/facets/result [@type != 'classes' and @type != 'properties']">
 	    <xsl:call-template name="render-result">
-		<xsl:with-param name="view-type"><xsl:value-of select="$type"/></xsl:with-param>
-		<xsl:with-param name="command"><xsl:value-of select="$cmd"/></xsl:with-param>
+	      <xsl:with-param name="view-type"><xsl:value-of select="$type"/></xsl:with-param>
+	      <xsl:with-param name="command">
+		<xsl:choose>
+		  <xsl:when test="@type = 'classes'">set_class</xsl:when>
+		  <xsl:when test="@type = 'properties'">open_property</xsl:when>
+		  <xsl:otherwise><xsl:value-of select="$cmd"/></xsl:otherwise>
+		</xsl:choose>
+	      </xsl:with-param>
 	    </xsl:call-template>
-	    <div id="sparql_link">
-		<a class="sparql_link" href="sparql.vsp?q={urlify (/facets/sparql)}">SPARQL</a>
-	    </div>
-	</xsl:for-each>
+	  </xsl:for-each>
+	</xsl:when>
+	<xsl:otherwise>
+	  <xsl:for-each select="/facets/result">
+	    <xsl:call-template name="render-result">
+	      <xsl:with-param name="view-type"><xsl:value-of select="$type"/></xsl:with-param>
+	      <xsl:with-param name="command">
+		<xsl:choose>
+		  <xsl:when test="@type = 'classes'">set_class</xsl:when>
+		  <xsl:when test="@type = 'properties'">open_property</xsl:when>
+		  <xsl:otherwise><xsl:value-of select="$cmd"/></xsl:otherwise>
+		</xsl:choose>
+	      </xsl:with-param>
+	    </xsl:call-template>
+	  </xsl:for-each>
+	  <div id="sparql_link">
+	    <a class="sparql_link" href="sparql.vsp?q={urlify (/facets/sparql)}">SPARQL</a>
+	  </div>
+	</xsl:otherwise>
+      </xsl:choose>
 
-	<xsl:if test="20 = count (/facets/result[@type='']/row)">
-	    <div id="pager">
-		<a>
-		    <xsl:attribute name="class">pager</xsl:attribute>
-		    <xsl:attribute name="href">/fct/facet.vsp?cmd=next&amp;sid=<xsl:value-of select="$sid"/>
-		    </xsl:attribute>&#10140;Next page
-		</a>
-	    </div> <!-- #pager -->
-	</xsl:if>
+      <xsl:if test="20 = count (/facets/result[@type='']/row)">
+	<div id="pager">
+	  <a>
+	    <xsl:attribute name="class">pager</xsl:attribute>
+	    <xsl:attribute name="href">/fct/facet.vsp?cmd=next&amp;sid=<xsl:value-of select="$sid"/>
+	    </xsl:attribute>&#10140;Next page
+	  </a>
+	</div> <!-- #pager -->
+      </xsl:if>
     </xsl:otherwise>
 </xsl:choose>
 <div id="result_nfo">
