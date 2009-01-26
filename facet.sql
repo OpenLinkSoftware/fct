@@ -271,7 +271,7 @@ fct_xml_wrap (in tree any, in txt any)
   n_cols := fct_n_cols(tree);
 
   if (n_cols = 2)
-    http ('select xmlelement ("result", xmlattributes ('''' as "type"),
+    http (sprintf ('select xmlelement ("result", xmlattributes (''%s'' as "type"),
                               xmlagg (xmlelement ("row",
                                                   xmlelement ("column",
                                                               xmlattributes (fct_lang ("c1") as "xml:lang",
@@ -282,7 +282,7 @@ fct_xml_wrap (in tree any, in txt any)
                                                               fct_label ("c1", 0, ''facets'' )),
                                                   xmlelement ("column",
                                                               fct_bold_tags("c2")))))
-             from (sparql define output:valmode "LONG" ', ntxt);
+             from (sparql define output:valmode "LONG" ', view_type), ntxt);
 
   if (n_cols = 1)
     http ('select xmlelement ("result", xmlattributes ('''' as "type"),

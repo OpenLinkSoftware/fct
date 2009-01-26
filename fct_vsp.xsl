@@ -110,7 +110,7 @@
     <xsl:when test="/facets/complete = 'yes'">Complete results in </xsl:when>
     <xsl:otherwise>
       Partial results
-      <a href="/fct/facet.vsp?cmd=refresh&amp;sid={$sid}&amp;timeout=$timeout">Retry with <xsl:value-of select="($timeout div 1000)"/>seconds timeout</a>
+      <a href="/fct/facet.vsp?cmd=refresh&amp;sid={$sid}&amp;timeout={$timeout}">Retry with <xsl:value-of select="($timeout div 1000)"/> seconds timeout</a>
     </xsl:otherwise>
   </xsl:choose>
   <xsl:value-of select="/facets/time"/> msec. Resource utilization:
