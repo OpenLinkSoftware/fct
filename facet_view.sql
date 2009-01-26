@@ -208,7 +208,7 @@ fct_query_info (in tree any,
     }
   if ('value' = n)
     {
-      http (sprintf (' %s %s %V . <a href="/fct/facet.vsp?sid=%d&cmd=drop_cond&cno=%d">Drop</a>',
+      http (sprintf (' %s %s %s . <a href="/fct/facet.vsp?sid=%d&cmd=drop_cond&cno=%d">Drop</a>',
                      fct_var_tag (this_s, ctx),
 		     cast (xpath_eval ('./@op', tree) as varchar),
 		     fct_literal (tree),

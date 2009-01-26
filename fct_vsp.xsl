@@ -76,6 +76,7 @@
 		    <xsl:with-param name="command">
 			<xsl:choose>
 			    <xsl:when test="@type = 'classes'">set_class</xsl:when>
+			    <xsl:when test="@type = 'properties'">open_property</xsl:when>
 			    <xsl:otherwise><xsl:value-of select="$cmd"/></xsl:otherwise>
 			</xsl:choose>
 		    </xsl:with-param>
