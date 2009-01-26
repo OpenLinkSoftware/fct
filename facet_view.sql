@@ -614,6 +614,9 @@ create procedure fct_new ()
            for="new_search_txt">Search for</label><input id="new_search_txt" size="60" type=text name=search_for>
   <input type=submit  value="Go">
   </div>
+  <div class="expln">
+    This is a simple demo application for demonstrating the Virtuoso Facets Web Service. For more information on how to use the service to produce your own faceted browser on RDF data, please see the Virtuoso Facets Web Service <a href="http://virtuoso.openlinksw.com/wiki/main/Main/VirtuosoFacetsWebService">documentation</a>.
+  </div>
   </form>
   <?vsp
 }
