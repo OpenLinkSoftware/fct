@@ -106,6 +106,9 @@
 	      </xsl:with-param>
 	    </xsl:call-template>
 	  </xsl:for-each>
+	  <div id="sparql_link">
+	    <a class="sparql_link" href="sparql.vsp?q={urlify (/facets/sparql)}">SPARQL</a>
+	  </div>
 	</xsl:when>
 	<xsl:otherwise>
 	  <xsl:for-each select="/facets/result">
@@ -120,9 +123,6 @@
 	      </xsl:with-param>
 	    </xsl:call-template>
 	  </xsl:for-each>
-	  <div id="sparql_link">
-	    <a class="sparql_link" href="sparql.vsp?q={urlify (/facets/sparql)}">SPARQL</a>
-	  </div>
 	</xsl:otherwise>
       </xsl:choose>
 
