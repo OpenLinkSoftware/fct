@@ -208,7 +208,7 @@ fct_query_info (in tree any,
     }
   if ('value' = n)
     {
-      http (sprintf (' %s %s %s . <a href="/fct/facet.vsp?sid=%d&cmd=drop_cond&cno=%d">Drop</a>',
+      http (sprintf (' %s %s %V . <a href="/fct/facet.vsp?sid=%d&cmd=drop_cond&cno=%d">Drop</a>',
                      fct_var_tag (this_s, ctx),
 		     cast (xpath_eval ('./@op', tree) as varchar),
 		     fct_literal (tree),
@@ -505,12 +505,12 @@ fct_set_view (in tree any, in sid int, in tp varchar, in lim int, in offs int, i
 
   tree := xslt ('file://fct/fct_set_view.xsl',
                 tree,
-		vector ('pos', pos, 
-		        'op', 
-			'view', 
-			'type', tp, 
-			'limit', lim, 
-			'offset', offs, 
+		vector ('pos', pos,
+		        'op',
+			'view',
+			'type', tp,
+			'limit', lim,
+			'offset', offs,
 			'location-prop', loc_prop));
 
   update fct_state set fct_state = tree where fct_sid = sid;
@@ -538,15 +538,15 @@ fct_open_property  (in tree any, in sid int, in iri varchar, in name varchar)
   pos := fct_view_pos (tree);
   tree := xslt ('file://fct/fct_set_view.xsl',
                 tree,
-		vector ('pos', pos, 
-		        'op', 'prop', 
-			'name', name, 
-			'iri', iri, 
-			'type', 'list', 
-			'limit', 20, 
+		vector ('pos', pos,
+		        'op', 'prop',
+			'name', name,
+			'iri', iri,
+			'type', 'list',
+			'limit', 20,
 			'offset', 0));
-  update fct_state 
-    set fct_state = tree 
+  update fct_state
+    set fct_state = tree
     where fct_sid = sid;
 
   commit work;
@@ -554,9 +554,9 @@ fct_open_property  (in tree any, in sid int, in iri varchar, in name varchar)
 }
 
 
-create procedure 
-fct_set_class (in tree any, 
-	       in sid int, 
+create procedure
+fct_set_class (in tree any,
+	       in sid int,
 	       in iri varchar)
 {
   declare pos int;
@@ -564,15 +564,15 @@ fct_set_class (in tree any,
   pos := fct_view_pos (tree);
   tree := xslt ('file://fct/fct_set_view.xsl',
                 tree,
-                vector ('pos', pos, 
-		        'op', 'class', 
-			'iri', iri, 
-			'type', 'list', 
-			'limit', 20, 
+                vector ('pos', pos,
+		        'op', 'class',
+			'iri', iri,
+			'type', 'list',
+			'limit', 20,
 			'offset', 0));
 
-  update fct_state 
-    set fct_state = tree 
+  update fct_state
+    set fct_state = tree
     where fct_sid = sid;
 
   commit work;
@@ -588,7 +588,7 @@ create procedure fct_new ()
     {
       no_ses:
       sid := sequence_next ('fct_seq');
-      insert into fct_state (fct_sid, fct_state) 
+      insert into fct_state (fct_sid, fct_state)
         values (sid, '<query inference="" same-as="" view3="" s-term="" c-term=""/>');
     }
   else
@@ -597,15 +597,15 @@ create procedure fct_new ()
 
       whenever not found goto no_ses;
 
-      select fct_state 
-        into tree 
-	from fct_state 
+      select fct_state
+        into tree
+	from fct_state
 	where fct_sid = sid;
 
       tree := XMLUpdate (tree, '/query/*', null);
 
-      update fct_state 
-        set fct_state = tree 
+      update fct_state
+        set fct_state = tree
 	where fct_sid = sid;
     }
   ?>
@@ -818,7 +818,7 @@ fct_vsp ()
   declare _to int;
   declare _to_max int;
   declare _to_def int;
-  
+
   cmd := http_param ('cmd');
 
   if (0 = cmd)
