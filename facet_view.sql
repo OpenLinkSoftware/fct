@@ -238,7 +238,9 @@ create table fct_log (
   fl_sqlstate varchar,
   fl_sqlmsg varchar,
   fl_parms varchar,
-  primary key (fl_sid, fl_ts));
+  fl_msec int,
+  primary key (fl_sid, fl_ts))
+  alter index fct_log on fct_log partition (fl_sid int);
 
 sequence_next ('fct_seq');
 
@@ -812,7 +814,7 @@ fct_vsp ()
 {
   declare cmd varchar;
   declare tree any;
-  declare sid int;
+  declare sid, start_time int;
   declare _to int;
   declare _to_max int;
   declare _to_def int;
@@ -860,7 +862,7 @@ fct_vsp ()
   insert into fct_log (fl_sid, fl_cli_ip, fl_where, fl_state, fl_cmd)
          values (sid, http_client_ip(), 'DISPATCH', tree, cmd);
   commit work;
-
+  start_time := msec_time ();
   if ('text' = cmd)
     fct_set_text (tree, sid, http_param ('search_for'));
   else if ('set_focus' = cmd)
@@ -909,8 +911,8 @@ fct_vsp ()
 
   select fct_state into _state from fct_state where fct_sid = http_param ('sid');
 
-  insert into fct_log (fl_sid, fl_cli_ip, fl_where, fl_state, fl_cmd)
-         values (sid, http_client_ip(), 'RETURN', _state, cmd);
+  insert into fct_log (fl_sid, fl_cli_ip, fl_where, fl_state, fl_cmd, fl_msec)
+         values (sid, http_client_ip(), 'RETURN', _state, cmd, msec_time () - start_time);
   commit work;
 
   return;
