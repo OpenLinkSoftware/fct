@@ -295,7 +295,7 @@ fct_xml_wrap (in tree any, in txt any)
 				xmlelement ("column", fct_label ("c1", 0, ''facets'' )))))
 	     from (sparql define output:valmode "LONG"', ntxt);
   if (n_cols = 3)
-    http ('select xmlelement ("result",
+    http ('select xmlelement ("result", xmlattributes ('''' as "type"),
                               xmlagg (xmlelement ("row",
                                                   xmlelement ("column",
                                                               xmlattributes (fct_lang ("c1") as "xml:lang",
@@ -447,8 +447,12 @@ fct_view (in tree any, in this_s int, in txt any, in pre any, in post any)
       declare loc any;
       loc := xpath_eval ('@location-prop', tree);
       if (loc = 'any')
-	loc := '?anyloc';
-      http (sprintf ('select distinct ?s%d as ?c1 ?lat%d as ?c2 ?lng%d as ?c3 ', this_s, this_s, this_s), pre);
+	{
+	  loc := '?anyloc';
+	  http (sprintf ('select ?location as ?c1 ?lat%d as ?c2 ?lng%d as ?c3 ', this_s, this_s, this_s), pre);
+	}
+      else
+        http (sprintf ('select distinct ?s%d as ?c1 ?lat%d as ?c2 ?lng%d as ?c3 ', this_s, this_s, this_s), pre);
       if (length (loc) < 2)
          http (sprintf (' ?s%d geo:lat ?lat%d ; geo:long ?lng%d .', this_s, this_s, this_s), txt);
       else

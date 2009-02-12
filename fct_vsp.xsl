@@ -67,7 +67,7 @@
       <div id="user_map" style="position:relative; width:600px; height:400px;"></div>
     </xsl:when>
     <xsl:otherwise>
-      
+
       <xsl:choose>
 	<xsl:when test="count (/facets/result) &gt; 1">
 	  <xsl:for-each select="result[@type = 'classes' or @type = 'properties']">
@@ -126,7 +126,7 @@
 	</xsl:otherwise>
       </xsl:choose>
 
-      <xsl:if test="20 = count (/facets/result[@type='']/row)">
+      <xsl:if test="20 = count (/facets/result[@type='' or @type='text']/row)">
 	<div id="pager">
 	  <a>
 	    <xsl:attribute name="class">pager</xsl:attribute>

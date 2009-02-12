@@ -25,7 +25,7 @@
 
   if (squery <> '' and squery is not null and sm = 'Execute')
   {
-    rexecute ('b3s', 'b3s_exec (?)', sql_state, err_msg, vector(squery),0, meta, data);
+    exec ('b3s_exec (?)', sql_state, err_msg, vector(squery),0, meta, data);
     res := deserialize (data[0][0]);
   }
   else if (squery = '')
