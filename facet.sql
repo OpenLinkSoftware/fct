@@ -1,4 +1,3 @@
-
 -- Facet web service
 
 create procedure
@@ -58,6 +57,7 @@ fct_short_uri (in x any)
     return sh || ':' || loc;
   return x;
 }
+;
 
 create procedure
 fct_trunc_uri (in s varchar, in maxlen int := 40)
@@ -90,6 +90,7 @@ fct_short_form (in x any, in ltgt int := 0)
     return (fct_trunc_uri(sh));
   else return (case when ltgt then '&lt;' || fct_trunc_uri (x) || '&gt;' else fct_trunc_uri (x) end);
 }
+;
 
 create procedure
 fct_long_uri (in x any)
@@ -105,11 +106,13 @@ fct_long_uri (in x any)
     return sh || loc;
   return x;
 }
+;
 
 cl_exec ('registry_set (''fct_label_iri'', ?)',
          vector (cast (iri_id_num (__i2id ('http://www.openlinksw.com/schemas/virtrdf#label')) as varchar)));
 
-cl_exec ('registry_set (''fct_timeout'',''2000'')');
+cl_exec ('registry_set (''fct_timeout_min'',''2000'')');
+cl_exec ('registry_set (''fct_timeout_max'',''40000'')');
 
 create procedure
 FCT_LABEL (in x any, in g_id iri_id_8, in ctx varchar)
@@ -140,6 +143,7 @@ FCT_LABEL (in x any, in g_id iri_id_8, in ctx varchar)
     }
   return __ro2sq(best_str);
 }
+;
 
 create procedure
 FCT_LABEL_DP (in x any, in g_id iri_id_8, in ctx varchar)
@@ -174,6 +178,7 @@ FCT_LABEL_DP (in x any, in g_id iri_id_8, in ctx varchar)
     return vector (0, 0, vector ('LBL_O_VALUE', vector (rdf_box_ro_id (best_str))));
   return vector (best_str, 1);
 }
+;
 
 create procedure
 LBL_O_VALUE (in id int)
@@ -182,11 +187,11 @@ LBL_O_VALUE (in id int)
   return vector ((select case (isnull (RO_LONG)) when 0 then blob_to_string (RO_LONG) else RO_VAL end
 		   from DB.DBA.RDF_OBJ table option (no cluster) where RO_ID = id), 1);
 }
+;
 
 dpipe_define ('DB.DBA.FCT_LABEL', 'DB.DBA.RDF_QUAD', 'RDF_QUAD_OPGS', 'DB.DBA.FCT_LABEL_DP', 0);
 dpipe_define ('FCT_LABEL', 'DB.DBA.RDF_QUAD', 'RDF_QUAD_OPGS', 'DB.DBA.FCT_LABEL_DP', 0);
 dpipe_define ('LBL_O_VALUE', 'DB.DBA.RDF_OBJ', 'RDF_OBJ', 'DB.DBA.LBL_O_VALUE', 0);
-
 
 ttlp ('
 @prefix foaf: <http://xmlns.com/foaf/0.1/>
@@ -210,6 +215,7 @@ fct_inf_clause (in tree any)
     return '';
   return sprintf (' define input:inference "%s" ', cast (i as varchar));
 }
+;
 
 create procedure
 fct_sas_clause (in tree any)
@@ -220,6 +226,7 @@ fct_sas_clause (in tree any)
     return '';
   return sprintf (' define input:same-as "%s" ', cast (i as varchar));
 }
+;
 
 create procedure
 fct_graph_clause (in tree any)
@@ -230,6 +237,7 @@ fct_graph_clause (in tree any)
     return '';
   return sprintf (' define input:default-graph-uri <%s> ', cast (i as varchar));
 }
+;
 
 create procedure
 fct_post (in tree any, in post any, in lim int, in offs int)
@@ -239,6 +247,7 @@ fct_post (in tree any, in post any, in lim int, in offs int)
   if (offs is not null)
     http (sprintf (' offset %d ', cast (offs as int)), post);
 }
+;
 
 create procedure
 fct_dtp (in x any)
@@ -247,6 +256,7 @@ fct_dtp (in x any)
     return 'url';
   return id_to_iri (rdf_datatype_of_long (x));
 }
+;
 
 create procedure
 fct_lang (in x any)
@@ -257,6 +267,7 @@ fct_lang (in x any)
     return null;
   return (select rl_id from rdf_language where rl_twobyte = rdf_box_lang (x));
 }
+;
 
 create procedure
 fct_xml_wrap (in tree any, in txt any)
@@ -328,6 +339,7 @@ fct_n_cols (in tree any)
   return 2;
   signal ('FCT00', 'Unknown facet view type');
 }
+;
 
 create procedure
 element_split (in val any)
@@ -466,6 +478,7 @@ fct_view (in tree any, in this_s int, in txt any, in pre any, in post any)
   fct_post (tree, post, lim, offs);
 
 }
+;
 
 create procedure
 fct_literal (in tree any)
@@ -487,6 +500,7 @@ fct_literal (in tree any)
     lit := sprintf ('"%s"^^<%s>', cast (tree as varchar), dtp);
   return lit;
 }
+;
 
 -- XXX (ghard) should ensure the literal is correctly quoted in the SPARQL statement
 
@@ -504,6 +518,7 @@ fct_cond (in tree any, in this_s int, in txt any)
 
   http (sprintf (' filter (?s%d %s %s) . ', this_s, op, lit), txt);
 }
+;
 
 create procedure
 fct_text_1 (in tree any,
@@ -523,6 +538,7 @@ fct_text_1 (in tree any,
       fct_text (c[i], this_s, max_s, txt, pre, post);
     }
 }
+;
 
 create procedure
 fct_text (in tree any,
@@ -589,6 +605,7 @@ fct_text (in tree any,
       fct_view (tree, this_s, txt, pre, post);
     }
 }
+;
 
 create procedure
 fct_query (in tree any)
@@ -616,7 +633,7 @@ fct_query (in tree any)
 
   return string_output_string (pre);
 }
-
+;
 
 create procedure
 fct_test (in str varchar, in timeout int := 0)
@@ -653,7 +670,13 @@ fct_test (in str varchar, in timeout int := 0)
 
   return xslt ('file://facet_text.xsl', reply);
 }
+;
 
+create procedure _min (in n1 int, in n2 int) {
+  if (n1 < n2) return n1;
+  else return n2;
+}
+;
 
 create procedure
 fct_exec (in tree any, in timeout int)
@@ -663,7 +686,7 @@ fct_exec (in tree any, in timeout int)
   declare md, res, results, more any;
   declare tmp any;
 
-  set result_timeout = timeout;
+  set result_timeout = _min (timeout, atoi (registry_get ('fct_timeout_max')));
 
   -- db_activity ();
   results := vector (null, null, null);
@@ -679,7 +702,8 @@ fct_exec (in tree any, in timeout int)
 --  dbg_obj_print (qr);
   qr2 := fct_xml_wrap (tree, qr);
   start_time := msec_time ();
-  dbg_printf('query: %s', qr2);
+-- dbg_printf('query: %s', qr2);
+
   exec (qr2, sqls, msg, vector (), 0, md, res);
 
   if (sqls <> '00000' and sqls <> 'S1TAT')
@@ -710,16 +734,16 @@ fct_exec (in tree any, in timeout int)
 
   act := db_activity ();
 
--- XXX: UNfinished add TIMEOUT code handling
-
   set result_timeout = 0;
 
   res := xmlelement ("facets", xmlelement ("sparql", query), xmlelement ("time", msec_time () - start_time),
 		       xmlelement ("complete", case when sqls = 'S1TAT' then 'no' else 'yes' end),
-		       xmlelement ("timeout", timeout),
+		       xmlelement ("timeout", _min (timeout * 2, atoi (registry_get ('fct_timeout_max')))),
 		       xmlelement ("db-activity", act), results[0], results[1], results[2]);
+
   --string_to_file ('ret.xml', serialize_to_UTF8_xml (res), -2);
-  dbg_obj_print (res);
+
+--  dbg_obj_print (res);
   return res;
 }
 ;

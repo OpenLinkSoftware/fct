@@ -6,7 +6,9 @@ fct_view_pos (in tree any)
 {
   declare c any;
   declare i int;
-  c := xpath_eval ('//*[name() = "query" or name () = "property" or name () = "property-of"]', tree, 0);
+  c := xpath_eval ('//*[name() = "query" or 
+	           name () = "property" or 
+	           name () = "property-of"]', tree, 0);
   for (i := 0; i < length (c); i := i + 1)
     {
       if (xpath_eval ('./view', c[i]) is not null)
@@ -14,7 +16,7 @@ fct_view_pos (in tree any)
     }
   return null;
 }
-
+;
 
 create procedure
 fct_view_info (in tree any, in ctx int, in txt any)
@@ -31,19 +33,19 @@ fct_view_info (in tree any, in ctx int, in txt any)
   http ('<h3 id="view_info">', txt);
   if ('list' = mode)
     {
-      http (sprintf ('showing list of %s%d\n', connection_get ('s_term'), pos), txt);
+      http (sprintf ('showing list of %s%d', connection_get ('s_term'), pos), txt);
     }
   if ('list-count' = mode)
     {
-      http (sprintf ('showing list of distinct %s%d with counts\n', connection_get ('s_term'), pos), txt);
+      http (sprintf ('showing list of distinct %s%d with counts', connection_get ('s_term'), pos), txt);
     }
   if ('properties' = mode)
     {
-      http (sprintf ('showing properties of %s%d\n', connection_get ('s_term'), pos), txt);
+      http (sprintf ('showing properties of %s%d', connection_get ('s_term'), pos), txt);
     }
   if ('properties-in' = mode)
     {
-      http (sprintf ('showing %s where %s%d is the value\n',
+      http (sprintf ('showing %s where %s%d is the value',
       	   	     connection_get ('c_term'),
                      connection_get ('s_term'),
 		     pos), txt);
@@ -51,7 +53,7 @@ fct_view_info (in tree any, in ctx int, in txt any)
 
   if ('text-properties' = mode)
     {
-      http (sprintf ('showing %s of %s%d where the value contains "%s"\n',
+      http (sprintf ('showing %s of %s%d where the value contains "%s"',
                      connection_get ('c_term'),
 		     connection_get ('s_term'),
 		     pos,
@@ -60,17 +62,18 @@ fct_view_info (in tree any, in ctx int, in txt any)
     }
   if ('classes' = mode)
     {
-      http (sprintf ('Displaying types of %s%d\n', connection_get ('s_term'), pos), txt);
+      http (sprintf ('Displaying types of %s%d', connection_get ('s_term'), pos), txt);
     }
   if ('text' = mode)
     {
-      http (sprintf ('Displaying values and text summaries associated with pattern: %s%d\n', connection_get ('s_term'), pos), txt);
+      http (sprintf ('Displaying values and text summaries associated with pattern: %s%d', 
+	             connection_get ('s_term'), pos), txt);
     }
   if (offs)
     http (sprintf ('  values %d - %d', 1 + offs, lim), txt);
-  http ('</h3>\n', txt);
+  http ('</h3>', txt);
 }
-
+;
 
 create procedure
 fct_var_tag (in this_s int, in ctx int)
@@ -86,7 +89,7 @@ fct_var_tag (in this_s int, in ctx int)
   else
     return sprintf ('%s%d', connection_get ('s_term'), this_s);
 }
-
+;
 
 create procedure
 fct_query_info_1 (in tree any,
@@ -105,6 +108,7 @@ fct_query_info_1 (in tree any,
       fct_query_info (c[i], this_s, max_s, level + 1, ctx, txt, cno);
     }
 }
+;
 
 create procedure
 fct_space (in n int)
@@ -217,15 +221,17 @@ fct_query_info (in tree any,
             txt);
     }
   if (ctx)
-    http ('<br/>\n', txt);
+    http ('<br/>', txt);
   else
     http ('\n', txt);
 }
+;
 
 vhost_remove (lpath=>'/fct');
 vhost_define (lpath=>'/fct',ppath=>'/fct/',vsp_user=>'dba', def_page=>'facet.vsp');
 
 create table fct_state (fct_sid int primary key, fct_state xmltype);
+
 alter index fct_state on fct_state partition (fct_sid int);
 
 create table fct_log (
@@ -239,7 +245,8 @@ create table fct_log (
   fl_sqlmsg varchar,
   fl_parms varchar,
   fl_msec int,
-  primary key (fl_sid, fl_ts))
+  primary key (fl_sid, fl_ts));
+
   alter index fct_log on fct_log partition (fl_sid int);
 
 sequence_next ('fct_seq');
@@ -256,25 +263,28 @@ fct_top (in tree any, in txt any)
   fct_query_info (xpath_eval ('/query', tree), 1, max_s, 1, 1, txt, cno);
 
 }
-
+;
 
 create procedure
 fct_view_link (in tp varchar, in msg varchar, in txt any)
 {
-  http (sprintf ('<li><a href="/fct/facet.vsp?cmd=set_view&sid=%d&type=%s&limit=20&offset=0">%s</a></li>\n',
+  http (sprintf ('<li><a href="/fct/facet.vsp?cmd=set_view&sid=%d&type=%s&limit=20&offset=0">%s</a></li>',
                  connection_get ('sid'), tp, msg),
         txt);
 }
+;
 
 create procedure
 fct_set_conn_tlogy (in tree any)
 {
   declare c_term, s_term varchar;
+
   c_term := cast (xpath_eval ('/query/@c-term', tree) as varchar);
   s_term := cast (xpath_eval ('/query/@s-term', tree) as varchar);
   connection_set ('c_term', c_term);
   connection_set ('s_term', s_term);
 }
+;
 
 create procedure
 fct_nav (in tree any,
@@ -314,9 +324,12 @@ fct_nav (in tree any,
       if (tp <> 'list')
 	fct_view_link ('list', 'Show values', txt);
     }
+
   if ('classes' <> tp)
-    if (connection_get('c_term') = 'class') fct_view_link ('classes', 'Classes', txt);
-    else fct_view_link ('classes', 'Types', txt);
+    if (connection_get('c_term') = 'class') 
+	fct_view_link ('classes', 'Classes', txt);
+    else 
+	fct_view_link ('classes', 'Types', txt);
 
   if ('geo' <> tp)
     {
@@ -335,64 +348,70 @@ fct_nav (in tree any,
 	    		'<option value="dbpprop:birthplace">dbpedia:birthplace</option>'||
 	    		'<option value="dbpprop:placeOfDeath">dbpedia:placeOfDeath</option>'||
 	    		'<option value="dbpprop:deathPlace">dbpedia:deathPlace</option>'||
-			'</select></li>\n',
+			'</select></li>',
                  connection_get ('sid'), 'geo', 'Map'), txt);
     }
 
-  http ('</ul>\n<ul class="n2">', txt);
+  http ('</ul><ul class="n2">', txt);
   http (sprintf ('<li><a href="/fct/facet.vsp?cmd=set_inf&sid=%d">Options</a></li>', connection_get ('sid')), txt);
   http (sprintf ('<li><a href="/fct/facet.vsp?sid=%d">New Search</a></li>', connection_get ('sid')), txt);
   http ('</ul>', txt);
   http ('</div> <!-- #fct_nav -->', txt);
 }
-
+;
 
 create procedure
 fct_view_type (in vt varchar)
 {
   if (vt in ('properties', 'classes', 'properties-in', 'text-properties', 'list', 'list-count'))
     return 'properties';
+
   if (vt = 'geo')
     return 'geo';
+
   return 'default';
 }
+;
 
 create procedure
 fct_view_cmd (in tp varchar)
 {
   if ('text-properties' = tp)
     return 'set_text_property';
+
   if ('properties' = tp)
     return 'open_property';
+
   if ('properties-in' = tp)
     return 'open_property_of';
+
   if ('classes' = tp)
     return 'set_class';
+
   return 'select_value';
 }
-
+;
 
 cl_exec ('registry_set (''fct_timeout'', ''0'')');
+cl_exec ('registry_set (''fct_timeout_max'', ''20000'')');
 
 create procedure
-fct_web (in tree any, in timeout int := 0)
+fct_web (in tree any)
 {
   declare sqls, msg, tp varchar;
   declare start_time int;
-  declare reply, md, res, qr, qr2, txt, time_txt any;
+  declare reply, md, res, qr, qr2, txt any;
+  declare timeout int;
+ 
+  timeout := connection_get ('timeout');
 
-  time_txt := http_param ('timeout');
+  if (not isinteger(timeout)) timeout := atoi(timeout);
 
-  if (isstring (time_txt))
-    timeout := atoi (time_txt);
-  else
-    timeout := atoi (registry_get ('fct_timeout'));
+--  dbg_printf ('calling fct_exec with to: %d', timeout);
 
   reply := fct_exec (tree, timeout);
 
-  --dbg_obj_print (reply);
-
-  txt := string_output ();
+    txt := string_output ();
 
   http ('<div id="top_ctr">', txt);
   fct_top (tree, txt);
@@ -409,17 +428,14 @@ fct_web (in tree any, in timeout int := 0)
 			    'type',
 			    fct_view_type (tp),
 			    'timeout',
-			    timeout)),
+			    _min (timeout*2, atoi (registry_get ('fct_timeout_max'))))),
 	      null, txt);
-
-
-  -- dbg_obj_print (reply);
-  -- dbg_printf ('%s', string_output_string (txt));
 
   fct_nav (tree, reply, txt);
 
   http (txt);
 }
+;
 
 create procedure
 fct_set_text (in tree any, in sid int, in txt varchar)
@@ -436,7 +452,6 @@ fct_set_text (in tree any, in sid int, in txt varchar)
     }
 
   update fct_state set fct_state = new_tree where fct_sid = sid;
-
   commit work;
 
   fct_web (new_tree);
@@ -447,11 +462,14 @@ create procedure
 fct_set_text_property (in tree any, in sid int, in iri varchar)
 {
   declare new_tree, txt any;
+
   txt := cast (xpath_eval ('//text', tree) as varchar);
   new_tree := xslt ('file://fct/fct_set_text.xsl', tree, vector ('text', txt, 'prop', iri));
   new_tree := xslt ('file://fct/fct_set_view.xsl', new_tree, vector ('pos', 0, 'type', 'text', 'limit', 20, 'op', 'view'));
+
   update fct_state set fct_state = new_tree where fct_sid = sid;
   commit work;
+
   fct_web (new_tree);
 }
 
@@ -470,10 +488,13 @@ fct_set_focus (in tree any, in sid int, in pos int)
 create procedure fct_drop (in tree any, in sid int, in pos int)
 {
   tree := xslt ('file://fct/fct_set_view.xsl', tree, vector ('pos', pos - 1, 'op', 'close'));
+
   if (xpath_eval ('//view', tree) is null)
     tree := xslt ('file://fct/fct_set_view.xsl', tree, vector ('pos', 0, 'op', 'view', 'type', 'list', 'limit', 20, 'offset', 0));
+
   update fct_state set fct_state = tree where fct_sid = sid;
   commit work;
+
   fct_web (tree);
 }
 
@@ -524,9 +545,11 @@ fct_next (in tree any, in sid int)
 {
   declare tp varchar;
   declare lim, offs int;
-  tp := cast (xpath_eval ('//view/@type', tree) as varchar);
-  lim := atoi (cast (xpath_eval ('//view/@limit', tree) as varchar));
-  offs := atoi (cast (xpath_eval ('//view/@offset', tree) as varchar));
+
+  tp   := cast       (xpath_eval ('//view/@type',  tree) as varchar);
+  lim  := atoi (cast (xpath_eval ('//view/@limit', tree) as varchar));
+  offs := atoi (cast (xpath_eval ('//view/@offset',tree) as varchar));
+
   fct_set_view  (tree, sid, tp, lim + 20, offs + 20);
 }
 
@@ -564,11 +587,11 @@ fct_set_class (in tree any,
   pos := fct_view_pos (tree);
   tree := xslt ('file://fct/fct_set_view.xsl',
                 tree,
-                vector ('pos', pos,
-		        'op', 'class',
-			'iri', iri,
-			'type', 'list',
-			'limit', 20,
+                vector ('pos'   , pos,
+		        'op'    , 'class',
+			'iri'   , iri,
+			'type'  , 'list',
+			'limit' , 20,
 			'offset', 0));
 
   update fct_state
@@ -617,7 +640,10 @@ create procedure fct_new ()
   <input type=submit  value="Go">
   </div>
   <div class="expln">
-    This is a simple demo application for demonstrating the Virtuoso Facets Web Service. For more information on how to use the service to produce your own faceted browser on RDF data, please see the Virtuoso Facets Web Service <a href="http://virtuoso.openlinksw.com/wiki/main/Main/VirtuosoFacetsWebService">documentation</a>.
+    This is a simple demo application for demonstrating the Virtuoso Facets Web Service. 
+    For more information on how to use the service to produce your own faceted browser on RDF data, 
+    please see the Virtuoso Facets Web Service 
+    <a href="http://virtuoso.openlinksw.com/wiki/main/Main/VirtuosoFacetsWebService">documentation</a>.
   </div>
   </form>
   <?vsp
@@ -653,36 +679,55 @@ fct_set_inf (in tree any, in sid int)
 
      again:
 
-      selected_inf := cast (xpath_eval ('/query/@inference', tree) as varchar);
-      selected_sas := cast (xpath_eval ('/query/@same-as',   tree) as varchar);
-      selected_view3 := cast (xpath_eval ('/query/@view3',   tree) as varchar);
-      sel_c_term   := cast (xpath_eval ('/query/@c-term',    tree) as varchar);
-      sel_s_term   := cast (xpath_eval ('/query/@s-term',    tree) as varchar);
+      selected_inf   := cast (xpath_eval ('/query/@inference', tree) as varchar);
+      selected_sas   := cast (xpath_eval ('/query/@same-as',   tree) as varchar);
+      selected_view3 := cast (xpath_eval ('/query/@view3',     tree) as varchar);
+      sel_c_term     := cast (xpath_eval ('/query/@c-term',    tree) as varchar);
+      sel_s_term     := cast (xpath_eval ('/query/@s-term',    tree) as varchar);
 
       ?> <div id="opts_ctr">
-           <div id="opts">
-             <h2>Options</h2>
+           <div id="opts" class="dlg">
+             <div class="title"><h2>Options</h2></div>
              <form action="/fct/facet.vsp?cmd=set_inf&sid=<?= sid ?>" method=post>
-	       <div class="opt_sect">
-<h3>Inference</h3>
-Inference:
-	<select name="inference">
-		<option value="">none</option>
-		<?vsp for select RS_NAME from SYS_RDF_SCHEMA do { ?>
-		  <option value="<?V RS_NAME ?>" <?V case when selected_inf = RS_NAME then 'selected' else '' end ?>><?V RS_NAME ?></option>
-		<?vsp } ?>
-	</select>
-<br>
-<input type=checkbox name="same-as" value="yes" id="same-as" <?= case when selected_sas = 'yes' then 'checked' end  ?>> <label for="same-as">Same As</label><br>
-<input type="checkbox" name="view3" value="yes" id="view3" <?= case when selected_view3 = 'yes' then 'checked' end  ?>> <label for="view3">Show Values, Types, Properties simultaneously</label><br>
+	       <div class="fm_sect">
+                 <h3>Inference</h3>
+                 <label class="left_txt" for="opt_inference">Inference</label>
+                 <select name="inference">
+	           <option value="">none</option>
+	           <?vsp for select RS_NAME from SYS_RDF_SCHEMA do { ?>
+		     <option value="<?V RS_NAME ?>" 
+	                     <?V case when selected_inf = RS_NAME then 'selected' else '' end ?>>
+                       <?V RS_NAME ?>
+                     </option>
+		   <?vsp } ?>
+	         </select>
+                 <br>
+                 <input type="checkbox" 
+                        name="same-as" 
+                        value="yes" 
+                        id="same-as" <?= case when selected_sas = 'yes' then 'checked="true"' end  ?>> 
+                 <label class="rt_ckb" for="same-as">Same As</label><br>
+               </div>
+               <div class="fm_sect">
 	         <h3>User Interface</h3>
 	         <label class="left_txt" for="tlogy">Terminology</label>
                  <select name="tlogy">
 	           <option value="eav" <?= case when sel_s_term = 'e' then 'selected="true"' else '' end ?>>Entity-Attribute-Value</option>
 	           <option value="spo" <?= case when sel_s_term = 's' then 'selected="true"' else '' end ?>>Subject-Predicate-Object</option>
-	       	 </select>
+	       	 </select><br/>
+                 <input type="checkbox" 
+                        name="view3" 
+                        value="yes" 
+                        id="view3" <?= case when selected_view3 = 'yes' then 'checked="true"' end  ?>> 
+                 <label class="rt_ckb" for="view3">Show Values, Types, Properties simultaneously</label><br>
                </div>
-               <br/><input type=submit value="Apply">
+<!--               <div class="fm_sect">
+                 <h3>Limits</h3>
+                 <label class="left_txt" for="to_val">Limit time used to</label>
+                 <input type="text" class="num" name="to_val" id="to_val" size="8"/> ms<br/>
+                 <div class="ctl_expln">Current server-wide limits are: XX soft, YY hard</div>
+               </div> -->
+               <div class="btn_bar"><button onclick="javascript:history.back();">Cancel</button><input type=submit value="Apply"></div>
              </form>
 	   </div>
          </div>
@@ -816,8 +861,6 @@ fct_vsp ()
   declare tree any;
   declare sid, start_time int;
   declare _to int;
-  declare _to_max int;
-  declare _to_def int;
 
   cmd := http_param ('cmd');
 
@@ -828,19 +871,10 @@ fct_vsp ()
     }
 
   sid := atoi (http_param ('sid'));
+  _to := http_param ('timeout');
 
-  _to := http_param ('timeout'); -- XXX add timeout
-  if (_to <> 0) _to := atoi (_to);
-
-  _to_max := registry_get ('fct_max_to');
-  _to_def := registry_get ('fct_def_to');
-
-  if (_to_def = 0) _to_def := 8000;
-  if (_to = 0) _to := _to_def;
-  if (_to*2 > _to_max)
-    {
-      _to := _to_max;
-    }
+  if (_to = 0) _to := atoi (registry_get ('fct_timeout_min'));
+  else _to := _min (atoi (registry_get ('fct_timeout_max')), atoi(_to));
 
   connection_set ('timeout', _to);
 
@@ -862,7 +896,9 @@ fct_vsp ()
   insert into fct_log (fl_sid, fl_cli_ip, fl_where, fl_state, fl_cmd)
          values (sid, http_client_ip(), 'DISPATCH', tree, cmd);
   commit work;
+
   start_time := msec_time ();
+
   if ('text' = cmd)
     fct_set_text (tree, sid, http_param ('search_for'));
   else if ('set_focus' = cmd)

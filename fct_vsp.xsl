@@ -17,136 +17,146 @@
 </xsl:choose-->
 <!--xsl:message terminate="no"><xsl:value-of select="$type"/></xsl:message-->
 <xsl:choose>
-    <xsl:when test="$type = 'geo'">
-	<script type="text/javascript" ><![CDATA[
-		OAT.Preferences.imagePath = "oat/images/";
-		function init(){
-			var callback = function(commonMapObj) {
-				var click = function (href, label) {
-				    return function(marker) {
-                                           var x;
-					   if (href.length > 0) {
-					     x = OAT.Dom.create ("a");
-					     x.href = '/about/?url='+escape (href);
-					     if (label.length > 0)
-				               x.innerHTML = label;
-					     else
-				               x.innerHTML = href;
-					   }
-				           else
-				             x = OAT.Dom.text(label);
-				           commonMapObj.openWindow (marker, x);
-					}
-				  }
-				window.m = commonMapObj;
-				commonMapObj.centerAndZoom(0,0,0);
-				commonMapObj.addTypeControl();
-				commonMapObj.addMapControl();
-				commonMapObj.setMapType(OAT.MapData.MAP_HYB);
+  <xsl:when test="$type = 'geo'">
+    <script type="text/javascript" >
+<![CDATA[
+OAT.Preferences.imagePath = "oat/images/";
+function init(){
+  var callback = function(commonMapObj) {
+    var click = function (href, label) {
+      return function(marker) {
+        var x;
+	if (href.length > 0) {
+	  x = OAT.Dom.create ("a");
+	  x.href = '/about/?url='+escape (href);
+	  if (label.length > 0)
+	    x.innerHTML = label;
+	  else
+            x.innerHTML = href;
+	}
+        else x = OAT.Dom.text(label);
+	commonMapObj.openWindow (marker, x);
+      }
+    }
+    window.m = commonMapObj;
+    commonMapObj.centerAndZoom(0,0,0);
+    commonMapObj.addTypeControl();
+    commonMapObj.addMapControl();
+    commonMapObj.setMapType(OAT.MapData.MAP_HYB);
 
-				var markersArr = []; ]]>
-				<xsl:for-each select="result/row">
-				    commonMapObj.addMarker(1,<xsl:value-of select="column[3]"/>,<xsl:value-of select="column[4]"/>,
-				    "oat/images/markers/01.png",18,41,
-				    	click ("<xsl:value-of select="column[1]"/>", "<xsl:value-of select="column[2]"/>"));
-				    markersArr.push([<xsl:value-of select="column[3]"/>,<xsl:value-of select="column[4]"/>]);
-			        </xsl:for-each>
-
-				<![CDATA[
-				commonMapObj.optimalPosition(markersArr);
-				return;
-			}
-			window.YMAPPID = "";
-
-			var providerType = OAT.MapData.TYPE_Y;
-			var containerDiv = document.getElementById('user_map');
-			var map = new OAT.Map(containerDiv,providerType,{fix:OAT.MapData.FIX_ROUND1});
-			map.loadApi(providerType, callback);
-		}
-	]]></script>
-      <div id="user_map" style="position:relative; width:600px; height:400px;"></div>
-    </xsl:when>
-    <xsl:otherwise>
-
-      <xsl:choose>
-	<xsl:when test="count (/facets/result) &gt; 1">
-	  <xsl:for-each select="result[@type = 'classes' or @type = 'properties']">
-	    <div class="facet_ctr">
+    var markersArr = []; 
+]]>
+    <xsl:for-each select="result/row">
+      commonMapObj.addMarker(1,
+                             <xsl:value-of select="column[3]"/>,
+                             <xsl:value-of select="column[4]"/>,
+                             "oat/images/markers/01.png",
+                             18,
+                             41,
+                             click ("<xsl:value-of select="column[1]"/>", "<xsl:value-of select="column[2]"/>"));
+      markersArr.push([<xsl:value-of select="column[3]"/>,<xsl:value-of select="column[4]"/>]);
+    </xsl:for-each>
+<![CDATA[
+    commonMapObj.optimalPosition(markersArr);
+    return;
+  }
+  window.YMAPPID = "";
+  var providerType = OAT.MapData.TYPE_Y;
+  var containerDiv = document.getElementById('user_map');
+  var map = new OAT.Map(containerDiv,providerType,{fix:OAT.MapData.FIX_ROUND1});
+  map.loadApi(providerType, callback);
+}
+]]>
+    </script>
+    <div id="user_map" style="position:relative; width:600px; height:400px;"></div>
+  </xsl:when>
+  <xsl:otherwise>
+    <xsl:choose>
+      <xsl:when test="count (/facets/result) &gt; 1">
+	<xsl:for-each select="result[@type = 'classes' or @type = 'properties']">
+	  <div class="facet_ctr">
+	    <xsl:choose>
+              <xsl:when test="@type='properties'">
+		<h4 class="facet_hd">Properties</h4>
+              </xsl:when>
+              <xsl:otherwise>
+		<h4 class="facet_hd">Types</h4>
+              </xsl:otherwise>
+	    </xsl:choose>
+	    <div class="facet">
+              <xsl:call-template name="render-result">
+		<xsl:with-param name="view-type"><xsl:value-of select="@type"/></xsl:with-param>
+		<xsl:with-param name="command">
+		  <xsl:choose>
+		    <xsl:when test="@type = 'classes'">set_class</xsl:when>
+		    <xsl:when test="@type = 'properties'">open_property</xsl:when>
+		    <xsl:otherwise><xsl:value-of select="$cmd"/></xsl:otherwise>
+                  </xsl:choose>
+		</xsl:with-param>
+              </xsl:call-template>
+	    </div>
+	  </div> <!-- facet_ctr -->
+	</xsl:for-each>
+	<xsl:for-each select="/facets/result [@type != 'classes' and @type != 'properties']">
+	  <xsl:call-template name="render-result">
+	    <xsl:with-param name="view-type"><xsl:value-of select="$type"/></xsl:with-param>
+	    <xsl:with-param name="command">
 	      <xsl:choose>
-		<xsl:when test="@type='properties'">
-		  <h4 class="facet_hd">Properties</h4>
-		</xsl:when>
-		<xsl:otherwise>
-		  <h4 class="facet_hd">Types</h4>
-		</xsl:otherwise>
-	      </xsl:choose>
-	      <div class="facet">
-		<xsl:call-template name="render-result">
-		  <xsl:with-param name="view-type"><xsl:value-of select="@type"/></xsl:with-param>
-		  <xsl:with-param name="command">
-		    <xsl:choose>
-		      <xsl:when test="@type = 'classes'">set_class</xsl:when>
-		      <xsl:when test="@type = 'properties'">open_property</xsl:when>
-		      <xsl:otherwise><xsl:value-of select="$cmd"/></xsl:otherwise>
-		    </xsl:choose>
-		  </xsl:with-param>
-		</xsl:call-template>
-	      </div>
-	    </div> <!-- facet_ctr -->
-	  </xsl:for-each>
-	  <xsl:for-each select="/facets/result [@type != 'classes' and @type != 'properties']">
-	    <xsl:call-template name="render-result">
-	      <xsl:with-param name="view-type"><xsl:value-of select="$type"/></xsl:with-param>
-	      <xsl:with-param name="command">
-		<xsl:choose>
-		  <xsl:when test="@type = 'classes'">set_class</xsl:when>
-		  <xsl:when test="@type = 'properties'">open_property</xsl:when>
-		  <xsl:otherwise><xsl:value-of select="$cmd"/></xsl:otherwise>
-		</xsl:choose>
-	      </xsl:with-param>
-	    </xsl:call-template>
-	  </xsl:for-each>
-	  <div id="sparql_link">
-	    <a class="sparql_link" href="sparql.vsp?q={urlify (/facets/sparql)}">SPARQL</a>
-	  </div>
-	</xsl:when>
-	<xsl:otherwise>
-	  <xsl:for-each select="/facets/result">
-	    <xsl:call-template name="render-result">
-	      <xsl:with-param name="view-type"><xsl:value-of select="$type"/></xsl:with-param>
-	      <xsl:with-param name="command">
-		<xsl:choose>
-		  <xsl:when test="@type = 'classes'">set_class</xsl:when>
-		  <xsl:when test="@type = 'properties'">open_property</xsl:when>
-		  <xsl:otherwise><xsl:value-of select="$cmd"/></xsl:otherwise>
-		</xsl:choose>
-	      </xsl:with-param>
-	    </xsl:call-template>
-	  </xsl:for-each>
-	</xsl:otherwise>
-      </xsl:choose>
-
-      <xsl:if test="20 = count (/facets/result[@type='' or @type='text']/row)">
-	<div id="pager">
-	  <a>
-	    <xsl:attribute name="class">pager</xsl:attribute>
-	    <xsl:attribute name="href">/fct/facet.vsp?cmd=next&amp;sid=<xsl:value-of select="$sid"/>
-	    </xsl:attribute>&#10140;Next page
-	  </a>
-	</div> <!-- #pager -->
-      </xsl:if>
-    </xsl:otherwise>
+                <xsl:when test="@type = 'classes'">set_class</xsl:when>
+                <xsl:when test="@type = 'properties'">open_property</xsl:when>
+                <xsl:otherwise><xsl:value-of select="$cmd"/></xsl:otherwise>
+              </xsl:choose>
+	    </xsl:with-param>
+	  </xsl:call-template>
+        </xsl:for-each>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:for-each select="/facets/result">
+	  <xsl:call-template name="render-result">
+	    <xsl:with-param name="view-type"><xsl:value-of select="$type"/></xsl:with-param>
+	    <xsl:with-param name="command">
+	      <xsl:choose>
+                <xsl:when test="@type = 'classes'">set_class</xsl:when>
+                <xsl:when test="@type = 'properties'">open_property</xsl:when>
+	        <xsl:otherwise><xsl:value-of select="$cmd"/></xsl:otherwise>
+              </xsl:choose>
+	    </xsl:with-param>
+	  </xsl:call-template>
+        </xsl:for-each>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:otherwise>
 </xsl:choose>
+<div class="btn_bar">
+  <button>
+    <xsl:attribute name="onclick">
+      javascript:fct_nav_to('sparql.vsp?q=<xsl:value-of select="urlify (/facets/sparql)"/>');
+    </xsl:attribute>SPARQL
+  </button>
+  <xsl:if test="20 = count (/facets/result[@type='' or @type='text' or @type='properties' or @type='classes']/row)">
+    <div id="pager">
+      <button>
+        <xsl:attribute name="class">pager</xsl:attribute>
+	<xsl:attribute name="onclick">javascript:fct_nav_to('/fct/facet.vsp?cmd=next&amp;sid=<xsl:value-of select="$sid"/>')
+	</xsl:attribute>&#10140;More results
+      </button>
+    </div> <!-- #pager -->
+  </xsl:if>
+  <xsl:if test="/facets/complete != 'yes'">
+    <button>
+      <xsl:attribute name="onclick">
+        javascript:fct_nav_to('/fct/facet.vsp?cmd=refresh&amp;sid=<xsl:value-of select="$sid"/>&amp;timeout=<xsl:value-of select="$timeout"/>')
+      </xsl:attribute>Retry with <xsl:value-of select="($timeout div 1000)"/> seconds timeout
+    </button>
+  </xsl:if>
+</div> <!-- btn_bar -->
 <div id="result_nfo">
   <xsl:choose>
-    <xsl:when test="/facets/complete = 'yes'">Complete results in </xsl:when>
-    <xsl:otherwise>
-      Partial results
-      <a href="/fct/facet.vsp?cmd=refresh&amp;sid={$sid}&amp;timeout={$timeout}">Retry with <xsl:value-of select="($timeout div 1000)"/> seconds timeout</a>
-    </xsl:otherwise>
+    <xsl:when test="/facets/complete = 'yes'">Complete results</xsl:when>
+    <xsl:otherwise>Partial results</xsl:otherwise>
   </xsl:choose>
-  <xsl:value-of select="/facets/time"/> msec. Resource utilization:
-  <xsl:value-of select="/facets/db-activity"/>
+ in <xsl:value-of select="/facets/time"/> msec. Resource utilization:
+  <xsl:value-of select="/facets/db-activity"/>&nbsp;
 </div> <!-- #result_nfo -->
 </div> <!-- #res -->
 </xsl:template>

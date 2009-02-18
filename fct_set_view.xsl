@@ -41,7 +41,9 @@
         <xsl:attribute name="limit"> <xsl:value-of select="$limit"/></xsl:attribute>
 	<xsl:attribute name="offset"> <xsl:value-of select="$offset"/></xsl:attribute>
 	<xsl:if test="$location-prop">
-	    <xsl:attribute name="location-prop"> <xsl:value-of select="$location-prop"/></xsl:attribute>
+	    <xsl:attribute name="location-prop"> 
+	        <xsl:value-of select="$location-prop"/>
+            </xsl:attribute>
 	</xsl:if>
       </xsl:element>
     </xsl:if>

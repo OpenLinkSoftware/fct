@@ -26,21 +26,21 @@
 -- dbg_obj_print (http_param ('cmd'));
 -- dbg_obj_print (http_param ('search_for'));
 -- dbg_obj_print  (http_request_header ());
-dbg_obj_print (params);
+-- dbg_obj_print (params);
 
 declare cmd varchar;
 cmd := http_param ('cmd');
 declare exit handler for sqlstate '*'
 {
-  http('<div class="error_msg">\n');
-  http('  <h2>Oops!</h2>\n');
+  http('<div class="error_msg dlg">\n');
+  http('  <div class="title"><h2>Oops!</h2></div>\n');
   http('  <div class="body">An unexpected error was encountered while processing your request.</div>\n');
-  http('  <div class="nav"><a href="/fct/facet.vsp?qq=ww">New Search</a></div>\n');
   http('  <div class="diag">\n');
   http('  <h3>Diagnostics</h3>\n');
   http(sprintf ('<pre>SQLSTATE: %s</pre><br/>\n', __SQL_STATE));
   http(sprintf ('<pre>SQLMSG  : %s</pre><br/>\n', __SQL_MESSAGE));
   http('  </div>\n');
+  http('  <div class="btn_bar"><button onclick="document.location=''/fct/facet.vsp?qq=ww''">New Search</button></div>\n');
   http('</div>\n');
 
   commit work;
@@ -65,7 +65,7 @@ footer:;
 <div id="FT">
   <a href="http://virtuoso.openlinksw.com/"><img src="images/virt_power_no_border.png" alt="Powered by OpenLink Virtuoso"/></a>
   <a href="http://linkeddata.org"><img src="images/LoDLogo.gif" alt="Linked Data"/></a><br/>
-  Copyright &copy; 2009 OpenLink Software
+  <span class="copyright">Copyright &copy; 2009 OpenLink Software</span>
   <div id="FT_L"></div>
   <div id="FT_R"></div>
 </div>

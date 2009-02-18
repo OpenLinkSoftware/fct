@@ -4,3 +4,8 @@ function link_change (prop)
   if (a)
     a.href = a.href + '&location-prop=' + escape (prop);
 }
+
+function fct_nav_to (url)
+{
+  document.location = url;
+}

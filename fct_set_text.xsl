@@ -24,7 +24,6 @@
 <xsl:template match="text">
 </xsl:template>
  
-
 <xsl:template match="@* | node()">
   <xsl:copy>
     <xsl:apply-templates select="@* | node()"/>

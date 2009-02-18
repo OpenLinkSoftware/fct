@@ -16,7 +16,8 @@ create procedure fct_svc_log (in qr varchar, in lines varchar)
 }
 ;
 
-create procedure fct_svc_exec (in tree any, in timeout int, in accept varchar, in lines any)
+create procedure 
+fct_svc_exec (in tree any, in timeout int, in accept varchar, in lines any)
 {
   declare start_time int;
   declare sqls, msg, qr, qr2, act varchar;
