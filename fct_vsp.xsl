@@ -53,7 +53,7 @@ function init(){
                              "oat/images/markers/01.png",
                              18,
                              41,
-                             click ("<xsl:value-of select="column[1]"/>", "<xsl:value-of select="column[2]"/>"));
+                             click ("<xsl:value-of select="column[1]"/>", "<xsl:value-of select="normalize-space (column[2])"/>"));
       markersArr.push([<xsl:value-of select="column[3]"/>,<xsl:value-of select="column[4]"/>]);
     </xsl:for-each>
 <![CDATA[
