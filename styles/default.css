@@ -10,7 +10,10 @@ a.describe {margin-right: 6px}
 #PG { width: 1000px; text-align: left; margin: 10px auto 10px auto;}
 #HD { width: 100%; float: left; text-align: center;}
 #MD { width: 100%; float: left; margin-top: 10px; background-color: #eee; }
-#FT { width: 100%; float: left; margin-top: 10px; color: #335; border-top: 1px solid #335; text-align: center;}
+#FT { width: 100%; float: left; margin-top: 10px; 
+  color: #335; background-color: #fff; 
+  border-top: 1px solid #335; 
+  text-align: center;}
 
 span.iri { font-weight: bold }
 span.value { font-weight: bold }
@@ -22,15 +25,16 @@ div.expln { margin: 0 100px 5px 100px;}
 #res { float: left; clear: left; margin: 5px 0px 0px 0px; width: 800px;}
 #res h3 { margin-top: 0; margin-left: 5px;}
 #new_srch label.left_txt { margin-right: 10px;}
-table.result { clear:left; width: 100%; margin: 3px;}
-table.result td { max-width: 350px; overflow: hidden;}
+
+table.result { clear:left; width: 100%; margin: 3px; font-size: 9pt;}
+table.result td { max-width: 350px; overflow: hidden; font-size: 9pt;}
 
 #opl_logo { border: 0; width: 120px; float: left; margin-left: 6px;}
 #HD h1 { float:left; margin: 0 0 0 80px;vertical-align: top; color: #335;}
 
-span.descr { font-size: 9pt; color: 557; margin-top: 0;}
+span.descr { font-size: 9pt; color: #557; margin-top: 0;}
 
-#result_nfo { float: left; clear: both; margin-top: 8px; margin-left: 5px; color: #446;}
+#result_nfo { float: left; clear: both; width: 100%; margin-top: 8px; margin-left: 5px; color: #446;}
 
 #fct_nav { 
   float: left; 

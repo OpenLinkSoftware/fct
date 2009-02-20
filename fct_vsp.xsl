@@ -128,19 +128,12 @@ function init(){
   </xsl:otherwise>
 </xsl:choose>
 <div class="btn_bar">
-  <button>
-    <xsl:attribute name="onclick">
-      javascript:fct_nav_to('sparql.vsp?q=<xsl:value-of select="urlify (/facets/sparql)"/>');
-    </xsl:attribute>SPARQL
-  </button>
   <xsl:if test="20 = count (/facets/result[@type='' or @type='text' or @type='properties' or @type='classes']/row)">
-    <div id="pager">
-      <button>
-        <xsl:attribute name="class">pager</xsl:attribute>
-	<xsl:attribute name="onclick">javascript:fct_nav_to('/fct/facet.vsp?cmd=next&amp;sid=<xsl:value-of select="$sid"/>')
-	</xsl:attribute>&#10140;More results
-      </button>
-    </div> <!-- #pager -->
+    <button>
+      <xsl:attribute name="class">pager</xsl:attribute>
+      <xsl:attribute name="onclick">javascript:fct_nav_to('/fct/facet.vsp?cmd=next&amp;sid=<xsl:value-of select="$sid"/>')
+      </xsl:attribute>&#10140;More results
+    </button>
   </xsl:if>
   <xsl:if test="/facets/complete != 'yes'">
     <button>
@@ -156,9 +149,15 @@ function init(){
     <xsl:otherwise>Partial results</xsl:otherwise>
   </xsl:choose>
  in <xsl:value-of select="/facets/time"/> msec. Resource utilization:
-  <xsl:value-of select="/facets/db-activity"/>&nbsp;
+  <xsl:value-of select="/facets/db-activity"/> 
 </div> <!-- #result_nfo -->
 </div> <!-- #res -->
+<script type="text/javascript">
+  var sparql_a = OAT.Dom.create('a',{}, 'sparql_a');
+  sparql_a.href='sparql.vsp?q=<xsl:value-of select="urlify (/facets/sparql)"/>'
+  sparql_a.innerHTML = 'View query as SPARQL';
+  OAT.Dom.append (['sparql_a_ctr',sparql_a]);
+</script>
 </xsl:template>
 
 <xsl:template name="render-result">

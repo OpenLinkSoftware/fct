@@ -143,7 +143,7 @@ fct_query_info (in tree any,
 
   if ('class' = n)
     {
-      http (sprintf ('%s is a <span class="iri">%s</span> . <a href="/fct/facet.vsp?sid=%d&cmd=drop_cond&cno=%d">Drop</a>',
+      http (sprintf ('%s is a <span class="iri">%s</span> . <a class="qry_nfo_cmd" href="/fct/facet.vsp?sid=%d&cmd=drop_cond&cno=%d">Drop</a>',
                      fct_var_tag (this_s, ctx),
 		     fct_short_form (cast (xpath_eval ('./@iri', tree) as varchar)),
 		     connection_get ('sid'),
@@ -174,7 +174,7 @@ fct_query_info (in tree any,
 
 --      if (prop is not null)
 --        {
---	  http (sprintf (' <a href="/fct/facet.vsp?sid=%d&cmd=drop_cond&cno=%d">Drop</a>',
+--	  http (sprintf (' <a class="qry_nfo_cmd" href="/fct/facet.vsp?sid=%d&cmd=drop_cond&cno=%d">Drop</a>',
 --		     connection_get ('sid'),
 --		     cno)
 --               ,txt);
@@ -189,7 +189,7 @@ fct_query_info (in tree any,
                      fct_var_tag (this_s, ctx),
 		     fct_short_form (cast (xpath_eval ('./@iri', tree, 1) as varchar)), fct_var_tag (new_s, ctx)), txt);
       if (ctx)
-	http (sprintf ('<a href="/fct/facet.vsp?sid=%d&cmd=drop&n=%d">Drop %s%d</a> ',
+	http (sprintf ('<a class="qry_nfo_cmd" href="/fct/facet.vsp?sid=%d&cmd=drop&n=%d">Drop %s%d</a> ',
 	               connection_get ('sid'), new_s, connection_get('s_term'), new_s), txt);
       fct_query_info_1 (tree, new_s, max_s, level, ctx, txt, cno);
     }
@@ -205,14 +205,14 @@ fct_query_info (in tree any,
             txt);
 
       if (ctx)
-	http (sprintf ('<a href="/fct/facet.vsp?sid=%d&cmd=drop&n=%d">Drop %s%d</a> ',
+	http (sprintf ('<a class="qry_nfo_cmd" href="/fct/facet.vsp?sid=%d&cmd=drop&n=%d">Drop %s%d</a> ',
 	connection_get ('sid'),
 	new_s, connection_get ('s_term'), new_s), txt);
       fct_query_info_1 (tree, new_s, max_s, ctx, level, txt, cno);
     }
   if ('value' = n)
     {
-      http (sprintf (' %s %s %V . <a href="/fct/facet.vsp?sid=%d&cmd=drop_cond&cno=%d">Drop</a>',
+      http (sprintf (' %s %s %V . <a class="qry_nfo_cmd" href="/fct/facet.vsp?sid=%d&cmd=drop_cond&cno=%d">Drop</a>',
                      fct_var_tag (this_s, ctx),
 		     cast (xpath_eval ('./@op', tree) as varchar),
 		     fct_literal (tree),
@@ -220,10 +220,10 @@ fct_query_info (in tree any,
 		     cno),
             txt);
     }
-  if (ctx)
-    http ('<br/>', txt);
-  else
-    http ('\n', txt);
+    if (ctx)
+      http ('<br/>', txt);
+    else
+      http ('\n', txt);
 }
 ;
 
@@ -247,7 +247,14 @@ create table fct_log (
   fl_msec int,
   primary key (fl_sid, fl_ts));
 
-  alter index fct_log on fct_log partition (fl_sid int);
+alter index fct_log on fct_log partition (fl_sid int);
+
+create table fct_stored_qry (
+  fsq_id int identity,
+  fsq_created timestamp,
+  fsq_title varchar,
+  fsq_expln varchar,
+  primary key (fsq_id));
 
 sequence_next ('fct_seq');
 
@@ -353,8 +360,10 @@ fct_nav (in tree any,
     }
 
   http ('</ul><ul class="n2">', txt);
-  http (sprintf ('<li><a href="/fct/facet.vsp?cmd=set_inf&sid=%d">Options</a></li>', connection_get ('sid')), txt);
-  http (sprintf ('<li><a href="/fct/facet.vsp?sid=%d">New Search</a></li>', connection_get ('sid')), txt);
+  http (sprintf ('<li><a href="/fct/facet.vsp?cmd=set_inf&sid=%d">Options</a></li>', 
+	connection_get ('sid')), txt);
+  http (sprintf ('<li><a href="/fct/facet.vsp?sid=%d">New Search</a></li>', 
+	connection_get ('sid')), txt);
   http ('</ul>', txt);
   http ('</div> <!-- #fct_nav -->', txt);
 }
@@ -364,8 +373,8 @@ create procedure
 fct_view_type (in vt varchar)
 {
   if (vt in ('properties', 'classes', 'properties-in', 'text-properties', 'list', 'list-count'))
-    return 'properties';
-
+    return vt;
+-- return 'properties';
   if (vt = 'geo')
     return 'geo';
 
@@ -405,7 +414,8 @@ fct_web (in tree any)
  
   timeout := connection_get ('timeout');
 
-  if (not isinteger(timeout)) timeout := atoi(timeout);
+  if (not isinteger(timeout)) 
+    timeout := atoi(timeout);
 
 --  dbg_printf ('calling fct_exec with to: %d', timeout);
 
@@ -414,7 +424,11 @@ fct_web (in tree any)
     txt := string_output ();
 
   http ('<div id="top_ctr">', txt);
+
   fct_top (tree, txt);
+
+  http('<div id="sparql_a_ctr"></div>', txt);
+
   http ('</div>', txt);
 
   tp := cast (xpath_eval ('//view/@type', tree) as varchar);
