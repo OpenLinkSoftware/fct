@@ -70,6 +70,7 @@ input.num { text-align: right;}
 .dlg .btn_bar button { margin-right: 4px; }
 .dlg .btn_bar input[type="submit"] { margin-right: 6px; }
 .dlg .title h2 { font-size: 10pt; margin: 0; color: #333;}
+.dlg .expln { margin-left: 120px }
 .dlg .fm_sect { margin: 0 10px 15px 10px; border-top: 1px solid #333}
 .dlg .fm_sect:first-child { border: 0; margin-top: 20px;}
 .dlg .fm_sect h3 { font-size: 9pt; margin: 0}

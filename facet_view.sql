@@ -53,8 +53,7 @@ fct_view_info (in tree any, in ctx int, in txt any)
 
   if ('text-properties' = mode)
     {
-      http (sprintf ('showing %s of %s%d where the value contains "%s"',
-                     connection_get ('c_term'),
+      http (sprintf ('showing properties of %s%d containing "%s"',
 		     connection_get ('s_term'),
 		     pos,
 	    	     cast (xpath_eval ('//text', tree) as varchar)),
@@ -254,6 +253,7 @@ create table fct_stored_qry (
   fsq_created timestamp,
   fsq_title varchar,
   fsq_expln varchar,
+  fsq_state xmltype,
   primary key (fsq_id));
 
 sequence_next ('fct_seq');
@@ -361,6 +361,8 @@ fct_nav (in tree any,
 
   http ('</ul><ul class="n2">', txt);
   http (sprintf ('<li><a href="/fct/facet.vsp?cmd=set_inf&sid=%d">Options</a></li>', 
+	connection_get ('sid')), txt);
+  http (sprintf ('<li><a href="/fct/facet.vsp?cmd=save_init&sid=%d">Save</a></li>', 
 	connection_get ('sid')), txt);
   http (sprintf ('<li><a href="/fct/facet.vsp?sid=%d">New Search</a></li>', 
 	connection_get ('sid')), txt);
@@ -616,12 +618,90 @@ fct_set_class (in tree any,
   fct_web (tree);
 }
 
+create procedure
+fct_save_init (in tree xmltype, in sid int)
+{
 
-create procedure fct_new ()
+?>
+  <div class="dlg" id="save_frm">
+    <div class="title"><h2>Save</h2></div>
+    <form method="post"
+          action="/fct/facet.vsp?cmd=save&sid=<?= sid ?>" >
+      <div class="fm_sect">
+        <h3>Information</h3>
+        <div class="expln">
+           <p>Please give this query a title and explanation and hit [Save] - then bookmark the permalink on next screen.</p>
+        </div>
+        <label class="left_txt"
+               for="new_search_txt">Title</label><input id="title" size="50" type="text" name="title"><br/>
+        <label class="left_txt"
+               for="desc">Description</label><input id="desc" size="80" type="text" name="desc"><br/>
+      </div> <!-- fm_sect -->
+      <div class="btn_bar">
+        <input type="submit" value="Save"/>
+        <button onclick="javascript:document.location='/fct/facet.vsp?cmd=refresh&sid=<?= sid ?>';return false;" >Cancel</button>
+      </div>
+    </form>
+  </div>
+<?vsp
+}
+;
+
+create procedure
+fct_save (in tree xmltype, 
+          in sid int, 
+          in title varchar, 
+          in _desc varchar)
+{
+  declare _fsq_id int;
+
+  _fsq_id := sequence_next ('fsq_seq');
+  
+  insert into fct_stored_qry (fsq_id, fsq_title, fsq_expln, fsq_state)
+    values (_fsq_id, title, _desc, tree);
+
+  ?>
+
+<div id="save_complete">
+  Your query has been saved. Please bookmark this link: <a href="/fct/facet.vsp?cmd=load&fsq_id=<?= _fsq_id ?>" title="<?= _desc ?>"><?= title ?></a> to return to it.
+  <button onclick="javascript:document.location='/fct/facet.vsp?sid=<?= sid ?>&cmd=refresh'">Continue</button>
+</div>
+  <?vsp
+}
+
+create procedure 
+fct_load (in from_stored int)
+{
+  declare sid int;
+  
+  sid := sequence_next ('fct_seq');
+  declare tree any;
+
+  whenever not found goto no_ses;
+
+  select fsq_state 
+    into tree
+    from fct_stored_qry
+    where fsq_id = from_stored;
+
+  insert into fct_state (fct_sid, fct_state)
+    values (sid, tree);
+
+  return sid;
+
+  no_ses:
+    fct_new ();
+    return null;
+}
+;
+
+create procedure 
+fct_new ()
 {
   declare sid int;
   sid := http_param ('sid');
-  if (sid = 0)
+
+  if (0 = sid)
     {
       no_ses:
       sid := sequence_next ('fct_seq');
@@ -951,6 +1031,13 @@ fct_vsp ()
 		      http_param ('lang'),
 		      http_param ('datatype'),
 		      http_param ('op'));
+  else if ('save' = cmd)
+    fct_save (tree, 
+	      sid,
+              http_param ('title'),
+              http_param ('desc'));
+  else if ('save_init' = cmd)
+    fct_save_init (tree, sid);
   else
     {
       http ('Unrecognized command');
