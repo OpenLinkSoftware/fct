@@ -662,9 +662,14 @@ fct_save (in tree xmltype,
 
   ?>
 
-<div id="save_complete">
-  Your query has been saved. Please bookmark this link: <a href="/fct/facet.vsp?cmd=load&fsq_id=<?= _fsq_id ?>" title="<?= _desc ?>"><?= title ?></a> to return to it.
-  <button onclick="javascript:document.location='/fct/facet.vsp?sid=<?= sid ?>&cmd=refresh'">Continue</button>
+<div class="dlg" id="save_complete">
+  <div class="title"><h2>Save Complete</h2></div>
+  <div class="expln">
+    <p><br/>
+    Your query has been saved.<br/>
+    Please bookmark this link: <a href="/fct/facet.vsp?cmd=load&fsq_id=<?= _fsq_id ?>" title="<?= _desc ?>"><?= title ?></a> to return to it.</p>
+  </div>
+  <div class="btn_bar"><button onclick="javascript:document.location='/fct/facet.vsp?sid=<?= sid ?>&cmd=refresh'">Continue</button></div>
 </div>
   <?vsp
 }
