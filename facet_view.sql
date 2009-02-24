@@ -730,7 +730,7 @@ create procedure
 fct_load (in from_stored int)
 {
   declare sid int;
-  dbg_printf ('fct_load: from_stored: %d', from_stored);
+--  dbg_printf ('fct_load: from_stored: %d', from_stored);
   
   sid := sequence_next ('fct_seq');
   declare tree any;
@@ -742,7 +742,7 @@ fct_load (in from_stored int)
     from fct_stored_qry
     where fsq_id = from_stored;
 
-  dbg_obj_print (sid);
+--  dbg_obj_print (sid);
 
   insert into fct_state (fct_sid, fct_state)
     values (sid, tree);

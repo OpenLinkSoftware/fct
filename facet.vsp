@@ -29,6 +29,8 @@
 -- dbg_obj_print (params);
 
 declare cmd varchar;
+declare langs any;
+
 cmd := http_param ('cmd');
 
 langs := http_request_header_full (lines, 'Accept-Language', 'en');
