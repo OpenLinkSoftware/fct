@@ -166,3 +166,6 @@ div#sparql_link a {
   width: auto; 
   text-decoration: none; 
   text-align: center;}
+
+#featured_list { font-size: 9pt;}
+#featured_list td { font-size: 9pt; }

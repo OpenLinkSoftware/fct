@@ -254,7 +254,11 @@ create table fct_stored_qry (
   fsq_title varchar,
   fsq_expln varchar,
   fsq_state xmltype,
+  fsq_featured int,
   primary key (fsq_id));
+
+alter index fct_log on fct_log partition (fsq_id int);
+create index fsq_featured_ndx on fct_stored_qry (fsq_featured, fsq_id);
 
 sequence_next ('fct_seq');
 
@@ -363,6 +367,8 @@ fct_nav (in tree any,
   http (sprintf ('<li><a href="/fct/facet.vsp?cmd=set_inf&sid=%d">Options</a></li>', 
 	connection_get ('sid')), txt);
   http (sprintf ('<li><a href="/fct/facet.vsp?cmd=save_init&sid=%d">Save</a></li>', 
+	connection_get ('sid')), txt);
+  http (sprintf ('<li><a href="/fct/facet.vsp?cmd=featured&sid=%d">Featured Queries</a></li>', 
 	connection_get ('sid')), txt);
   http (sprintf ('<li><a href="/fct/facet.vsp?sid=%d">New Search</a></li>', 
 	connection_get ('sid')), txt);
@@ -619,6 +625,51 @@ fct_set_class (in tree any,
 }
 
 create procedure
+fct_featured (in tree xmltype, in sid int) {
+?>
+  <div class="dlg" id="featured_qry">
+    <div class="title"><h2>Featured Queries</h2></div>
+    <div class="expln"><p>These are queries stored in the facet server which are marked as featured. Click on a title in list below to load the query.</p></div>
+    <div class="fm_sect">
+      <table id="featured_list">
+<?vsp
+	declare no_qry, cnt int;
+	cnt := 0;
+	no_qry := http_param ('no_qry');
+
+        for (select fsq_id, 
+                    fsq_title, 
+                    fsq_expln 
+               from fct_stored_qry 
+               where fsq_featured is not null 
+               order by fsq_featured desc) do
+          {
+            cnt := cnt + 1;
+?>
+            <tr>
+              <td><a href="/fct/facet.vsp?cmd=load&fsq_id=<?= fsq_id ?>"><?= fsq_title ?></a></td>
+              <td><?= fsq_expln ?></td>
+            </tr>
+<?vsp
+          }
+	if (0 = cnt) 
+          {
+?>
+	    <tr><td>There are currently no featured queries.</td></td>
+<?vsp
+          }
+?>
+      </table>
+    </div>
+    <div class="btn_bar">
+      <button onclick="javascript:document.location='/fct/facet.vsp?cmd=refresh&sid=<?= case when no_qry then 0 else sid end ?>'">Cancel</button>
+    </div>
+  </div>
+<?vsp
+}
+;
+
+create procedure
 fct_save_init (in tree xmltype, in sid int)
 {
 
@@ -633,7 +684,7 @@ fct_save_init (in tree xmltype, in sid int)
            <p>Please give this query a title and explanation and hit [Save] - then bookmark the permalink on next screen.</p>
         </div>
         <label class="left_txt"
-               for="new_search_txt">Title</label><input id="title" size="50" type="text" name="title"><br/>
+               for="title">Title</label><input id="title" size="50" type="text" name="title"><br/>
         <label class="left_txt"
                for="desc">Description</label><input id="desc" size="80" type="text" name="desc"><br/>
       </div> <!-- fm_sect -->
@@ -736,7 +787,8 @@ fct_new ()
   <div id="new_srch">
     <label class="left_txt"
            for="new_search_txt">Search for</label><input id="new_search_txt" size="60" type=text name=search_for>
-  <input type=submit  value="Go">
+    <input type=submit  value="Go"><br/>
+    <a href="/fct/facet.vsp?cmd=featured&sid=<?= sid ?>&no_qry=1">Featured Queries</a>
   </div>
   <div class="expln">
     This is a simple demo application for demonstrating the Virtuoso Facets Web Service. 
@@ -747,18 +799,6 @@ fct_new ()
   </form>
   <?vsp
 }
-
-
---	 <!-- <label class="left_txt" for="inf_type">Inference context name</label>
---         <input id="inf_type"
---                type="text"
---                name="inference"
---                value="<?= selected_inf ?>"><br/>
---         <input id="inf_sas"
---                type="checkbox"
---                name="same-as" <?= case when selected_sas = 'yes' then 'selected="true"' else '' end ?>">
---         <label class="cbox" for="inf_sas">Follow owl:sameAs</label><br/>
-         -->
 
 create procedure
 fct_set_inf (in tree any, in sid int)
@@ -1043,6 +1083,8 @@ fct_vsp ()
               http_param ('desc'));
   else if ('save_init' = cmd)
     fct_save_init (tree, sid);
+  else if ('featured' = cmd)
+    fct_featured (tree, sid);
   else
     {
       http ('Unrecognized command');
