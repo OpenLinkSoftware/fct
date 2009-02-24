@@ -45,6 +45,66 @@ create procedure b3s_page_get_type (in val any)
 }
 ;
 
+create procedure b3s_get_lang_by_q (in accept varchar, in lang varchar)
+{
+  declare format, itm, q varchar;
+  declare arr any;
+  declare i, l int;
+
+  arr := split_and_decode (accept, 0, '\0\0,;');
+  q := 0;
+  l := length (arr);
+  format := null;
+  for (i := 0; i < l; i := i + 2)
+    {
+      declare tmp any;
+      itm := trim(arr[i]);
+      if (itm = lang)
+	{
+	  q := arr[i+1];
+	  if (q is null)
+	    q := 1.0;
+	  else
+	    {
+	      tmp := split_and_decode (q, 0, '\0\0=');
+	      if (length (tmp) = 2)
+		q := atof (tmp[1]);
+	      else
+		q := 1.0;
+	    }
+	  goto ret;
+	}
+    }
+  ret:
+  if (q = 0 and lang = 'en')
+    q := 0.002;
+  if (q = 0 and not length (lang))
+    q := 0.001;
+  return q;
+}
+;
+
+create procedure b3s_label_get (inout data any, in langs any)
+{
+  declare q, best_q, label any;
+  label := '';
+   if (length (data))
+     {
+       best_q := 0;
+       for (declare i,l int, i := 0, l := length (data); i < l; i := i + 1)
+         {
+	  q := b3s_get_lang_by_q (langs, data[i][1]);
+	  --dbg_obj_print (data[i][0], langs, data[i][1], q);
+          if (q > best_q)
+	    {
+	      label := data[i][0];
+	      best_q := q;
+	    }
+	 }
+     }
+   return label;
+}
+;
 
 create procedure b3s_uri_curie (in uri varchar)
 {
