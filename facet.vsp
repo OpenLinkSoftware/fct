@@ -31,6 +31,9 @@
 declare cmd varchar;
 cmd := http_param ('cmd');
 
+langs := http_request_header_full (lines, 'Accept-Language', 'en');
+connection_set ('langs', langs);
+
 if ('load' = cmd)
   {
     declare _fsq_id int;

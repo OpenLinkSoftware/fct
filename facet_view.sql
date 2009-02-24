@@ -257,8 +257,9 @@ create table fct_stored_qry (
   fsq_featured int,
   primary key (fsq_id));
 
-alter index fct_log on fct_log partition (fsq_id int);
-create index fsq_featured_ndx on fct_stored_qry (fsq_featured, fsq_id);
+alter index fct_stored_qry on fct_stored_qry partition (fsq_id int);
+
+create index fsq_featured_ndx on fct_stored_qry (fsq_featured, fsq_id) partition;
 
 sequence_next ('fct_seq');
 
@@ -729,6 +730,7 @@ create procedure
 fct_load (in from_stored int)
 {
   declare sid int;
+  dbg_printf ('fct_load: from_stored: %d', from_stored);
   
   sid := sequence_next ('fct_seq');
   declare tree any;
@@ -739,6 +741,8 @@ fct_load (in from_stored int)
     into tree
     from fct_stored_qry
     where fsq_id = from_stored;
+
+  dbg_obj_print (sid);
 
   insert into fct_state (fct_sid, fct_state)
     values (sid, tree);
@@ -1009,7 +1013,9 @@ fct_vsp ()
       return;
     }
 
-  sid := atoi (http_param ('sid'));
+  sid := http_param ('sid');
+  dbg_obj_print (sid);
+  if (0 <> sid) { sid := atoi (sid); }
   _to := http_param ('timeout');
 
   if (_to = 0) _to := atoi (registry_get ('fct_timeout_min'));
@@ -1093,7 +1099,7 @@ fct_vsp ()
 
   declare _state any;
 
-  select fct_state into _state from fct_state where fct_sid = http_param ('sid');
+  select fct_state into _state from fct_state where fct_sid = sid;
 
   insert into fct_log (fl_sid, fl_cli_ip, fl_where, fl_state, fl_cmd, fl_msec)
          values (sid, http_client_ip(), 'RETURN', _state, cmd, msec_time () - start_time);
@@ -1102,7 +1108,7 @@ fct_vsp ()
   return;
 
  no_ses:
-  http ('<div class="ses_info">Session lost. New search started</div>');
+  http (sprintf ('<div class="ses_info">Session id %d lost. New search started</div>', sid));
   fct_new ();
 }
 ;
