@@ -566,7 +566,7 @@ s3 := ' .
       validate_input(val);
       s2 := element_split(val);
       s4 := trim (fti_make_search_string(val), '()');
-      query := sprintf ('sparql select ?s ?p ( bif:search_excerpt ( bif:vector (%s) , ?o ) ) where {  graph ?G  {  ?s ?p ?o . filter ( bif:contains ( ?o, \'%s\' ) )  } . filter (?g = <%s>)   } limit 10', s2, s4, val2);
+      query := sprintf ('sparql select ?s ?p ( bif:search_excerpt ( bif:vector (%s) , ?o ) ) where {  graph ?g  {  ?s ?p ?o . filter ( bif:contains ( ?o, \'%s\' ) )  } . filter (?g = <%s>)   } limit 10', s2, s4, val2);
     }
   else if (smode = '1003')
     {
