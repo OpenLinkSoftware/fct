@@ -27,10 +27,14 @@ create procedure s_f (in i int)
 }
 
 
+grant execute on S_F to "SPARQL";
+
 create procedure DB.DBA.IR_SRV (in iri iri_id_8)
 {
   declare str varchar;
   declare n, nth, ni int;
+  if (not isiri_id (iri))
+    return vector (0, 1);
   ni := iri_id_num (iri);
   n := bit_and (0hexffffffffffffff00, ni);
  nth := 2 * bit_and (ni, 0hexff);
@@ -58,6 +62,9 @@ create procedure DB.DBA.IRI_RANK (in iri iri_id_8)
   return str[nth] * 256 + str[nth + 1];
 }
 
+
+grant execute on IR_SRV to "SPARQL";
+grant execute on IRI_RANK to "SPARQL";
 
 create procedure rnk_store_w (inout first int, inout str varchar, inout fill int) 
 {
