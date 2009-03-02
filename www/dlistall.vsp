@@ -45,7 +45,7 @@
 	  declare tmp, i, j, rs, len, to_print any;
 	  sql_state := '00000';
 	  err_msg := 'none';
-	  rexecute ('b3s', 'b3s_exec (?)', sql_state, err_msg, vector(
+	  exec ('b3s_exec (?)', sql_state, err_msg, vector(
 	  sprintf ('sparql select distinct ?p ?o where { <%s> ?p ?o }', puri)
 	  ),0, meta, data);
 	  if (sql_state = '00000')

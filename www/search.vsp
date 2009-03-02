@@ -229,7 +229,7 @@
 		  <p>Related NEs</p>
 		  <table class="tableresult" border="1">
 		  <?vsp 
-		  rexecute ('b3s', 'select top 20 iri from (select id_to_iri (tc_t2) iri, tc_count from nes_coincidence where tc_t1 = iri_to_id (?) union select id_to_iri (tc_t1), tc_count from nes_coincidence where tc_t2 = iri_to_id (?) order by tc_count desc) xx', null, null, vector (srch, srch), 0, meta, data);
+		  exec ('select top 20 iri from (select id_to_iri (tc_t2) iri, tc_count from nes_coincidence where tc_t1 = iri_to_id (?) union select id_to_iri (tc_t1), tc_count from nes_coincidence where tc_t2 = iri_to_id (?) order by tc_count desc) xx', null, null, vector (srch, srch), 0, meta, data);
 		  for (i := 0; i < length (data); i := i + 1)
 		    {
                       declare iri any;
