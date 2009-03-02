@@ -160,6 +160,11 @@ create procedure DB.DBA.IRI_STAT (in iri iri_id_8)
     + bit_shift (str[nth + 3], 16) + bit_shift (str[nth + 4], 8) + str[nth + 5];
 }
 
+create procedure rst_old_sc (in rst int)
+{
+  return bit_and (0hexffff, bit_shift (rst, -16));
+}
+
 create procedure rnk_inc (in rnk int, in nth_iter int)
 {
   /* the score increment is 1 / n_outgoing * (score_now - score_before) */
@@ -181,6 +186,18 @@ create procedure rnk_store_sc (inout first int, inout str varchar, inout fill in
   commit  work;
 }
 
+create procedure rnk_get_ranks (in s_first iri_id)
+{
+  declare  str varchar;
+ str := (select rnk_string  from rdf_iri_rank where rnk_iri = iri_id_from_num (s_first));
+  if (str is null)
+    return make_string (512);
+  if (length (str) < 512)
+    return str || make_string (512 - length (str));
+  return str;
+}
+
+
 create procedure rnk_score (in nth_iter int)
 {
   declare cr cursor for select o, p, iri_stat (s) from rdf_quad table option (no cluster, index rdf_quad_opgs) where o >#i0 and o < iri_id_from_num (0hexffffffffffffff00);
@@ -188,6 +205,8 @@ create procedure rnk_score (in nth_iter int)
   declare sc double precision;
   declare s, p iri_id;
   declare str varchar;
+  set isolation = 'committed';
+  log_enable (2);
   whenever not found goto last;
   s_first := null;
   s_prev := null;
@@ -199,6 +218,10 @@ create procedure rnk_score (in nth_iter int)
       if (s_first is null)
 	{
 	s_first := bit_and (sn, 0hexffffffffffffff00);
+	  if (nth_iter > 1)
+	    str := rnk_get_ranks (s_first);
+	  else 
+	  str := make_string (512);
 	s_prev := sn;
 	sc := 0;
 	}
@@ -212,7 +235,7 @@ create procedure rnk_score (in nth_iter int)
 	  if (not isstring (str))
 	    str := make_string (512);
 	    nth := 2 * (s_prev - s_first);
-	ssc := f_s (sc);
+	ssc := f_s (sc + s_f (str[nth] * 256 + str[nth + 1]));
 	    str[nth] := bit_shift (ssc, -8);
 	    str[nth + 1] := ssc;
 	    fill := nth + 2;
@@ -221,8 +244,11 @@ create procedure rnk_score (in nth_iter int)
 	    if (sn - s_first > 255)
 	      {
 		rnk_store_sc (s_first, str, fill);
-	      str := make_string (512);
 	      s_first := bit_and (sn, 0hexffffffffffffff00);
+		if (nth_iter > 1)
+		str := rnk_get_ranks (s_first);
+		else
+		str := make_string (512);
 	      fill := 0;
 	    }
 	}
@@ -254,6 +280,7 @@ create procedure rnk_next_cycle ()
   declare iri iri_id;
   declare n_done int;
   declare cr cursor for select rst_iri, rst_string from rdf_iri_stat table option (no cluster);
+  log_enable (2);
   whenever not found goto done;
   open cr;
   for (;;)
@@ -292,5 +319,7 @@ create procedure s_rank ()
   cl_exec ('rnk_score_srv (1)');
   cl_exec ('rnk_next_cycle ()');
   cl_exec ('rnk_score_srv (2)');
+  cl_exec ('rnk_next_cycle ()');
+  cl_exec ('rnk_score_srv (3)');
 }
 

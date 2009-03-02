@@ -394,6 +394,7 @@ fct_view (in tree any, in this_s int, in txt any, in pre any, in post any)
   if ('list' = mode)
     {
       http (sprintf ('select distinct ?s%d as ?c1 ', this_s), pre);
+      http (sprintf (' order by desc (<LONG::IRI_RANK> (?s%d)) ', this_s), post);
     }
 
   if ('list-count' = mode)
@@ -441,11 +442,15 @@ fct_view (in tree any, in this_s int, in txt any, in pre any, in post any)
 
       exp := cast (xpath_eval ('//text', tree) as varchar);
 
-      http (sprintf ('select distinct ?s%d as ?c1, (bif:search_excerpt (bif:vector (%s), ?o%d)) as ?c2 ',
+      http (sprintf ('select ?s%d as ?c1, (bif:search_excerpt (bif:vector (%s), ?o%d)) as ?c2 ?sc?rank  where {{ select ?s%d ?sc ?o%d (sql:s_f (<LONG::IRI_RANK> (?s%d))) as ?rank ',
             this_s,
    	    element_split (exp),
-	    this_s), pre);
+		     this_s, this_s, this_s, this_s), pre);
 
+      http (sprintf (' order by desc (?sc * 3 + sql:s_f (<LONG::IRI_RANK> (?s%d))) ', this_s), post);
+      fct_post (tree, post, lim, offs);
+      http ('}}', post);
+      return;
     }
 
   if ('graphs' = mode)
@@ -567,14 +572,19 @@ fct_text (in tree any,
 
   if (n = 'text')
     {
-      declare prop varchar;
-    prop := cast (xpath_eval ('./@property', tree, 1) as varchar);
+      declare prop, sc_opt, v varchar;
+      v := cast (xpath_eval ('//view/@type', tree) as varchar);
+      prop := cast (xpath_eval ('./@property', tree, 1) as varchar);
+      if ('text' = v)
+        sc_opt := ' option (score ?sc) ';
+      else 
+        sc_opt := '';
       if (prop is not null)
       prop := '<' || prop || '>';
       else
       prop := sprintf ('?s%dtextp', this_s);
-      http (sprintf (' ?s%d %s ?o%d . filter (bif:contains (?o%d, ''%s'')) .', this_s, prop, this_s, this_s,
-		     fti_make_search_string (cast (tree as varchar))), txt);
+      http (sprintf (' ?s%d %s ?o%d . ?o%d bif:contains  ''%s'' %s .', this_s, prop, this_s, this_s,
+		     fti_make_search_string (cast (tree as varchar)), sc_opt), txt);
     }
 
   if ('property' = n)
@@ -681,7 +691,7 @@ create procedure _min (in n1 int, in n2 int) {
 create procedure
 fct_exec (in tree any, in timeout int)
 {
-  declare start_time, view3, inx int;
+  declare start_time, view3, inx, n_rows int;
   declare sqls, msg, qr, qr2, act, query varchar;
   declare md, res, results, more any;
   declare tmp any;
@@ -705,7 +715,7 @@ fct_exec (in tree any, in timeout int)
 -- dbg_printf('query: %s', qr2);
 
   exec (qr2, sqls, msg, vector (), 0, md, res);
-
+  n_rows := row_count ();
   if (sqls <> '00000' and sqls <> 'S1TAT')
     signal (sqls, msg);
   if (not isarray (res) or 0 = length (res) or not isarray (res[0]) or 0 = length (res[0]))
@@ -721,6 +731,7 @@ fct_exec (in tree any, in timeout int)
       qr2 := fct_xml_wrap (tree, qr);
       sqls := '00000';
       exec (qr2, sqls, msg, vector (), 0, md, res);
+      n_rows := row_count ();
       if (sqls <> '00000' and sqls <> 'S1TAT')
 	signal (sqls, msg);
       if (isarray (res) and length (res) and isarray (res[0]) and length (res[0]))
@@ -739,7 +750,8 @@ fct_exec (in tree any, in timeout int)
   res := xmlelement ("facets", xmlelement ("sparql", query), xmlelement ("time", msec_time () - start_time),
 		       xmlelement ("complete", case when sqls = 'S1TAT' then 'no' else 'yes' end),
 		       xmlelement ("timeout", _min (timeout * 2, atoi (registry_get ('fct_timeout_max')))),
-		       xmlelement ("db-activity", act), results[0], results[1], results[2]);
+		       xmlelement ("db-activity", act),
+		     xmlelement ("processed", n_rows), results[0], results[1], results[2]);
 
   --string_to_file ('ret.xml', serialize_to_UTF8_xml (res), -2);
 
