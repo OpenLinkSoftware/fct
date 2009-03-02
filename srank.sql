@@ -1,15 +1,15 @@
 
 -- Rank RDF subjects.
--- 
+--
 
 
 
-create table rdf_iri_rank (rnk_iri iri_id_8 primary key, rnk_string varchar no compress)
-alter index rdf_iri_rank on rdf_iri_rank partition (rnk_iri int (0hexffff00));
+create table RDF_IRI_RANK (rnk_iri iri_id_8 primary key, rnk_string varchar no compress)
+alter index RDF_IRI_RANK on RDF_IRI_RANK partition (rnk_iri int (0hexffff00));
 
 
-create table rdf_iri_stat (rst_iri iri_id_8 primary key, rst_string varchar no compress)
-alter index rdf_iri_stat on rdf_iri_stat partition (rst_iri int (0hexffff00));
+create table RDF_IRI_STAT (rst_iri iri_id_8 primary key, rst_string varchar no compress)
+alter index RDF_IRI_STAT on RDF_IRI_STAT partition (rst_iri int (0hexffff00));
 
 create procedure f_s (in f double precision)
 {
@@ -66,7 +66,7 @@ create procedure DB.DBA.IRI_RANK (in iri iri_id_8)
 grant execute on IR_SRV to "SPARQL";
 grant execute on IRI_RANK to "SPARQL";
 
-create procedure rnk_store_w (inout first int, inout str varchar, inout fill int) 
+create procedure rnk_store_w (inout first int, inout str varchar, inout fill int)
 {
   if (fill < 1000)
   str := subseq (str, 0, fill);
@@ -85,7 +85,7 @@ create procedure rnk_count_refs_srv ()
   s_first := null;
   s_prev := null;
   open cr;
-  for (;;) 
+  for (;;)
     {
       fetch cr into s, p;
       sn := iri_id_num (s);
@@ -99,7 +99,7 @@ create procedure rnk_count_refs_srv ()
 	{
 	cnt := cnt + 1;
 	}
-      else 
+      else
 	{
 	  if (not isstring (str))
 	    str := make_string (1536);
@@ -177,6 +177,8 @@ create procedure rnk_inc (in rnk int, in nth_iter int)
   /* the score increment is 1 / n_outgoing * (score_now - score_before) */
   declare n_out, sc, prev_sc, inc double precision;
   n_out := bit_shift (rnk, -32);
+  if (n_out < 1)
+    n_out := 1;
   if (1 = nth_iter)
     return 1e0 / n_out;
   sc := s_f (bit_and (bit_shift (rnk, -16), 0hexffff));
@@ -185,7 +187,7 @@ create procedure rnk_inc (in rnk int, in nth_iter int)
   return (1e0 / n_out) * (inc / nth_iter);
 }
 
-create procedure rnk_store_sc (inout first int, inout str varchar, inout fill int) 
+create procedure rnk_store_sc (inout first int, inout str varchar, inout fill int)
 {
   if (fill < 300)
   str := subseq (str, 0, fill);
@@ -218,7 +220,7 @@ create procedure rnk_score (in nth_iter int)
   s_first := null;
   s_prev := null;
   open cr;
-  for (;;) 
+  for (;;)
     {
       fetch cr into s, p, rnk;
       sn := iri_id_num (s);
@@ -227,7 +229,7 @@ create procedure rnk_score (in nth_iter int)
 	s_first := bit_and (sn, 0hexffffffffffffff00);
 	  if (nth_iter > 1)
 	    str := rnk_get_ranks (s_first);
-	  else 
+	  else
 	  str := make_string (512);
 	s_prev := sn;
 	sc := 0;
@@ -237,7 +239,7 @@ create procedure rnk_score (in nth_iter int)
 	sc := sc + rnk_inc (rnk, nth_iter);
 	  --	  dbg_obj_princ (' sc of ', s, ' ', sc);
 	}
-      else 
+      else
 	{
 	  if (not isstring (str))
 	    str := make_string (512);
