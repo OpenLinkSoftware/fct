@@ -29,6 +29,21 @@ create procedure s_f (in i int)
 
 grant execute on S_F to "SPARQL";
 
+create procedure rnk_scale (in i int)
+{
+  declare ret, tmp any;
+
+  ret := exp ((i - 0hex7fff) / 1e3);
+  if (ret > 100)
+    {
+       ret :=  (100 + log ((ret - 100) / 10));
+    }
+  return ret;
+}
+;
+
+grant execute on rnk_scale to "SPARQL";
+
 create procedure DB.DBA.IR_SRV (in iri iri_id_8)
 {
   declare str varchar;
@@ -44,6 +59,7 @@ create procedure DB.DBA.IR_SRV (in iri iri_id_8)
   return vector (str[nth] * 256 + str[nth + 1], 1);
 }
 
+grant execute on DB.DBA.IR_SRV to "SPARQL";
 
 dpipe_define ('IRI_RANK', 'DB.DBA.RDF_IRI_RANK', 'RDF_IRI_RANK', 'DB.DBA.IR_SRV', 0);
 dpipe_define ('DB.DBA.IRI_RANK', 'DB.DBA.RDF_IRI_RANK', 'RDF_IRI_RANK', 'DB.DBA.IR_SRV', 0);
@@ -149,7 +165,6 @@ create procedure DB.DBA.Ist_SRV (in iri iri_id_8)
 
 
 dpipe_define ('IRI_STAT', 'DB.DBA.RDF_IRI_STAT', 'RDF_IRI_STAT', 'DB.DBA.IST_SRV', 0);
-
 
 create procedure DB.DBA.IRI_STAT (in iri iri_id_8)
 {

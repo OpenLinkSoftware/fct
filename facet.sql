@@ -442,12 +442,12 @@ fct_view (in tree any, in this_s int, in txt any, in pre any, in post any)
 
       exp := cast (xpath_eval ('//text', tree) as varchar);
 
-      http (sprintf ('select ?s%d as ?c1, (bif:search_excerpt (bif:vector (%s), ?o%d)) as ?c2 ?sc?rank  where {{ select ?s%d ?sc ?o%d (sql:s_f (<LONG::IRI_RANK> (?s%d))) as ?rank ',
+      http (sprintf ('select ?s%d as ?c1, (bif:search_excerpt (bif:vector (%s), ?o%d)) as ?c2 ?sc?rank  where {{ select ?s%d ?sc ?o%d (sql:rnk_scale (<LONG::IRI_RANK> (?s%d))) as ?rank ',
             this_s,
    	    element_split (exp),
 		     this_s, this_s, this_s, this_s), pre);
 
-      http (sprintf (' order by desc (?sc * 3 + sql:s_f (<LONG::IRI_RANK> (?s%d))) ', this_s), post);
+      http (sprintf (' order by desc (?sc * 3 + sql:rnk_scale (<LONG::IRI_RANK> (?s%d))) ', this_s), post);
       fct_post (tree, post, lim, offs);
       http ('}}', post);
       return;
@@ -577,7 +577,7 @@ fct_text (in tree any,
       prop := cast (xpath_eval ('./@property', tree, 1) as varchar);
       if ('text' = v)
         sc_opt := ' option (score ?sc) ';
-      else 
+      else
         sc_opt := '';
       if (prop is not null)
       prop := '<' || prop || '>';
