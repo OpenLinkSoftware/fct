@@ -34,11 +34,21 @@ create procedure rnk_scale (in i int)
   declare ret, tmp any;
 
   ret := exp ((i - 0hex7fff) / 1e3);
-  if (ret > 100)
+
+  if (ret < 1) 
     {
-       ret :=  (100 + log ((ret - 100) / 10));
+      return (2 * atan (ret*5));
     }
-  return ret;
+
+  if (ret > 1 and ret < 10)
+    {
+      return 3 + ((atan (ret-1) * 4) / 3.14);
+    }
+
+  else 
+    {
+      return 7 + (atan ((ret-10)/50) * 2);
+    }
 }
 ;
 
