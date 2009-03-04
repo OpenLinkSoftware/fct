@@ -44,7 +44,7 @@ function init(){
     commonMapObj.addMapControl();
     commonMapObj.setMapType(OAT.MapData.MAP_HYB);
 
-    var markersArr = []; 
+    var markersArr = [];
 ]]>
     <xsl:for-each select="result/row">
       commonMapObj.addMarker(1,
@@ -149,7 +149,7 @@ function init(){
     <xsl:otherwise>Partial results</xsl:otherwise>
   </xsl:choose>
  in <xsl:value-of select="/facets/time"/> msec. Resource utilization:
-  <xsl:value-of select="/facets/db-activity"/> 
+  <xsl:value-of select="/facets/db-activity"/>
 </div> <!-- #result_nfo -->
 </div> <!-- #res -->
 <script type="text/javascript">
@@ -204,9 +204,11 @@ function init(){
 			  $view-type = 'text-properties' or
 			  $view-type = 'list' or
 			  $view-type = 'list-count'">
+	  <xsl:if test="./@rank">
             <td>
               <xsl:value-of select="./@rank"/>
             </td>
+	</xsl:if>
 	    <td>
 	      <xsl:if test="'url' = column[1]/@dataview-type">
 		<a>
@@ -260,8 +262,8 @@ function init(){
                         rank: <xsl:value-of select="."/>
                       </xsl:attribute>
                     </img>
-              </xsl:for-each> 
-            </td>
+              </xsl:for-each>
+	  </td>
 	    <xsl:for-each select="column">
 	      <td>
 		<xsl:choose>
@@ -276,7 +278,7 @@ function init(){
 		    </a>
 		  </xsl:when>
                   <xsl:when test="'rank' = ./@datatype">
-		    
+
                   </xsl:when>
 		  <xsl:otherwise><xsl:apply-templates select="."/></xsl:otherwise>
 		</xsl:choose>

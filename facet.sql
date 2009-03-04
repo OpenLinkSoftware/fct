@@ -284,12 +284,15 @@ fct_xml_wrap (in tree any, in txt any)
   dbg_printf ('n_cols: %d', n_cols);
 
   if (n_cols = 2)
-    http (sprintf ('select xmlelement ("result", xmlattributes (''%s'' as "type"),
+    {
+      if (view_type = 'text')
+	{
+	  http (sprintf ('select xmlelement ("result", xmlattributes (''%s'' as "type"),
                               xmlagg (xmlelement ("row",
-                                                  xmlelement ("column", 
+                                                  xmlelement ("column",
                                                               xmlattributes (''rank'' as "datatype"),
                                                               "sc"),
-                                                  xmlelement ("column", 
+                                                  xmlelement ("column",
                                                               xmlattributes (''rank'' as "datatype"),
                                                               "rank"),
                                                   xmlelement ("column",
@@ -302,7 +305,24 @@ fct_xml_wrap (in tree any, in txt any)
                                                   xmlelement ("column",
                                                               fct_bold_tags("c2")))))
              from (sparql define output:valmode "LONG" ', view_type), ntxt);
+	}
+      else
+	{
+	  http (sprintf ('select xmlelement ("result", xmlattributes (''%s'' as "type"),
+                              xmlagg (xmlelement ("row",
+                                                  xmlelement ("column",
+                                                              xmlattributes (fct_lang ("c1") as "xml:lang",
+                                                                             fct_dtp ("c1") as "datatype",
+                                                                             fct_short_form(__ro2sq("c1")) as "shortform"),
+                                                              __ro2sq ("c1")),
+                                                  xmlelement ("column",
+                                                              fct_label ("c1", 0, ''facets'' )),
+                                                  xmlelement ("column",
+                                                              fct_bold_tags("c2")))))
+             from (sparql define output:valmode "LONG" ', view_type), ntxt);
 
+	}
+     }
   if (n_cols = 1)
     http ('select xmlelement ("result", xmlattributes ('''' as "type"),
     			xmlagg (xmlelement ("row",
@@ -720,7 +740,7 @@ fct_exec (in tree any, in timeout int)
 --  dbg_obj_print (qr);
   qr2 := fct_xml_wrap (tree, qr);
   start_time := msec_time ();
--- dbg_printf('query: %s', qr2);
+ dbg_printf('query: %s', qr2);
 
   exec (qr2, sqls, msg, vector (), 0, md, res);
   n_rows := row_count ();
