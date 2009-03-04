@@ -281,9 +281,17 @@ fct_xml_wrap (in tree any, in txt any)
   declare n_cols int;
   n_cols := fct_n_cols(tree);
 
+  dbg_printf ('n_cols: %d', n_cols);
+
   if (n_cols = 2)
     http (sprintf ('select xmlelement ("result", xmlattributes (''%s'' as "type"),
                               xmlagg (xmlelement ("row",
+                                                  xmlelement ("column", 
+                                                              xmlattributes (''rank'' as "datatype"),
+                                                              "sc"),
+                                                  xmlelement ("column", 
+                                                              xmlattributes (''rank'' as "datatype"),
+                                                              "rank"),
                                                   xmlelement ("column",
                                                               xmlattributes (fct_lang ("c1") as "xml:lang",
                                                                              fct_dtp ("c1") as "datatype",
@@ -442,12 +450,12 @@ fct_view (in tree any, in this_s int, in txt any, in pre any, in post any)
 
       exp := cast (xpath_eval ('//text', tree) as varchar);
 
-      http (sprintf ('select ?s%d as ?c1, (bif:search_excerpt (bif:vector (%s), ?o%d)) as ?c2 ?sc?rank  where {{ select ?s%d ?sc ?o%d (sql:rnk_scale (<LONG::IRI_RANK> (?s%d))) as ?rank ',
+      http (sprintf ('select ?s%d as ?c1, (bif:search_excerpt (bif:vector (%s), ?o%d)) as ?c2 ?sc ?rank where {{ select ?s%d (?sc * 3e-1) as ?sc ?o%d (sql:rnk_scale (<LONG::IRI_RANK> (?s%d))) as ?rank ',
             this_s,
    	    element_split (exp),
 		     this_s, this_s, this_s, this_s), pre);
 
-      http (sprintf (' order by desc (?sc * 3 + sql:rnk_scale (<LONG::IRI_RANK> (?s%d))) ', this_s), post);
+      http (sprintf (' order by desc (?sc * 3e-1 + sql:rnk_scale (<LONG::IRI_RANK> (?s%d))) ', this_s), post);
       fct_post (tree, post, lim, offs);
       http ('}}', post);
       return;
@@ -676,7 +684,7 @@ fct_test (in str varchar, in timeout int := 0)
 		       xmlelement ("complete", cplete),
 		       xmlelement ("db-activity", db_activity ()), res[0][0]);
 
-  --dbg_obj_print (reply);
+--  dbg_obj_print (reply);
 
   return xslt ('file://facet_text.xsl', reply);
 }
@@ -753,7 +761,7 @@ fct_exec (in tree any, in timeout int)
 		       xmlelement ("db-activity", act),
 		     xmlelement ("processed", n_rows), results[0], results[1], results[2]);
 
-  --string_to_file ('ret.xml', serialize_to_UTF8_xml (res), -2);
+  string_to_file ('ret.xml', serialize_to_UTF8_xml (res), -2);
 
 --  dbg_obj_print (res);
   return res;
