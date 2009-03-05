@@ -17,7 +17,7 @@
 <div id="PG">
 <div id="HD">
   <a href="http://www.openlinksw.com" class="logo">
-    <img id="opl_logo" src="images/openlinklogo_wstrap_2008_no_motto.png" alt="OpenLink Software"/>
+    <img id="opl_logo" src="/fct/images/openlinklogo_wstrap_2008_no_motto.png" alt="OpenLink Software"/>
   </a>
   <h1>Faceted Data Explorer <span class="descr">- A Server-Hosted Faceted Data Browser</span></h1>
 </div><!-- #HD -->
@@ -88,8 +88,8 @@ footer:;
 ?>
 </div><!-- #MD -->
 <div id="FT">
-  <a href="http://virtuoso.openlinksw.com/"><img src="images/virt_power_no_border.png" alt="Powered by OpenLink Virtuoso"/></a>
-  <a href="http://linkeddata.org"><img src="images/LoDLogo.gif" alt="Linked Data"/></a><br/>
+  <a href="http://virtuoso.openlinksw.com/"><img src="/fct/images/virt_power_no_border.png" alt="Powered by OpenLink Virtuoso"/></a>
+  <a href="http://linkeddata.org"><img src="/fct/images/LoDLogo.gif" alt="Linked Data"/></a><br/>
   <span class="copyright">Copyright &copy; 2009 OpenLink Software</span>
   <div id="FT_L"></div>
   <div id="FT_R"></div>
