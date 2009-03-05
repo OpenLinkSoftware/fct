@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<?vsp set http_charset='utf-8'; ?>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>OpenLink Faceted Data Browser - Documentation</title>
+<link rel="stylesheet" media="screen" type="text/css" href="styles/default.css"/>
+<script type="text/javascript" >
+    var featureList=["map", "combolist"];
+</script>
+<script type="text/javascript" src="oat/toolkit/loader.js"></script>
+</head>
+<body>
+<div id="PG">
+<div id="HD">
+  <a href="http://www.openlinksw.com" class="logo">
+    <img id="opl_logo" src="/fct/images/openlinklogo_wstrap_2008_no_motto.png" alt="OpenLink Software"/>
+  </a>
+  <h1>Faceted Data Explorer <span class="descr">- A Server-Hosted Faceted Data Browser</span></h1>
+</div><!-- #HD -->
+<div id="MD">
+  <div class="doc_ctr">
+    <h1>Documentation</h1>
+    <p></p>
+    <h2>Results Ranking</h2>
+    <p>Results are sorted on a combination of text match score and graph link structure.
+       The text score is proportional to the frequency of the search terms in the match and if many terms are present, 
+       the score is increased if the different terms occur in close proximity.</p>
+    <p>Additionally, all URIs have a score based on  how frequently they are referenced in properties of other URIs.  
+       The score is increased in function of the score of the referencing URI.  This is similar to result ranking for 
+       web search engines. When a list of URI's is shown, for example when they occur as property values, they are 
+       sorted by the URI's score since there is no text criterion on them.  The details of how scores vary in function 
+       of referencing properties, how distance affects score etc will vary as we test different options.</p> 
+    <h2>More Information</h2>
+    <ul>
+      <li><a href="http://docs.openlinksw.com/virtuoso/">OpenLink Virtuoso Documentation Main Page</a></li>
+      <li><a href="http://virtuoso.openlinksw.com/dataspace/dav/wiki/Main/VirtuosoFacetsWebService">Virtuoso Facets Web Service Documentation</a></li>
+    </ul>
+  </div>
+</div><!-- #MD -->
+<div id="FT">
+  <a href="http://virtuoso.openlinksw.com/"><img src="/fct/images/virt_power_no_border.png" alt="Powered by OpenLink Virtuoso"/></a>
+  <a href="http://linkeddata.org"><img src="/fct/images/LoDLogo.gif" alt="Linked Data"/></a><br/>
+  <span class="copyright">Copyright &copy; 2009 OpenLink Software</span>
+  <div id="FT_L"></div>
+  <div id="FT_R"></div>
+</div>
+</div> <!-- #PG -->
+</body>
+</html>
