@@ -794,11 +794,9 @@ fct_new ()
     <input type=submit  value="Go"><br/>
     <a href="/fct/facet.vsp?cmd=featured&sid=<?= sid ?>&no_qry=1">Featured Queries</a>
   </div>
-  <div class="expln">
-    This is a simple demo application for demonstrating the Virtuoso Facets Web Service. 
-    For more information on how to use the service to produce your own faceted browser on RDF data, 
-    please see the Virtuoso Facets Web Service 
-    <a href="http://virtuoso.openlinksw.com/wiki/main/Main/VirtuosoFacetsWebService">documentation</a>.
+  <div class="main_expln">
+    This is a simple demo application for demonstrating the Virtuoso Facets Web Service.<br/>
+    <a href="facet_doc.html">More information</a>
   </div>
   </form>
   <?vsp

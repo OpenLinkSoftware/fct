@@ -15,7 +15,8 @@ a.describe {margin-right: 6px}
   border-top: 1px solid #335; 
   text-align: center;}
 
-img.rnk { float: left; clear:left; margin-top: 1px;}
+td.rnk { margin: 0; padding: 0; }
+img.rnk { float: left; clear: left; margin-top: 1px;}
 
 span.iri { font-weight: bold }
 span.value { font-weight: bold }
@@ -23,6 +24,8 @@ span.value { font-weight: bold }
 #new_srch { margin-top: 40px; margin-bottom: 40px; width: 100%; text-align: center;}
 
 div.expln { margin: 0 100px 5px 100px;}
+div.doc_ctr { margin: 10px; }
+div.main_expl { text-align: center}
 
 #res { float: left; clear: left; margin: 5px 0px 0px 0px; width: 800px;}
 #res h3 { margin-top: 0; margin-left: 5px;}

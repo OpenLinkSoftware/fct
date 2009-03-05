@@ -145,11 +145,11 @@ function init(){
 </div> <!-- btn_bar -->
 <div id="result_nfo">
   <xsl:choose>
-    <xsl:when test="/facets/complete = 'yes'">Complete results</xsl:when>
-    <xsl:otherwise>Partial results</xsl:otherwise>
+    <xsl:when test="/facets/complete = 'yes'">Complete result - </xsl:when>
+    <xsl:otherwise>Partial result - </xsl:otherwise>
   </xsl:choose>
- in <xsl:value-of select="/facets/time"/> msec. Resource utilization:
-  <xsl:value-of select="/facets/db-activity"/>
+  <xsl:value-of select="/facets/processed"/> processed in <xsl:value-of select="/facets/time"/> msec.<br/>  Resource utilization:
+  <xsl:value-of select="/facets/db-activity"/> 
 </div> <!-- #result_nfo -->
 </div> <!-- #res -->
 <script type="text/javascript">

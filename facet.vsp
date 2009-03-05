@@ -8,7 +8,7 @@
 <title>OpenLink Faceted Data Browser</title>
 <link rel="stylesheet" media="screen" type="text/css" href="styles/default.css"/>
 <script type="text/javascript" >
-    var featureList=["map"];
+    var featureList=["map", "combolist"];
 </script>
 <script type="text/javascript" src="oat/toolkit/loader.js"></script>
 <script type="text/javascript" src="facet.js"></script>
@@ -25,7 +25,7 @@
 <?vsp 
 -- dbg_obj_print (http_param ('cmd'));
 -- dbg_obj_print (http_param ('search_for'));
--- dbg_obj_print  (http_request_header ());
+-- dbg_obj_print (http_request_header ());
 -- dbg_obj_print (params);
 
 declare cmd varchar;
@@ -59,7 +59,7 @@ if ('load' = cmd)
 declare exit handler for sqlstate '*'
 {
   http('<div class="error_msg dlg">\n');
-  http('  <div class="title"><h2>ERROR</h2></div>\n');
+  http('  <div class="title"><h2>Error</h2></div>\n');
   http('  <div class="body">An unexpected error was encountered while processing your request.</div>\n');
   http('  <div class="diag">\n');
   http('  <h3>Diagnostics</h3>\n');
