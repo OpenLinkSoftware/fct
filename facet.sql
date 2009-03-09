@@ -744,6 +744,8 @@ fct_exec (in tree any, in timeout int)
 
   exec (qr2, sqls, msg, vector (), 0, md, res);
   n_rows := row_count ();
+  act := db_activity ();
+  set result_timeout = 0;
   if (sqls <> '00000' and sqls <> 'S1TAT')
     signal (sqls, msg);
   if (not isarray (res) or 0 = length (res) or not isarray (res[0]) or 0 = length (res[0]))
@@ -758,8 +760,11 @@ fct_exec (in tree any, in timeout int)
       qr := fct_query (xpath_eval ('//query', tree, 1));
       qr2 := fct_xml_wrap (tree, qr);
       sqls := '00000';
+      set result_timeout = _min (timeout, atoi (registry_get ('fct_timeout_max')));
       exec (qr2, sqls, msg, vector (), 0, md, res);
       n_rows := row_count ();
+      act := db_activity ();
+      set result_timeout = 0;
       if (sqls <> '00000' and sqls <> 'S1TAT')
 	signal (sqls, msg);
       if (isarray (res) and length (res) and isarray (res[0]) and length (res[0]))
@@ -771,9 +776,6 @@ fct_exec (in tree any, in timeout int)
       inx := inx + 1;
     }
 
-  act := db_activity ();
-
-  set result_timeout = 0;
 
   res := xmlelement ("facets", xmlelement ("sparql", query), xmlelement ("time", msec_time () - start_time),
 		       xmlelement ("complete", case when sqls = 'S1TAT' then 'no' else 'yes' end),
