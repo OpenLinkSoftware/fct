@@ -139,7 +139,7 @@
 	  <li><a href="<?V http_path () ?>?g=<?U _S ?>&tp=1&sid=<?V sid ?>" <?vsp http (case when tp = 1 then 'class="sel"' else '' end); ?>>Referenced Datasets</a></li>
 	  <li><a href="<?V http_path () ?>?g=<?U _S ?>&tp=2&sid=<?V sid ?>" <?vsp http (case when tp = 2 then 'class="sel"' else '' end); ?> >Defined in Datasets</a></li>
 	  <li><a href="<?V http_path () ?>?g=<?U _S ?>&tp=3&sid=<?V sid ?>" <?vsp http (case when tp = 3 then 'class="sel"' else '' end); ?> >Expanded Same As</a></li>
-	  <li><a href="<?V http_path () ?>?g=<?U _S ?>&tp=4&sid=<?V sid ?>" <?vsp http (case when tp = 4 then 'class="sel"' else '' end); ?> >Expaned Inverse Functional Properties</a></li>
+	  <li><a href="<?V http_path () ?>?g=<?U _S ?>&tp=4&sid=<?V sid ?>" <?vsp http (case when tp = 4 then 'class="sel"' else '' end); ?> >Expanded Inverse Functional Properties</a></li>
       </ul>
       <table class="description">
 	  <?vsp

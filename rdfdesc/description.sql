@@ -140,7 +140,8 @@ create procedure b3s_uri_curie (in uri varchar)
 ;
 
 
-create procedure b3s_http_url (in url varchar, in sid varchar := null)
+create procedure 
+b3s_http_url (in url varchar, in sid varchar := null)
 {
   declare host, pref, more varchar;
   if (sid is not null)
@@ -150,7 +151,8 @@ create procedure b3s_http_url (in url varchar, in sid varchar := null)
   return sprintf ('/about/?url=%U%s', url, more);
 };
 
-create procedure b3s_http_print_l (in p_text any, inout odd_position int, in r int := 0, in sid varchar := null)
+create procedure 
+b3s_http_print_l (in p_text any, inout odd_position int, in r int := 0, in sid varchar := null)
 {
    declare short_p, p_prefix, int_redirect, url any;
 
@@ -167,7 +169,8 @@ create procedure b3s_http_print_l (in p_text any, inout odd_position int, in r i
 }
 ;
 
-create procedure b3s_http_print_r (in _object any, in sid varchar := null)
+create procedure 
+b3s_http_print_r (in _object any, in sid varchar := null)
 {
    declare lang, rdfs_type any;
 
