@@ -170,15 +170,17 @@
 	         http ('<tr>');
                  if (tp = 1 or tp = 2)
 		   { 
-		     for (declare i, l int, i := 0, l := length (data); i < l; i := i + 1)
-			{
-			  http_value (data[i], 'td');
-			}	    
+		     --for (declare i, l int, i := 0, l := length (data); i < l; i := i + 1)
+		     --	{
+		     --	  http_value (data[i], 'td');
+	             -- }	    
+		     http (sprintf ('<td>%V</td>', data[0]));
+		     http (sprintf ('<td align="right">%d</td>', data[1]));
 		   }   
 		 else if (tp = 3)
 		  {
  		     http (sprintf ('<td><a href="/about/?url=%U">%V</a></td>', data[0], b3s_uri_curie (data[0])));
-		     http (sprintf ('<td>%.6g</td>', data[1]));
+		     http (sprintf ('<td align="right">%.6g</td>', data[1]));
 		  } 
                  else if (tp = 4)
 		  {
@@ -187,8 +189,14 @@
 		     if (__box_flags (data[2]) = 1)
 		       http (sprintf ('<td><a href="/about/?url=%U">%V</a></td>', data[2], b3s_uri_curie (data[2])));
 		     else
-                       http_value (data[2], 'td');
-		     http (sprintf ('<td>%s</td>', data[3]));
+                       {
+		         if (isstring (data[2]))
+			   http ('<td>' || data[2] || '</td>');
+			 else  
+                           http_value (data[2], 'td');
+		       }	 
+		     http (sprintf ('<td align="right">%.06g</td>', cast (data[3] as decimal)));
+		     --http (sprintf ('<td align="right">%s</td>', data[3]));
 		  } 
 	         http ('</tr>\n');
 	      }
