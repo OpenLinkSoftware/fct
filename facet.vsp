@@ -8,7 +8,7 @@
 <title>OpenLink Faceted Data Browser</title>
 <link rel="stylesheet" media="screen" type="text/css" href="styles/default.css"/>
 <script type="text/javascript" >
-    var featureList=["map", "combolist"];
+    var featureList=["map", "combolist", "ajax2", "tab", "json"];
 </script>
 <script type="text/javascript" src="oat/toolkit/loader.js"></script>
 <script type="text/javascript" src="facet.js"></script>
@@ -17,9 +17,8 @@
 <div id="PG">
 <div id="HD">
   <a href="http://www.openlinksw.com" class="logo">
-    <img id="opl_logo" src="/fct/images/openlinklogo_wstrap_2008_no_motto.png" alt="OpenLink Software"/>
+    <img id="opl_logo" src="/fct/images/openlink150_on_blue.gif" alt="OpenLink Software"/>
   </a>
-  <h1>Faceted Data Explorer <span class="descr">- A Server-Hosted Faceted Data Browser</span></h1>
 </div><!-- #HD -->
 <div id="MD">
 <?vsp 

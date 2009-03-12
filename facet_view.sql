@@ -65,12 +65,12 @@ fct_view_info (in tree any, in ctx int, in txt any)
     }
   if ('text' = mode)
     {
-      http (sprintf ('Displaying values and text summaries associated with pattern: %s%d', 
+      http (sprintf ('Displaying values and text summaries associated with pattern %s%d', 
 	             connection_get ('s_term'), pos), txt);
     }
   if (offs)
     http (sprintf ('  values %d - %d', 1 + offs, lim), txt);
-  http ('</h3>', txt);
+  http (' where:</h3>', txt);
 }
 ;
 
@@ -186,7 +186,8 @@ fct_query_info (in tree any,
       new_s := max_s;
       http (sprintf (' %s <span class="iri">%s</span> %s . ',
                      fct_var_tag (this_s, ctx),
-		     fct_short_form (cast (xpath_eval ('./@iri', tree, 1) as varchar)), fct_var_tag (new_s, ctx)), txt);
+		     fct_short_form (cast (xpath_eval ('./@iri', tree, 1) as varchar)), 
+                     fct_var_tag (new_s, ctx)), txt);
       if (ctx)
 	http (sprintf ('<a class="qry_nfo_cmd" href="/fct/facet.vsp?sid=%d&cmd=drop&n=%d">Drop %s%d</a> ',
 	               connection_get ('sid'), new_s, connection_get('s_term'), new_s), txt);
@@ -219,10 +220,10 @@ fct_query_info (in tree any,
 		     cno),
             txt);
     }
-    if (ctx)
-      http ('<br/>', txt);
-    else
-      http ('\n', txt);
+  if (ctx)
+    http ('<br/>', txt);
+  else
+    http ('\n', txt);
 }
 ;
 
@@ -786,20 +787,58 @@ fct_new ()
 	where fct_sid = sid;
     }
   ?>
-  <form method="post"
-        action="/fct/facet.vsp?cmd=text&sid=<?= sid ?>" >
-  <div id="new_srch">
-    <label class="left_txt"
-           for="new_search_txt">Search for</label><input id="new_search_txt" size="60" type=text name=search_for>
-    <input type=submit  value="Go"><br/>
-    <a href="/fct/facet.vsp?cmd=featured&sid=<?= sid ?>&no_qry=1">Featured Queries</a>
+  <div id="main_srch">
+    <div id="TAB_ROW">
+      <div class="tab" id="TAB_TXT">Search Text</div>
+      <div class="tab" id="TAB_URI">URI Lookup</div>
+      <div class="tab_act">
+        <a href="/fct/facet.vsp?cmd=featured&sid=<?= sid ?>&no_qry=1">Featured Queries</a>
+        &nbsp;|&nbsp;
+        <a href="facet_doc.html">About</a>
+    </div>
+    </div>
+    <div id="TAB_CTR">
+    </div> <!-- #TAB_CTR -->
+    <div id="TAB_PAGE_TXT" class="tab_page" style="display: none">
+      <h2>OpenLink Finder</h2>
+      <form method="post"
+            action="/fct/facet.vsp?cmd=text&sid=<?= sid ?>" >
+        <div id="new_srch">
+          <label class="left_txt"
+                 for="new_search_txt">Search Text</label>
+          <input id=  "new_search_txt" 
+                 size="60" 
+                 type="text" 
+                 name="search_for"/>
+          <input type=submit  value="Search"><br/>
+        </div>
+      </form>
+    </div> <!-- #TAB_PAGE_TXT -->
+    <div id="TAB_PAGE_URI" class="tab_page" style="display: none">
+      <h2>OpenLink Finder</h2>
+      <form method="get" action="/about/">
+        <div id="new_uri">
+          <label class="left_txt"
+                 for="new_uri_txt">URI Lookup</label>
+          <input id=  "new_uri_txt" 
+                 size="60" 
+                 type="text" 
+                 name="url" 
+                 autocomplete="off"/>
+          <input type="hidden" name="sid" value="<?= sid ?>">
+          <img id=   "uri_ac_thr" 
+               class="throbber" 
+               src=  "/fct/images/thrb.gif" 
+               alt=  "Loading" style="display: none"/>
+          <input type="submit" value="Describe"/><br/>
+        </div>
+      </form>
+    </div> <!-- #TAB_PAGE_URI -->
+  </div> <!-- #main_srch -->
+  <div class="main_expln"><br/>
+    Faceted Search &amp; Find Service<br/>
   </div>
-  <div class="main_expln">
-    This is a simple demo application for demonstrating the Virtuoso Facets Web Service.<br/>
-    <a href="facet_doc.html">More information</a>
-  </div>
-  </form>
-  <?vsp
+ <?vsp
 }
 
 create procedure

@@ -28,7 +28,7 @@ function init(){
         var x;
 	if (href.length > 0) {
 	  x = OAT.Dom.create ("a");
-	  x.href = '/about/?url='+escape (href);
+	  x.href = '/fcr/rdfdesc/description.vsp?url='+escape (href);
 	  if (label.length > 0)
 	    x.innerHTML = label;
 	  else
@@ -250,20 +250,28 @@ function init(){
 	  </xsl:when>
 	  <xsl:otherwise>
             <td class="rnk">
-              <xsl:for-each select="column[@datatype='rank']">
-                    <img class="rnk">
-                      <xsl:attribute name="src">
-                        images/r_<xsl:value-of select="min (floor(.), 10)"/>.png
-                      </xsl:attribute>
-                      <xsl:attribute name="alt">
-                        rank: <xsl:value-of select="."/>
-                      </xsl:attribute>
-                      <xsl:attribute name="title">
-                        rank: <xsl:value-of select="."/>
-                      </xsl:attribute>
-                    </img>
+              <xsl:for-each select="column[@datatype='trank' or @datatype='erank']">
+                <img class="rnk">
+                  <xsl:attribute name="src">
+                    images/r_<xsl:value-of select="min (floor(.), 10)"/>.png
+                  </xsl:attribute>
+                    <xsl:attribute name="alt">
+                      <xsl:choose>
+                        <xsl:when test="./@datatype='trank'">Text Rank:</xsl:when>
+                        <xsl:when test="./@datatype='erank'">Entity Rank:</xsl:when> 
+		      </xsl:choose>
+                      <xsl:value-of select="."/>
+                    </xsl:attribute>
+                    <xsl:attribute name="title">
+                      <xsl:choose>
+                        <xsl:when test="./@datatype='trank'">Text Rank:</xsl:when>
+                        <xsl:when test="./@datatype='erank'">Entity Rank:</xsl:when> 
+                      </xsl:choose>
+                    <xsl:value-of select="."/>
+                  </xsl:attribute>
+                </img>
               </xsl:for-each>
-	  </td>
+	    </td>
 	    <xsl:for-each select="column">
 	      <td>
 		<xsl:choose>
@@ -277,7 +285,7 @@ function init(){
 		      </xsl:choose>
 		    </a>
 		  </xsl:when>
-                  <xsl:when test="'rank' = ./@datatype">
+                  <xsl:when test="'erank' = ./@datatype or 'trank' = ./@datatype">
 
                   </xsl:when>
 		  <xsl:otherwise><xsl:apply-templates select="."/></xsl:otherwise>

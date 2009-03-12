@@ -314,7 +314,7 @@ create procedure rnk_next_cycle ()
   declare iri iri_id;
   declare n_done int;
   declare cr cursor for select rst_iri, rst_string from rdf_iri_stat table option (no cluster);
-  log_enable (2);
+--  log_enable (2);
   whenever not found goto done;
   open cr;
   for (;;)

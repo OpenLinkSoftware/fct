@@ -7,35 +7,121 @@ body {
 
 a, a:visited {color: #242;}
 a.describe {margin-right: 6px}
-#PG { width: 1000px; text-align: left; margin: 10px auto 10px auto;}
-#HD { width: 100%; float: left; text-align: center;}
-#MD { width: 100%; float: left; margin-top: 10px; background-color: #eee; }
-#FT { width: 100%; float: left; margin-top: 10px; 
-  color: #335; background-color: #fff; 
-  border-top: 1px solid #335; 
-  text-align: center;}
+
+#PG { width: 1000px; 
+      text-align: left; margin: 10px auto 10px auto; background-color: #fff;}
+
+#HD { 
+  width: 100%; 
+  float: left; 
+  height: 60px;
+  text-align: center; 
+  background-color: #006699;
+}
+
+#HD img { margin-top: 10px; margin-left: 10px;}
+/*image: url(/fct/images/banbck1.png)}*/
+
+#HD h1 { float:left; margin: 0 0 0 20px;vertical-align: top; color: #335;}
+
+#opl_logo { border: 0; width: 120px; float: left; margin-left: 6px;}
+
+#MD { width: 100%; float: left; margin-top: 0; background-color: #e9f2f7; padding-bottom: 10px; }
+
+#FT { width: 100%; float: left; 
+      border-top: 1px solid #335;
+      text-align: center }
+
+span.copyright { font-size: 8pt; color: #888}
 
 td.rnk { margin: 0; padding: 0; }
 img.rnk { float: left; clear: left; margin-top: 1px;}
 
-span.iri { font-weight: bold }
-span.value { font-weight: bold }
-
-#new_srch { margin-top: 40px; margin-bottom: 40px; width: 100%; text-align: center;}
+/*#new_srch { margin-top: 40px; margin-bottom: 40px; width: 100%; text-align: center;}
+#new_srch label.left_txt { margin-right: 10px;}*/
 
 div.expln { margin: 0 100px 5px 100px;}
 div.doc_ctr { margin: 10px; }
-div.main_expln { text-align: center; width: 100%;}
+div.main_actions { float: left; clear: left; width: 100%; text-align: left;}
+div.main_expln { float: left; clear: left; text-align: center; width: 100%;}
 
 #res { float: left; clear: left; margin: 5px 0px 0px 0px; width: 800px;}
 #res h3 { margin-top: 0; margin-left: 5px;}
-#new_srch label.left_txt { margin-right: 10px;}
+
+#new_search_txt {}
+#new_uri_txt {}
 
 table.result { clear:left; width: 100%; margin: 3px; font-size: 9pt;}
 table.result td { max-width: 350px; overflow: hidden; font-size: 9pt;}
+span.iri { font-weight: bold }
+span.value { font-weight: bold }
 
-#opl_logo { border: 0; width: 120px; float: left; margin-left: 6px;}
-#HD h1 { float:left; margin: 0 0 0 80px;vertical-align: top; color: #335;}
+table.dataset_list td { margin: 0 10px 0 10px }
+th { text-align: left; }
+
+#main_srch { 
+  margin-top: 15px; 
+  margin-left: auto;
+  margin-right: auto}
+
+#TAB_ROW { width: 800px; margin-left: auto; margin-right: auto;}
+
+div.tab { 
+  float: left;
+  width: 10em;
+  padding-top: 10px;
+  padding-left: 10px;
+  padding-bottom: 4px;
+  cursor: pointer; 
+  background-image: url(/fct/images/tablv1default.png); 
+  margin-right: 4px;
+}
+
+div.tab:first-child { clear: left; }
+
+div.tab_selected { 
+  background-image: url(/fct/images/tablv1sel.png); 
+  font-weight: bold;
+  padding-top: 10px;
+  padding-bottom: 5px;
+  border-top: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+  border-left: 1px solid #ddd;
+  border-bottom: 2px solid #fff; 
+}
+
+#TAB_ROW div.tab_act { float: right; padding-top: 10px;}
+
+#TAB_CTR { width: 800px; margin-left: auto; margin-right: auto; text-align: center;}
+
+div.tab_page {
+  float: left;
+  width: 100%;
+  min-height: 150px;
+  background-image: url(/fct/images/tab_page_back1.png); 
+  background-repeat: repeat-x;
+  border-left: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+}
+
+div.tab_page form { margin-top: 40px;}
+div.tab_page form label { font-weight: bold; }
+
+div.autocomplete_list { 
+  padding: 0;
+  margin: 0;
+  list-style-type: none;
+  text-align: left;
+  background: #fff; 
+  border: 1px solid #888; }
+
+div.ac_list_option { 
+  text-align: left; 
+  margin: 2px 5px 2px 5px; 
+  cursor: pointer; 
+  color: #888 }
+
+div.ac_list_option:hover { color: #666 }
 
 span.descr { font-size: 9pt; color: #557; margin-top: 0;}
 
@@ -173,4 +259,5 @@ div#sparql_link a {
   text-align: center;}
 
 #featured_list { font-size: 9pt;}
-#featured_list td { font-size: 9pt; }
+#featured_list td { font-size: 9pt;}
+
