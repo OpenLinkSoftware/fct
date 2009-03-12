@@ -4,25 +4,17 @@
 
    declare _S, odd_position any;
    declare page_resource_uri, proxy_iri, rdf_link, label, _subject any;
-   declare white_page, arr, data, meta, h1, h2, inx, gr, host, refr, sid, inf, sas, langs, best_q any;
+   declare white_page, arr, data, meta, h1, h2, inx, gr, host, refr, sid, inf, sas, langs, best_q, tp any;
 
    white_page := 1;
    sid := null;
    inf := '';
    sas := '';
-   refr := http_request_header (http_request_header (), 'Referer', null, null);
-   if (refr not like '%/facet.vsp?%')
-     refr := null;
-   else if (refr is not null)
-     {
-       declare ht, pars any; 
-       ht := WS.WS.PARSE_URI (refr);
-       pars := ht[4];
-       pars := split_and_decode (pars);
-       sid := get_keyword ('sid', pars);
-     }
    if (sid is null)
      sid := get_keyword ('sid', params); 
+   else 
+     sid := '';
+   refr := null;
    if (sid is not null)
      {
        for select fct_state from fct_state where fct_sid = sid do
@@ -64,21 +56,65 @@
   __res_desc := b3s_uri_curie(page_resource_uri);
   if (not length (label))
     label := page_resource_uri;
+  tp := atoi (get_keyword ('tp', params, '1'));  
 ?>
 
 <!-- header -->
 <head>
     <base href="http://<?V host ?>/fct/rdfdesc/" />
-    <title>About: <?vsp http (sprintf ('%s', label)); ?></title>
+    <title>Usage Statistics about: <?vsp http (sprintf ('%s', label)); ?></title>
     <link rel="alternate" type="application/rdf+xml" href="<?=rdf_link?>" title="RDF" />
     <link rel="stylesheet" type="text/css" href="statics/<?=either (white_page, 'style_w.css', 'style.css')?>" />
     <link href="statics/highlighter.css" type="text/css" rel="stylesheet" charset="utf-8" />
     <script type="text/javascript" src="statics/script.js"></script>
+    <style>
+	#nav {
+	    position:relative;
+	    float:left;
+	    width:100%;
+	    padding:0 0 2em 0em;
+	    margin:0;
+	    list-style:none;
+	    line-height:1em;
+	}
+
+	#nav li {
+	    float:left;
+	    margin:0;
+	    padding:0;
+	}
+
+	#nav a {
+	    display:block;
+	    color:#444;
+	    text-decoration:none;
+	    font-weight:normal;
+	    background:#ddd;
+	    margin:0;
+	    padding:0.25em 1em;
+	    border-left:1px solid #fff;
+	    border-top:1px solid #fff;
+	    border-right:1px solid #aaa;
+	}
+
+	#nav a:hover,
+	#nav a:active,
+	#nav a.sel:link,
+	#nav a.sel:visited {
+	    background:#bbb;
+	}
+
+	#nav a.sel:link,
+	#nav a.sel:visited {
+	    position:relative;
+	    z-index:102;
+	}
+    </style>
 </head>
   <body onLoad="init();">
     <div id="header">
       <div id="hd_l">
-	  <h1 id="title">About: <a href="<?= case when page_resource_uri like 'nodeID://%' then b3s_http_url (page_resource_uri) else page_resource_uri end ?>"><?vsp http (sprintf ('%s', label)); ?></a></h1>
+	  <h1 id="title">Usage Statistics about: <a href="<?= case when page_resource_uri like 'nodeID://%' then b3s_http_url (page_resource_uri) else page_resource_uri end ?>"><?vsp http (sprintf ('%s', label)); ?></a></h1>
         <div id="homelink">
         </div>
         <div class="page-resource-uri">
@@ -98,64 +134,66 @@
 <!-- proptable -->
       <?vsp if (refr is not null) { ?>
       <a href="<?V refr ?>">Go Back</a>
-      &nbsp;
-      <a href="usage.vsp?g=<?V _S ?>&sid=<?V sid ?>">Usage Statistics</a>
       <?vsp } ?>      
-      <table class="description"><tr><th class="property">Property</th><th class="value">Value</th></tr>
-
-<?vsp
-      exec (sprintf ('select "p" as PRED from (sparql %s select distinct ?p where { <%S> ?p ?o }) sp order by 1', inf, _S), 
-		null, null, vector (), 0, null, null, h1); 
-      while (0 = exec_next (h1, null, null, data))	
-	{
-           declare PRED any;
-	   pred := data[0];  
-	   b3s_http_print_l (PRED, odd_position, 0, sid);
-	   exec (sprintf ('sparql %s select distinct ?o where { <%S> <%S> ?o } limit 300', inf, _S, PRED),
-		null, null, vector (), 0, null, null, h2);
-	   while (0 = exec_next (h2, null, null, data))	
-	      {	
-                declare OBJECT any;
-		OBJECT := data [0];
-		b3s_http_print_r (OBJECT, sid);
+      <ul id="nav">
+	  <li><a href="<?V http_path () ?>?g=<?U _S ?>&tp=1&sid=<?V sid ?>" <?vsp http (case when tp = 1 then 'class="sel"' else '' end); ?>>Referenced Datasets</a></li>
+	  <li><a href="<?V http_path () ?>?g=<?U _S ?>&tp=2&sid=<?V sid ?>" <?vsp http (case when tp = 2 then 'class="sel"' else '' end); ?> >Defined in Datasets</a></li>
+	  <li><a href="<?V http_path () ?>?g=<?U _S ?>&tp=3&sid=<?V sid ?>" <?vsp http (case when tp = 3 then 'class="sel"' else '' end); ?> >Expanded Same As</a></li>
+	  <li><a href="<?V http_path () ?>?g=<?U _S ?>&tp=4&sid=<?V sid ?>" <?vsp http (case when tp = 4 then 'class="sel"' else '' end); ?> >Expaned Inverse Functional Properties</a></li>
+      </ul>
+      <table class="description">
+	  <?vsp
+	    declare qr varchar;
+	    if (tp = 1) -- refd in data sets
+	      {
+	        qr := sprintf ('sparql select ?g count (*) where { graph ?g { <%S> ?p ?o }} group by ?g order by desc 2 limit 20', _S);
+                http ('<tr><th class="property">Graph</th><th class="value">Count</th></tr>\n');
 	      }
-	   exec_close (h2);
-
-	   http ('</ul></td></tr>');
-	}
-      exec_close (h1);
-      exec (sprintf ('select "p" as PRED from (sparql %s select distinct ?p where { ?o ?p <%S> }) sp order by 1', inf, _S), 
-		null, null, vector (), 0, null, null, h1); 
-      inx := 0;	
-      while (0 = exec_next (h1, null, null, data))	
-	{
-           declare PRED any;
-	   pred := data[0];  
-	   --if (inx = 0)
-	   --  {
-	   --    http ('<tr><th width="25%">Reverse links</th><th>&nbsp;</th></tr>');
-	   --  }
-	   inx := inx + 1;
-	   b3s_http_print_l (PRED, odd_position, 1, sid);
-	   exec (sprintf ('sparql %s select distinct ?s where { ?s <%S> <%S> } limit 300', inf, PRED, _S),
-		null, null, vector (), 0, null, null, h2);
-	   while (0 = exec_next (h2, null, null, data))	
-	      {	
-                declare OBJECT any;
-		OBJECT := data [0];
-		b3s_http_print_r (OBJECT, sid);
+	    if (tp = 2) -- defd in data sets
+	      {
+	        qr := sprintf ('sparql select ?g count (*) where { graph ?g { ?s ?p <%S>  }} group by ?g order by desc 2 limit 20', _S);
+                http ('<tr><th>Graph</th><th>Count</th></tr>\n');
 	      }
-	   exec_close (h2);
-
-	   http ('</ul></td></tr>');
-	}
-      exec_close (h1);
-skip_rev:
-       if  (odd_position = 0)
-	 {
-	    http ('<tr><td colspan="2"><p>No further information is available.</p></td></tr>');
-	 }
-?>
+	    if (tp = 3) -- Expanded sas
+	      {
+	         qr := sprintf ('sparql select ?syn (sql:rnk_scale (<LONG::IRI_RANK> (?syn))) where {{ select ?s ?syn  where {{?syn owl:sameAs ?s } union {?s owl:sameAs ?syn}}} option (transitive, t_distinct, t_min (0), T_in (?s), t_out (?syn)) . filter (!isliteral (?syn) && ?s = <%S> ) } order by desc 2 limit 20', _S);
+                 http ('<tr><th>Subject</th><th>Rank</th></tr>\n');
+	      }
+	    if (tp = 4) -- Expanded ifp
+	      {
+	         qr := sprintf ('sparql select distinct ?syn ?p ?o (sql:rnk_scale (<LONG::IRI_RANK> (?syn))) where { <%S> ?p ?o .  filter (0 != (<LONG::bif:rdf_is_sub> ("b3sifp", ?p, lod:ifp_like, 3))) .  ?syn ?p ?o . } order by desc 4 limit 20', _S);
+		 http ('<tr><th>Subject</th><th>Property</th><th>Object</th><th>Rank</th></tr>\n');
+	      }
+	    exec (qr, null, null, vector (), 0, null, null, h1); 
+	    while (0 = exec_next (h1, null, null, data))	
+	      {
+	         http ('<tr>');
+                 if (tp = 1 or tp = 2)
+		   { 
+		     for (declare i, l int, i := 0, l := length (data); i < l; i := i + 1)
+			{
+			  http_value (data[i], 'td');
+			}	    
+		   }   
+		 else if (tp = 3)
+		  {
+ 		     http (sprintf ('<td><a href="/about/?url=%U">%V</a></td>', data[0], b3s_uri_curie (data[0])));
+		     http (sprintf ('<td>%.6g</td>', data[1]));
+		  } 
+                 else if (tp = 4)
+		  {
+ 		     http (sprintf ('<td><a href="/about/?url=%U">%V</a></td>', data[0], b3s_uri_curie (data[0])));
+		     http (sprintf ('<td><a href="/about/?url=%U">%V</a></td>', data[1], b3s_uri_curie (data[1])));
+		     if (__box_flags (data[2]) = 1)
+		       http (sprintf ('<td><a href="/about/?url=%U">%V</a></td>', data[2], b3s_uri_curie (data[2])));
+		     else
+                       http_value (data[2], 'td');
+		     http (sprintf ('<td>%s</td>', data[3]));
+		  } 
+	         http ('</tr>\n');
+	      }
+	    exec_close (h1);
+	  ?>
       </table>
       <?vsp if (refr is not null) { ?>
       <a href="<?V refr ?>">Go Back</a>
