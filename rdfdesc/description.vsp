@@ -99,7 +99,7 @@
       <?vsp if (refr is not null) { ?>
       <a href="<?V refr ?>">Go Back</a>
       &nbsp;
-      <a href="usage.vsp?g=<?V _S ?>&sid=<?V sid ?>">Usage Statistics</a>
+      <a href="usage.vsp?g=<?U _S ?>&sid=<?V sid ?>">Usage Statistics</a>
       <?vsp } ?>      
       <table class="description"><tr><th class="property">Property</th><th class="value">Value</th></tr>
 
