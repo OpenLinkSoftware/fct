@@ -112,10 +112,10 @@
 <!-- proptable -->
     <div id="TAB_ROW">
 	<div class="tab <?vsp http (case when tp = 1 then ' tab_selected' else '' end); ?>">
-          <a href="<?V http_path () ?>?g=<?U _S ?>&tp=1&sid=<?V sid ?>">Referenced Datasets</a>
+          <a href="<?V http_path () ?>?g=<?U _S ?>&tp=1&sid=<?V sid ?>">Referenced by Graphs</a>
         </div>
 	<div class="tab <?vsp http (case when tp = 2 then ' tab_selected' else '' end); ?>">
-          <a href="<?V http_path () ?>?g=<?U _S ?>&tp=2&sid=<?V sid ?>">Defined in Datasets</a>
+          <a href="<?V http_path () ?>?g=<?U _S ?>&tp=2&sid=<?V sid ?>">Source Datasets</a>
         </div>
 	<div class="tab <?vsp http (case when tp = 3 then ' tab_selected' else '' end); ?>">
           <a href="<?V http_path () ?>?g=<?U _S ?>&tp=3&sid=<?V sid ?>">Expanded Same As</a>

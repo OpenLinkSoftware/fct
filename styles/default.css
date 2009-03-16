@@ -115,6 +115,7 @@ div.subj_nav div.nav h3 { text-align: left; margin-left: 10px; }
 
 table.description { text-align: left; margin: 10px; float: left;clear: left;}
 table.description td { vertical-align: top;}
+table.description td.property { white-space: nowrap;}
 table.description ul.obj { 
   padding: 0; 
   margin-top: 0; 
@@ -182,7 +183,7 @@ div.tab_page {
 div.tab_page form { margin-top: 40px;}
 div.tab_page form label { font-weight: bold; }
 
-div.pg_b_nav { width: 100%; margin-left: 10px;}
+div.pg_b_nav { float: left; clear: left; width: 100%; margin-left: 10px;}
 
 div.autocomplete_list { 
   padding: 0;
