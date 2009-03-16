@@ -3,36 +3,66 @@ html {}
 body { 
   margin: 0; padding: 0;
   font-family: Gill Sans, Verdana, Helvetica, sans-serif;
-  font-size: 9pt; text-align: center;}
+  font-size: 9pt; text-align: center}
 
 a, a:visited {color: #242;}
 a.describe {margin-right: 6px}
 
+tr:hover {
+  background-color: #ddd;}
+
 #PG { width: 1000px; 
-      text-align: left; margin: 10px auto 10px auto; background-color: #fff;}
+      text-align: left; margin: 10px auto 10px auto; background-color: #fff}
 
 #HD { 
   width: 100%; 
   float: left; 
   height: 60px;
   text-align: center; 
-  background-color: #006699;
-}
+  background-color: #006699}
 
-#HD img { margin-top: 10px; margin-left: 10px;}
-/*image: url(/fct/images/banbck1.png)}*/
+#HD img { margin-top: 0 0 0 10px; padding: 0; vertical-align: middle;}
 
-#HD h1 { float:left; margin: 0 0 0 20px;vertical-align: top; color: #335;}
+#HD h1 { 
+  font-size: 14pt; 
+  float:left; 
+  margin: 0 0 0 20px; 
+  vertical-align: top; 
+  color: #fff; 
+  padding: 0}
+
+#HD h1 a { color: #fff}
+
+#h1 div.page-resource-uri {float: left}
+#hd_l { float: left; clear: left}
+#hd_r { float: right; clear: right}
+#hd_r img { margin: 10px 10px 0 0; vertical-align: middle}
 
 #opl_logo { border: 0; width: 120px; float: left; margin-left: 6px;}
 
-#MD { width: 100%; float: left; margin-top: 0; background-color: #e9f2f7; padding-bottom: 10px; }
+#MD { width: 100%; 
+      float: left; 
+      margin-top: 0; 
+      background-color: #e9f2f7; 
+      padding-bottom: 10px; 
+      margin-left: auto; margin-right: auto;}
 
 #FT { width: 100%; float: left; 
       border-top: 1px solid #335;
-      text-align: center }
+      text-align: center;
+      padding-top: 10px; }
+
+#ft_b { padding-top: 10px; }
 
 span.copyright { font-size: 8pt; color: #888}
+
+div.page_resource_info {
+  width: 100%; float: left; clear: left;
+  text-align: left;
+  margin-top: 15px; 
+}
+
+div.page_resource_info h2 { display: inline; padding: 0; margin-left: 10px;}
 
 td.rnk { margin: 0; padding: 0; }
 img.rnk { float: left; clear: left; margin-top: 1px;}
@@ -59,6 +89,38 @@ span.value { font-weight: bold }
 table.dataset_list td { margin: 0 10px 0 10px }
 th { text-align: left; }
 
+div.subj_nav { float: left; width: 100%;}
+
+p.subj_desc {
+  float: left;
+  clear: left;
+  width: 750px;
+  text-align: left; 
+  font-style: italic; 
+  font-size: 12pt; 
+  margin: 10px; 
+  padding: 10px;
+  border: 1px solid black;}
+
+div.subj_nav div.nav { 
+  float: right; 
+  clear: right;
+  text-align: left; 
+  width: 200px;
+  margin-top: 10px; 
+  border-left: 1px solid #ddd; }
+
+div.subj_nav div.nav ul { list-style-type: none; padding: 0; margin-left: 10px;}
+div.subj_nav div.nav h3 { text-align: left; margin-left: 10px; }
+
+table.description { text-align: left; margin: 10px; float: left;clear: left;}
+table.description td { vertical-align: top;}
+table.description ul.obj { 
+  padding: 0; 
+  margin-top: 0; 
+  margin-left; 10px; 
+  list-style-type: none } /* list-style-type: none} */
+
 #main_srch { 
   margin-top: 15px; 
   margin-left: auto;
@@ -66,9 +128,10 @@ th { text-align: left; }
 
 #TAB_ROW { width: 800px; margin-left: auto; margin-right: auto;}
 
+
 div.tab { 
   float: left;
-  width: 10em;
+  min-width: 10em;
   padding-top: 10px;
   padding-left: 10px;
   padding-bottom: 4px;
@@ -76,6 +139,8 @@ div.tab {
   background-image: url(/fct/images/tablv1default.png); 
   margin-right: 4px;
 }
+
+div.tab a { text-decoration: none; white-space: nowrap; margin-right: 5px; }
 
 div.tab:first-child { clear: left; }
 
@@ -93,19 +158,31 @@ div.tab_selected {
 #TAB_ROW div.tab_act { float: right; padding-top: 10px;}
 
 #TAB_CTR { width: 800px; margin-left: auto; margin-right: auto; text-align: center;}
+#TAB_CTR table { width: 100%; }
+
+body.usage_page p.subj_desc { width: 900px; }
+body.usage_page #TAB_ROW { margin-left: 10px; width: 920px}
+body.usage_page #TAB_CTR { margin-left: 10px; width: 920px}
+body.usage_page td { text-align: left;  margin: 0 10px 0 10px; margin-left: 10px;width: auto;}
+body.usage_page th { text-align: left;  margin: 0 10px 0 10px; margin-left: 10px;width: auto;}
+
 
 div.tab_page {
   float: left;
   width: 100%;
   min-height: 150px;
+  background-color: #ffffff;
   background-image: url(/fct/images/tab_page_back1.png); 
   background-repeat: repeat-x;
+  background-position: bottom left;
   border-left: 1px solid #ddd;
   border-bottom: 1px solid #ddd;
 }
 
 div.tab_page form { margin-top: 40px;}
 div.tab_page form label { font-weight: bold; }
+
+div.pg_b_nav { width: 100%; margin-left: 10px;}
 
 div.autocomplete_list { 
   padding: 0;

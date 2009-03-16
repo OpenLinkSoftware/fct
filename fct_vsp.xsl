@@ -28,7 +28,7 @@ function init(){
         var x;
 	if (href.length > 0) {
 	  x = OAT.Dom.create ("a");
-	  x.href = '/fct/rdfdesc/description.vsp?url='+escape (href);
+	  x.href = '/about/?url='+escape (href);
 	  if (label.length > 0)
 	    x.innerHTML = label;
 	  else

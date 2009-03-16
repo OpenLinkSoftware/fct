@@ -64,84 +64,69 @@
     <base href="http://<?V host ?>/fct/rdfdesc/" />
     <title>Usage Statistics about: <?vsp http (sprintf ('%s', label)); ?></title>
     <link rel="alternate" type="application/rdf+xml" href="<?=rdf_link?>" title="RDF" />
-    <link rel="stylesheet" type="text/css" href="statics/<?=either (white_page, 'style_w.css', 'style.css')?>" />
-    <link href="statics/highlighter.css" type="text/css" rel="stylesheet" charset="utf-8" />
-    <script type="text/javascript" src="statics/script.js"></script>
-    <style>
-	#nav {
-	    position:relative;
-	    float:left;
-	    width:100%;
-	    padding:0 0 2em 0em;
-	    margin:0;
-	    list-style:none;
-	    line-height:1em;
-	}
-
-	#nav li {
-	    float:left;
-	    margin:0;
-	    padding:0;
-	}
-
-	#nav a {
-	    display:block;
-	    color:#444;
-	    text-decoration:none;
-	    font-weight:normal;
-	    background:#ddd;
-	    margin:0;
-	    padding:0.25em 1em;
-	    border-left:1px solid #fff;
-	    border-top:1px solid #fff;
-	    border-right:1px solid #aaa;
-	}
-
-	#nav a:hover,
-	#nav a:active,
-	#nav a.sel:link,
-	#nav a.sel:visited {
-	    background:#bbb;
-	}
-
-	#nav a.sel:link,
-	#nav a.sel:visited {
-	    position:relative;
-	    z-index:102;
-	}
-    </style>
+    <link rel="stylesheet" type="text/css" href="styles/default.css" charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="styles/highlighter.css" charset="utf-8" />
+    <script type="text/javascript" >
+      var featureList=["tab"];
+    </script>
+    <script type="text/javascript" src="/fct/oat/toolkit/loader.js"></script>
+    <script type="text/javascript" src="s/description.js"></script>
 </head>
-  <body onLoad="init();">
-    <div id="header">
-      <div id="hd_l">
-	  <h1 id="title">Usage Statistics about: <a href="<?= case when page_resource_uri like 'nodeID://%' then b3s_http_url (page_resource_uri) else page_resource_uri end ?>"><?vsp http (sprintf ('%s', label)); ?></a></h1>
-        <div id="homelink">
+<body class="usage_page">
+  <div id="HD">
+    <div id="hd_l">
+      <h1>
+        <div id="logo">
+          <a href="http://www.openlinksw.com">
+            <img src="/fct/images/openlink150_on_blue.gif" 
+                 alt="OpenLink Software"/>
+          </a>
         </div>
-        <div class="page-resource-uri">
-	   An Entity in Data Space: <a href="http://<?V host ?>"><?V host ?></a>
+      </h1>
+    </div> <!-- hd_l -->
+    <div id="hd_r">
+      <a href="<?=rdf_link?>" title="RDF data">
+        <img src="/fct/images/sw-cube.png" alt="[RDF Data]">
+      </a>
+    </div> <!-- hd_r -->
+  </div> <!-- #HD -->
+  <div id="MD">
+    <div class="page_resource_info">
+      <h2>Usage stats on <a href="<?= case when page_resource_uri like 'nodeID://%' then b3s_http_url (page_resource_uri) else page_resource_uri end ?>"><?vsp http (sprintf ('%s', label)); ?></a></h2>
+	      - an Entity in Data Space: <a href="http://<?V host ?>"><?V host ?></a>
+    </div>
+    <div class="subj_nav">
+      <?vsp if (_subject <> '') { ?>
+        <p class="subj_desc"><?vsp http (sprintf ('%s', _subject)); ?></p>
+      <?vsp } ?>
+      <?vsp if (refr is not null) { ?>
+        <div class="nav">
+          <h3>Actions</h3>
+          <ul>
+            <li><a href="<?V refr ?>">Go Back</a></li>
+          </ul>
         </div>
-      </div> <!-- hd_l -->
-      <div id="hd_r">
-        <a href="<?=rdf_link?>" title="RDF data">
-	  <img src="statics/sw-cube.png" alt="[RDF Data]">
-        </a>
-      </div> <!-- hd_r -->
-    </div> <!-- header -->
-    <div id="content">
-
-      <p><?vsp http (sprintf ('%s', _subject)); ?></p>
+      <?vsp } ?>      
+    </div> <!-- .subj_nav -->
 
 <!-- proptable -->
-      <?vsp if (refr is not null) { ?>
-      <a href="<?V refr ?>">Go Back</a>
-      <?vsp } ?>      
-      <ul id="nav">
-	  <li><a href="<?V http_path () ?>?g=<?U _S ?>&tp=1&sid=<?V sid ?>" <?vsp http (case when tp = 1 then 'class="sel"' else '' end); ?>>Referenced Datasets</a></li>
-	  <li><a href="<?V http_path () ?>?g=<?U _S ?>&tp=2&sid=<?V sid ?>" <?vsp http (case when tp = 2 then 'class="sel"' else '' end); ?> >Defined in Datasets</a></li>
-	  <li><a href="<?V http_path () ?>?g=<?U _S ?>&tp=3&sid=<?V sid ?>" <?vsp http (case when tp = 3 then 'class="sel"' else '' end); ?> >Expanded Same As</a></li>
-	  <li><a href="<?V http_path () ?>?g=<?U _S ?>&tp=4&sid=<?V sid ?>" <?vsp http (case when tp = 4 then 'class="sel"' else '' end); ?> >Expanded Inverse Functional Properties</a></li>
-      </ul>
-      <table class="description">
+    <div id="TAB_ROW">
+	<div class="tab <?vsp http (case when tp = 1 then ' tab_selected' else '' end); ?>">
+          <a href="<?V http_path () ?>?g=<?U _S ?>&tp=1&sid=<?V sid ?>">Referenced Datasets</a>
+        </div>
+	<div class="tab <?vsp http (case when tp = 2 then ' tab_selected' else '' end); ?>">
+          <a href="<?V http_path () ?>?g=<?U _S ?>&tp=2&sid=<?V sid ?>">Defined in Datasets</a>
+        </div>
+	<div class="tab <?vsp http (case when tp = 3 then ' tab_selected' else '' end); ?>">
+          <a href="<?V http_path () ?>?g=<?U _S ?>&tp=3&sid=<?V sid ?>">Expanded Same As</a>
+        </div>
+	<div class="tab <?vsp http (case when tp = 4 then ' tab_selected' else '' end); ?>">
+          <a href="<?V http_path () ?>?g=<?U _S ?>&tp=4&sid=<?V sid ?>">Expanded IFPs</a>
+        </div>
+      </div> <!-- TAB_ROW -->
+      <div id="TAB_CTR">
+      <div class="tab_page">
+        <table class="description">
 	  <?vsp
 	    declare qr varchar;
 	    if (tp = 1) -- refd in data sets
@@ -203,12 +188,11 @@
 	    exec_close (h1);
 	  ?>
       </table>
-      <?vsp if (refr is not null) { ?>
-      <a href="<?V refr ?>">Go Back</a>
-      <?vsp } ?>      
-    </div> <!--  #content -->
+      </div> <!-- .tab_page -->
+      </div> <!-- #TAB_CTR -->
+    </div> <!--  #MD -->
 <!-- footer -->
-    <div id="footer">
+    <div id="FT">
       <div id="ft_t">
         Explore using:
         <a href="/ode/?uri=<?vsp http_url (page_resource_uri); ?>">OpenLink Data Explorer</a> |
@@ -228,6 +212,6 @@
         <a href="http://www.opendefinition.org/"><img alt="This material is Open Knowledge" src="statics/od_80x15_red_green.png" border="0"></a>
 	<a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/80x15.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-Share Alike 3.0 Unported License</a>.
       </div> <!-- #ft_b -->
-    </div> <!-- #footer -->
+    </div> <!-- #FT -->
  </body>
 </html>
