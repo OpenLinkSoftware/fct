@@ -38,7 +38,7 @@ tr:hover {
 #hd_r { float: right; clear: right}
 #hd_r img { margin: 10px 10px 0 0; vertical-align: middle}
 
-#opl_logo { border: 0; width: 120px; float: left; margin-left: 6px;}
+#opl_logo { border: 0; float: left; margin-left: 6px;}
 
 #MD { width: 100%; 
       float: left; 
