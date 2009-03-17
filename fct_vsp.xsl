@@ -5,7 +5,7 @@
 <xsl:template match = "facets">
 <div id="res">
 <div class="btn_bar btn_bar_top">
-  <xsl:if test="/facet/processed &gt; 0">
+  <xsl:if test="/facets/processed &gt; 0">
     <div class="pager">
       <span class="stats">Showing 
         <xsl:value-of select="/facets/view/@offset"/>-<xsl:value-of select="/facets/view/@offset + $page_len"/> of 
@@ -163,7 +163,7 @@ function init(){
   </xsl:otherwise>
 </xsl:choose>
 <div class="btn_bar">
-  <xsl:if test="/facet/processed &gt; 0">
+  <xsl:if test="/facets/processed &gt; 0">
     <div class="pager">
       <span class="stats">Showing 
         <xsl:value-of select="/facets/view/@offset"/>-<xsl:value-of select="/facets/view/@offset + $page_len"/> of 
