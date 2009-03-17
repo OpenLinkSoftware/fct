@@ -85,8 +85,9 @@
       </h1>
     </div> <!-- hd_l -->
     <div id="hd_r">
-      <a href="<?=rdf_link?>" title="RDF data">
-        <img src="/fct/images/sw-cube.png" alt="[RDF Data]">
+      <a href="http://data.openlinksw.com/about/html/http://data.openlinksw.com/oplweb/product_family/virtuoso" 
+         title="OpenLink Virtuoso">
+        <img class="powered_by" src="/fct/images/virt_power_no_border.png" alt="Powered by OpenLink Virtuoso"/>
       </a>
     </div> <!-- hd_r -->
   </div> <!-- #HD -->
@@ -115,7 +116,7 @@
           <a href="<?V http_path () ?>?g=<?U _S ?>&tp=1&sid=<?V sid ?>">Referenced by Graphs</a>
         </div>
 	<div class="tab <?vsp http (case when tp = 2 then ' tab_selected' else '' end); ?>">
-          <a href="<?V http_path () ?>?g=<?U _S ?>&tp=2&sid=<?V sid ?>">Source Datasets</a>
+          <a href="<?V http_path () ?>?g=<?U _S ?>&tp=2&sid=<?V sid ?>">Source Graphs</a>
         </div>
 	<div class="tab <?vsp http (case when tp = 3 then ' tab_selected' else '' end); ?>">
           <a href="<?V http_path () ?>?g=<?U _S ?>&tp=3&sid=<?V sid ?>">Expanded Same As</a>
@@ -206,10 +207,11 @@
         &nbsp; &nbsp;<a href="http://ode.openlinksw.com/">About</a>&nbsp; &nbsp;
       </div> <!-- #ft_t -->
       <div id="ft_b">
-        <a href="http://virtuoso.openlinksw.com" title="OpenLink Virtuoso"><img class="powered_by" src="statics/virt_power_no_border.png" alt="Powered by OpenLink Virtuoso"/></a>
-        <a href="http://linkeddata.org/"><img alt="This material is Open Knowledge" src="statics/LoDLogo.gif" border="0"></a> &nbsp;
-        <a href="http://dbpedia.org/sparql"><img alt="W3C Semantic Web Technology" src="statics/sw-sparql-blue.png" border="0"></a> &nbsp;  &nbsp;
-        <a href="http://www.opendefinition.org/"><img alt="This material is Open Knowledge" src="statics/od_80x15_red_green.png" border="0"></a>
+        <a href="http://virtuoso.openlinksw.com" title="OpenLink Virtuoso"><img class="powered_by" src="/fct/images/virt_power_no_border.png" alt="Powered by OpenLink Virtuoso"/></a>
+        <a href="http://linkeddata.org/"><img alt="This material is Open Knowledge" src="/fct/images/LoDLogo.gif" border="0"></a> &nbsp;
+        <a href="http://dbpedia.org/sparql"><img alt="W3C Semantic Web Technology" src="/fct/images/sw-sparql-blue.png" border="0"></a>
+        <a href="<?=rdf_link?>" title="RDF data"><img src="/fct/images/sw-rdf-blue.png" alt="[RDF Data]"></a>
+        <a href="http://www.opendefinition.org/"><img alt="This material is Open Knowledge" src="/fct/images/od_80x15_red_green.png" border="0"></a>
 	<a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/80x15.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-Share Alike 3.0 Unported License</a>.
       </div> <!-- #ft_b -->
     </div> <!-- #FT -->

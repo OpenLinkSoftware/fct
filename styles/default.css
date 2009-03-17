@@ -21,7 +21,7 @@ tr:hover {
   text-align: center; 
   background-color: #006699}
 
-#HD img { margin-top: 0 0 0 10px; padding: 0; vertical-align: middle;}
+#HD img { margin: 2px 0 0 0; padding: 0; vertical-align: middle;}
 
 #HD h1 { 
   font-size: 14pt; 
@@ -36,7 +36,7 @@ tr:hover {
 #h1 div.page-resource-uri {float: left}
 #hd_l { float: left; clear: left}
 #hd_r { float: right; clear: right}
-#hd_r img { margin: 10px 10px 0 0; vertical-align: middle}
+#hd_r img { margin: 15px 10px 0 0; vertical-align: middle; padding-bottom: 3px; background-color: white; }
 
 #opl_logo { border: 0; float: left; margin-left: 6px;}
 

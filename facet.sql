@@ -295,6 +295,9 @@ fct_xml_wrap (in tree any, in txt any)
                                                   xmlelement ("column",
                                                               xmlattributes (''erank'' as "datatype"),
                                                               "rank"),
+--                                                  xmlelement ("column",
+--                                                              xmlattributes (''g'' as "datatype"),
+--                                                              __ro2sq ("g")),
                                                   xmlelement ("column",
                                                               xmlattributes (fct_lang ("c1") as "xml:lang",
                                                                              fct_dtp ("c1") as "datatype",
@@ -470,14 +473,14 @@ fct_view (in tree any, in this_s int, in txt any, in pre any, in post any)
 
       exp := cast (xpath_eval ('//text', tree) as varchar);
 
-      http (sprintf ('select ?s%d as ?c1, (bif:search_excerpt (bif:vector (%s), ?o%d)) as ?c2 ?sc ?rank where {{ select ?s%d (?sc * 3e-1) as ?sc ?o%d (sql:rnk_scale (<LONG::IRI_RANK> (?s%d))) as ?rank ',
+      http (sprintf ('select ?s%d as ?c1, (bif:search_excerpt (bif:vector (%s), ?o%d)) as ?c2, ?sc, ?rank where {{{ select ?s%d, (?sc * 3e-1) as ?sc, ?o%d, (sql:rnk_scale (<LONG::IRI_RANK> (?s%d))) as ?rank ',
             this_s,
    	    element_split (exp),
 		     this_s, this_s, this_s, this_s), pre);
 
       http (sprintf (' order by desc (?sc * 3e-1 + sql:rnk_scale (<LONG::IRI_RANK> (?s%d))) ', this_s), post);
       fct_post (tree, post, lim, offs);
-      http ('}}', post);
+      http ('}}}', post);
       return;
     }
 
@@ -657,6 +660,7 @@ fct_query (in tree any)
 
   s := 0;
   add_graph := 0;
+
   if (xpath_eval ('//view[@type="graphs"]', tree) is not null)
     add_graph := 1;
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xsl:stylesheet version ="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 <xsl:output method="html" encoding="ISO-8859-1"/>
-
+<xsl:variable name="page_len" select="20"/>
 <xsl:template match = "facets">
 
 <div id="res">
@@ -128,13 +128,22 @@ function init(){
   </xsl:otherwise>
 </xsl:choose>
 <div class="btn_bar">
-  <xsl:if test="20 = count (/facets/result[@type='' or @type='text' or @type='properties' or @type='classes']/row)">
-    <button>
-      <xsl:attribute name="class">pager</xsl:attribute>
-      <xsl:attribute name="onclick">javascript:fct_nav_to('/fct/facet.vsp?cmd=next&amp;sid=<xsl:value-of select="$sid"/>')
-      </xsl:attribute>&#10140;More results
-    </button>
-  </xsl:if>
+  <div class="pager">
+    <xsl:if test="$page_len &lt; /facets/processed">
+      <button>
+	<xsl:attribute name="class">pager</xsl:attribute>
+	<xsl:attribute name="onclick">javascript:fct_nav_to('/fct/facet.vsp?cmd=next&amp;sid=<xsl:value-of select="$sid"/>')
+	</xsl:attribute>&#10140; Next
+      </button>
+    </xsl:if>
+    <xsl:if test="true">
+      <button>
+	<xsl:attribute name="class">pager</xsl:attribute>
+        <xsl:attribute name="onclick">javascript:fct_nav_to('/fct/facet.vsp?cmd=prev&amp;sid=<xsl:value-of select="$sid"/>')
+        </xsl:attribute>&#10139; Previous
+      </button>button>
+    </xsl:if>
+  </div>
   <xsl:if test="/facets/complete != 'yes'">
     <button>
       <xsl:attribute name="onclick">
