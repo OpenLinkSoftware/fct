@@ -265,6 +265,12 @@ input.num { text-align: right;}
 
 #res .btn_bar { text-align: right; border-top: 1px solid #333; margin-top: 15px; padding-top: 8px;}
 
+#res .btn_bar_top { border-top: none; margin-top: 0; padding-top: 0; margin-bottom: 10px;}
+
+#res .pager .stats {
+  font-style: italic;
+}
+
 div.dbg { 
   display: none; }
 

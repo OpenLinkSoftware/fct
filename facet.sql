@@ -721,18 +721,25 @@ create procedure _min (in n1 int, in n2 int) {
 ;
 
 create procedure
-fct_exec (in tree any, in timeout int)
+fct_exec (in tree any, 
+          in timeout int)
 {
   declare start_time, view3, inx, n_rows int;
   declare sqls, msg, qr, qr2, act, query varchar;
   declare md, res, results, more any;
   declare tmp any;
+  declare offs, lim int;
 
   set result_timeout = _min (timeout, atoi (registry_get ('fct_timeout_max')));
 
+  offs := xpath_eval ('//query/view/@offset', tree);
+  lim := xpath_eval ('//query/view/@limit', tree);
+
   -- db_activity ();
+
   results := vector (null, null, null);
   more := vector ();
+
   if (xpath_eval ('//query[@view3="yes"]//view[@type="text"]', tree) is not null)
     {
       more := vector ('classes', 'properties');
@@ -744,7 +751,8 @@ fct_exec (in tree any, in timeout int)
 --  dbg_obj_print (qr);
   qr2 := fct_xml_wrap (tree, qr);
   start_time := msec_time ();
- dbg_printf('query: %s', qr2);
+
+  dbg_printf('query: %s', qr2);
 
   exec (qr2, sqls, msg, vector (), 0, md, res);
   n_rows := row_count ();
@@ -758,6 +766,7 @@ fct_exec (in tree any, in timeout int)
     results[0] := res[0][0];
 
   inx := 1;
+
   foreach (varchar tp in more) do
     {
       tree := XMLUpdate (tree, '/query/view/@type', tp, '/query/view/@limit', '40', '/query/view/@offset', '0');
@@ -781,11 +790,15 @@ fct_exec (in tree any, in timeout int)
     }
 
 
-  res := xmlelement ("facets", xmlelement ("sparql", query), xmlelement ("time", msec_time () - start_time),
-		       xmlelement ("complete", case when sqls = 'S1TAT' then 'no' else 'yes' end),
-		       xmlelement ("timeout", _min (timeout * 2, atoi (registry_get ('fct_timeout_max')))),
-		       xmlelement ("db-activity", act),
-		     xmlelement ("processed", n_rows), results[0], results[1], results[2]);
+
+  res := xmlelement ("facets", xmlelement ("sparql", query), 
+                               xmlelement ("time", msec_time () - start_time),
+		               xmlelement ("complete", case when sqls = 'S1TAT' then 'no' else 'yes' end),
+		               xmlelement ("timeout", _min (timeout * 2, atoi (registry_get ('fct_timeout_max')))),
+		               xmlelement ("db-activity", act),
+		               xmlelement ("processed", n_rows), 
+                               xmlelement ("view", xmlattributes (offs as "offset", lim as "limit")),
+                               results[0], results[1], results[2]);
 
   string_to_file ('ret.xml', serialize_to_UTF8_xml (res), -2);
 

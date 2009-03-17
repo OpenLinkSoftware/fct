@@ -431,7 +431,9 @@ fct_web (in tree any)
 
   reply := fct_exec (tree, timeout);
 
-    txt := string_output ();
+  dbg_obj_print (reply);
+
+  txt := string_output ();
 
   http ('<div id="top_ctr">', txt);
 
@@ -533,7 +535,12 @@ fct_drop_cond (in tree any, in sid int, in cno int)
 }
 
 create procedure
-fct_set_view (in tree any, in sid int, in tp varchar, in lim int, in offs int, in loc_prop varchar := null)
+fct_set_view (in tree     any, 
+              in sid      int, 
+              in tp       varchar, 
+              in lim      int, 
+              in offs     int, 
+              in loc_prop varchar := null)
 {
   declare pos int;
   pos := fct_view_pos (tree);
@@ -574,9 +581,26 @@ fct_next (in tree any, in sid int)
   lim  := atoi (cast (xpath_eval ('//view/@limit', tree) as varchar));
   offs := atoi (cast (xpath_eval ('//view/@offset',tree) as varchar));
 
-  fct_set_view  (tree, sid, tp, lim + 20, offs + 20);
+  fct_set_view  (tree, sid, tp, lim, offs + 20);
 }
+;
 
+create procedure
+fct_prev (in tree any, in sid int)
+{
+  declare tp varchar;
+  declare lim, offs int;
+
+  tp   := cast       (xpath_eval ('//view/@type',  tree) as varchar);
+  lim  := atoi (cast (xpath_eval ('//view/@limit', tree) as varchar));
+  offs := atoi (cast (xpath_eval ('//view/@offset',tree) as varchar));
+
+  offs := offs - 20;
+  if (offs < 0) offs := 0;
+
+  fct_set_view  (tree, sid, tp, lim, offs);
+}
+;
 
 create procedure
 fct_open_property  (in tree any, in sid int, in iri varchar, in name varchar)
@@ -1094,8 +1118,10 @@ fct_vsp ()
 		  http_param ('location-prop'));
   else if ('next' = cmd)
     fct_next (tree, sid);
-	else if ('set_text_property' = cmd)
-	fct_set_text_property (tree, sid, http_param ('iri'));
+  else if ('prev' = cmd)
+    fct_prev (tree, sid);
+  else if ('set_text_property' = cmd)
+    fct_set_text_property (tree, sid, http_param ('iri'));
   else if ('open_property' = cmd)
     fct_open_property (tree, sid, http_param ('iri'), 'property');
   else if ('open_property_of' = cmd)

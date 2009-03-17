@@ -3,8 +3,36 @@
 <xsl:output method="html" encoding="ISO-8859-1"/>
 <xsl:variable name="page_len" select="20"/>
 <xsl:template match = "facets">
-
 <div id="res">
+<div class="btn_bar btn_bar_top">
+  <div class="pager">
+    <span class="stats">Showing 
+      <xsl:value-of select="/facets/view/@offset"/>-<xsl:value-of select="/facets/view/@offset + $page_len"/> of 
+      <xsl:value-of select="/facets/processed"/> available results&nbsp;
+    </span>
+    <xsl:if test="/facets/view/@offset &gt;= $page_len">
+      <button>
+	<xsl:attribute name="class">pager</xsl:attribute>
+        <xsl:attribute name="onclick">javascript:fct_nav_to('/fct/facet.vsp?cmd=prev&amp;sid=<xsl:value-of select="$sid"/>')
+        </xsl:attribute>&#9666; Prev
+      </button>
+    </xsl:if>
+    <xsl:if test="(/facets/view/@offset + $page_len) &lt; /facets/processed">
+      <button>
+	<xsl:attribute name="class">pager</xsl:attribute>
+	<xsl:attribute name="onclick">javascript:fct_nav_to('/fct/facet.vsp?cmd=next&amp;sid=<xsl:value-of select="$sid"/>')
+	</xsl:attribute>&#9656; Next
+      </button>
+    </xsl:if>
+  </div>
+  <xsl:if test="/facets/complete != 'yes'">
+    <button>
+      <xsl:attribute name="onclick">
+        javascript:fct_nav_to('/fct/facet.vsp?cmd=refresh&amp;sid=<xsl:value-of select="$sid"/>&amp;timeout=<xsl:value-of select="$timeout"/>')
+      </xsl:attribute>Retry with <xsl:value-of select="($timeout div 1000)"/> seconds timeout
+    </button>
+  </xsl:if>
+</div> <!-- btn_bar -->
 <!--xsl:choose>
   <xsl:when test="$type = 'text'"><h3>Text match results</h3></xsl:when>
   <xsl:when test="$type = 'text-properties'"><h3>List of Properties With Matching Text</h3></xsl:when>
@@ -129,19 +157,23 @@ function init(){
 </xsl:choose>
 <div class="btn_bar">
   <div class="pager">
-    <xsl:if test="$page_len &lt; /facets/processed">
-      <button>
-	<xsl:attribute name="class">pager</xsl:attribute>
-	<xsl:attribute name="onclick">javascript:fct_nav_to('/fct/facet.vsp?cmd=next&amp;sid=<xsl:value-of select="$sid"/>')
-	</xsl:attribute>&#10140; Next
-      </button>
-    </xsl:if>
-    <xsl:if test="true">
+    <span class="stats">Showing 
+      <xsl:value-of select="/facets/view/@offset"/>-<xsl:value-of select="/facets/view/@offset + $page_len"/> of 
+      <xsl:value-of select="/facets/processed"/> available results&nbsp;
+    </span>
+    <xsl:if test="/facets/view/@offset &gt;= $page_len">
       <button>
 	<xsl:attribute name="class">pager</xsl:attribute>
         <xsl:attribute name="onclick">javascript:fct_nav_to('/fct/facet.vsp?cmd=prev&amp;sid=<xsl:value-of select="$sid"/>')
-        </xsl:attribute>&#10139; Previous
-      </button>button>
+        </xsl:attribute>&#9666; Prev
+      </button>
+    </xsl:if>
+    <xsl:if test="(/facets/view/@offset + $page_len) &lt; /facets/processed">
+      <button>
+	<xsl:attribute name="class">pager</xsl:attribute>
+	<xsl:attribute name="onclick">javascript:fct_nav_to('/fct/facet.vsp?cmd=next&amp;sid=<xsl:value-of select="$sid"/>')
+	</xsl:attribute>&#9656; Next
+      </button>
     </xsl:if>
   </div>
   <xsl:if test="/facets/complete != 'yes'">

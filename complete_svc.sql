@@ -61,6 +61,8 @@ DB.DBA.IRI_AUTOCOMPLETE () __SOAP_HTTP 'text/json'
   if (iri_str = '' or iri_str = null)
     goto empty;
 
+  set result_timeout = 1500;
+
   res := DB.DBA.cmp_uri (params[1]);
   
 
