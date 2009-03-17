@@ -271,6 +271,12 @@ input.num { text-align: right;}
   font-style: italic;
 }
 
+div.empty_result {
+  font-weight: bold; 
+  font-size: 12pt;
+  margin: 20px;
+}
+
 div.dbg { 
   display: none; }
 
