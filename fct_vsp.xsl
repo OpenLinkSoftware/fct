@@ -3,12 +3,22 @@
 <xsl:output method="html" encoding="ISO-8859-1"/>
 <xsl:variable name="page_len" select="20"/>
 <xsl:variable name="offs" select="if(/facets/view/@offset = '', 1, /facets/view/@offset + 1)"/> <!-- humans count from 1 -->
-<xsl:variable name="rowcnt" select="count(//facets/result/row)"/>
+<xsl:variable name="rowcnt" select="count(/facets/result/row)"/>
 <xsl:template match = "facets">
 <div id="res">
   <div class="btn_bar btn_bar_top">
     <xsl:call-template name="render-pager"/>
   <xsl:if test="/facets/complete != 'yes'">
+    <span class="partial_res_expln">
+      <xsl:choose>
+        <xsl:when test="$rowcnt != 0">
+          The query timed out with partial result:
+        </xsl:when>
+        <xsl:otherwise>
+          The query timed out with no result:
+        </xsl:otherwise>
+      </xsl:choose>
+    </span>
     <button>
       <xsl:attribute name="onclick">
         javascript:fct_nav_to('/fct/facet.vsp?cmd=refresh&amp;sid=<xsl:value-of select="$sid"/>&amp;timeout=<xsl:value-of select="$timeout"/>')
