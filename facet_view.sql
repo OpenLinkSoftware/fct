@@ -68,8 +68,8 @@ fct_view_info (in tree any, in ctx int, in txt any)
       http (sprintf ('Displaying values and text summaries associated with pattern %s%d', 
 	             connection_get ('s_term'), pos), txt);
     }
-  if (offs)
-    http (sprintf ('  values %d - %d', 1 + offs, lim), txt);
+--  if (offs)
+--    http (sprintf ('  values %d - %d', 1 + offs, lim), txt);
   http (' where:</h3>', txt);
 }
 ;
@@ -431,7 +431,7 @@ fct_web (in tree any)
 
   reply := fct_exec (tree, timeout);
 
-  dbg_obj_print (reply);
+--  dbg_obj_print (reply);
 
   txt := string_output ();
 
@@ -1075,7 +1075,7 @@ fct_vsp ()
     }
 
   sid := http_param ('sid');
-  dbg_obj_print (sid);
+--  dbg_obj_print (sid);
   if (0 <> sid) { sid := atoi (sid); }
   _to := http_param ('timeout');
 
