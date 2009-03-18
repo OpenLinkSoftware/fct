@@ -2,31 +2,12 @@
 <xsl:stylesheet version ="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 <xsl:output method="html" encoding="ISO-8859-1"/>
 <xsl:variable name="page_len" select="20"/>
+<xsl:variable name="offs" select="if(/facets/view/@offset = '', 1, /facets/view/@offset + 1)"/> <!-- humans count from 1 -->
+<xsl:variable name="rowcnt" select="count(//facets/result/row)"/>
 <xsl:template match = "facets">
 <div id="res">
-<div class="btn_bar btn_bar_top">
-  <xsl:if test="/facets/processed &gt; 0">
-    <div class="pager">
-      <span class="stats">Showing 
-        <xsl:value-of select="/facets/view/@offset"/>-<xsl:value-of select="/facets/view/@offset + $page_len"/> of 
-        <xsl:value-of select="/facets/processed"/> available results&nbsp;
-      </span>
-      <xsl:if test="/facets/view/@offset &gt;= $page_len">
-        <button>
-	  <xsl:attribute name="class">pager</xsl:attribute>
-          <xsl:attribute name="onclick">javascript:fct_nav_to('/fct/facet.vsp?cmd=prev&amp;sid=<xsl:value-of select="$sid"/>')
-          </xsl:attribute>&#9666; Prev
-        </button>
-      </xsl:if>
-      <xsl:if test="(/facets/view/@offset + $page_len) &lt; /facets/processed">
-        <button>
-	  <xsl:attribute name="class">pager</xsl:attribute>
-	  <xsl:attribute name="onclick">javascript:fct_nav_to('/fct/facet.vsp?cmd=next&amp;sid=<xsl:value-of select="$sid"/>')
-	  </xsl:attribute>&#9656; Next
-        </button>
-      </xsl:if>
-    </div>
-  </xsl:if>
+  <div class="btn_bar btn_bar_top">
+    <xsl:call-template name="render-pager"/>
   <xsl:if test="/facets/complete != 'yes'">
     <button>
       <xsl:attribute name="onclick">
@@ -163,28 +144,7 @@ function init(){
   </xsl:otherwise>
 </xsl:choose>
 <div class="btn_bar">
-  <xsl:if test="/facets/processed &gt; 0">
-    <div class="pager">
-      <span class="stats">Showing 
-        <xsl:value-of select="/facets/view/@offset"/>-<xsl:value-of select="/facets/view/@offset + $page_len"/> of 
-        <xsl:value-of select="/facets/processed"/> available results&nbsp;
-      </span>
-      <xsl:if test="/facets/view/@offset &gt;= $page_len">
-        <button>
-	  <xsl:attribute name="class">pager</xsl:attribute>
-          <xsl:attribute name="onclick">javascript:fct_nav_to('/fct/facet.vsp?cmd=prev&amp;sid=<xsl:value-of select="$sid"/>')
-          </xsl:attribute>&#9666; Prev
-        </button>
-      </xsl:if>
-      <xsl:if test="(/facets/view/@offset + $page_len) &lt; /facets/processed">
-        <button>
-	  <xsl:attribute name="class">pager</xsl:attribute>
-	  <xsl:attribute name="onclick">javascript:fct_nav_to('/fct/facet.vsp?cmd=next&amp;sid=<xsl:value-of select="$sid"/>')
-	  </xsl:attribute>&#9656; Next
-        </button>
-      </xsl:if>
-    </div>
-  </xsl:if>
+  <xsl:call-template name="render-pager"/>
 </div> <!-- btn_bar -->
 <div id="result_nfo">
   <xsl:choose>
@@ -202,6 +162,31 @@ function init(){
   OAT.Dom.append (['sparql_a_ctr',sparql_a]);
 </script>
 </xsl:template>
+
+<xsl:template name="render-pager">
+  <xsl:if test="/facets/processed &gt; 0">
+    <div class="pager">
+      <span class="stats">Showing 
+      <xsl:value-of select="$offs"/>-<!-- <xsl:value-of select="$offs + $page_len - 1"/>--><xsl:value-of select="$offs + $rowcnt - 1"/> of
+      <xsl:value-of select="/facets/processed"/> total&nbsp;
+      </span>
+      <xsl:if test="$offs &gt;= $page_len">
+	<button>
+	  <xsl:attribute name="class">pager</xsl:attribute>
+	  <xsl:attribute name="onclick">javascript:fct_nav_to('/fct/facet.vsp?cmd=prev&amp;sid=<xsl:value-of select="$sid"/>')
+	  </xsl:attribute>&#9666; Prev
+	</button>
+      </xsl:if>
+      <xsl:if test="($offs + $page_len) &lt; /facets/processed">
+	<button>
+	  <xsl:attribute name="class">pager</xsl:attribute>
+	  <xsl:attribute name="onclick">javascript:fct_nav_to('/fct/facet.vsp?cmd=next&amp;sid=<xsl:value-of select="$sid"/>')
+	  </xsl:attribute>&#9656; Next
+	</button>
+      </xsl:if>
+    </div>
+  </xsl:if>
+</xsl:template> <!-- render-pager -->
 
 <xsl:template name="render-result">
 <table class="result">
