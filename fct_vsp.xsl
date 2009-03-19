@@ -19,6 +19,7 @@
         </xsl:otherwise>
       </xsl:choose>
     </span>
+    <a class="partial_res_help" href="/fct/facet_doc.html#timeout">What's this?</a>&nbsp;
     <button>
       <xsl:attribute name="onclick">
         javascript:fct_nav_to('/fct/facet.vsp?cmd=refresh&amp;sid=<xsl:value-of select="$sid"/>&amp;timeout=<xsl:value-of select="$timeout"/>')
@@ -26,7 +27,7 @@
     </button>
   </xsl:if>
 </div> <!-- btn_bar -->
-<xsl:if test="/facets/complete = 'yes' and /facets/processed = 0">
+<xsl:if test="/facets/complete = 'yes' and /facets/processed = 0 and $rowcnt = 0">
   <div class="empty_result">
     Nothing found.
   </div>
@@ -161,7 +162,7 @@ function init(){
     <xsl:when test="/facets/complete = 'yes'">Complete result - </xsl:when>
     <xsl:otherwise>Partial result - </xsl:otherwise>
   </xsl:choose>
-  <xsl:value-of select="/facets/processed"/> processed in <xsl:value-of select="/facets/time"/> msec.<br/>  Resource utilization:
+  <xsl:value-of select="if(/facets/processed > 0, /facets/processed, $rowcnt)"/> processed in <xsl:value-of select="/facets/time"/> msec.<br/>  Resource utilization:
   <xsl:value-of select="/facets/db-activity"/> 
 </div> <!-- #result_nfo -->
 </div> <!-- #res -->
