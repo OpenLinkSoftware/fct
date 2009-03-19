@@ -824,7 +824,7 @@ fct_new ()
     <div id="TAB_CTR">
     </div> <!-- #TAB_CTR -->
     <div id="TAB_PAGE_TXT" class="tab_page" style="display: none">
-      <h2>OpenLink Finder</h2>
+      <h2>OpenLink Entity Finder</h2>
       <form method="post"
             action="/fct/facet.vsp?cmd=text&sid=<?= sid ?>" >
         <div id="new_srch">
@@ -839,7 +839,7 @@ fct_new ()
       </form>
     </div> <!-- #TAB_PAGE_TXT -->
     <div id="TAB_PAGE_URI" class="tab_page" style="display: none">
-      <h2>OpenLink Finder</h2>
+      <h2>OpenLink Entity Finder</h2>
       <form method="get" action="/about/">
         <div id="new_uri">
           <label class="left_txt"

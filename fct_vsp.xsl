@@ -19,7 +19,7 @@
         </xsl:otherwise>
       </xsl:choose>
     </span>
-    <a class="partial_res_help" href="/fct/facet_doc.html#timeout">What's this?</a>&nbsp;
+    <a class="partial_res_help" href="/fct/facet_doc.html#timeout">What's this?</a>&#8194;
     <button>
       <xsl:attribute name="onclick">
         javascript:fct_nav_to('/fct/facet.vsp?cmd=refresh&amp;sid=<xsl:value-of select="$sid"/>&amp;timeout=<xsl:value-of select="$timeout"/>')
@@ -179,7 +179,7 @@ function init(){
     <div class="pager">
       <span class="stats">Showing 
       <xsl:value-of select="$offs"/>-<!-- <xsl:value-of select="$offs + $page_len - 1"/>--><xsl:value-of select="$offs + $rowcnt - 1"/> of
-      <xsl:value-of select="/facets/processed"/> total&nbsp;
+      <xsl:value-of select="/facets/processed"/> total&#8194;
       </span>
       <xsl:if test="$offs &gt;= $page_len">
 	<button>

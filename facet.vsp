@@ -5,7 +5,7 @@
 <?vsp set http_charset='utf-8'; ?>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>OpenLink Faceted Data Browser</title>
+<title>OpenLink Entity Finder</title>
 <link rel="stylesheet" media="screen" type="text/css" href="styles/default.css"/>
 <script type="text/javascript" >
     var featureList=["map", "combolist", "ajax2", "tab", "json"];
