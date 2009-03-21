@@ -735,6 +735,20 @@ where
   } order by ?dist desc 3 limit 50
 ;
 
+
+
+
+select "path", xmlelement ('path', xmlagg (xmlelement ('step', "via"))) from 
+(sparql select ?o ?via ?dist ?path where
+  {
+    {select ?s ?o
+      where {?s foaf:knows ?o
+        }} option (transitive, t_distinct, t_in(?s), t_out(?o), t_min (1), t_max (4), t_step ('step_no') as ?dist, t_step ("path_id") as ?path, t_step (?s) as ?via) .
+    filter (?s= <http://myopenlink.net/dataspace/person/kidehen#this>)
+  } order by ?dist ) paths group by "path" order by "path";
+
+
+
 -- with sas and blank nodes
 sparql define input:same-as "yes"
 select ?o ?dist ((select count (*) where {{select distinct ?other where {?o foaf:knows ?other}}}))
@@ -795,7 +809,7 @@ where
     option (transitive, t_distinct, t_in(?s), t_out(?o), t_no_cycles, T_shortest_only,
        t_step (?s) as ?link, t_step ('path_id') as ?path, t_step ('step_no') as ?step, t_direction 3) .
     filter (?s= <http://myopenlink.net/dataspace/person/kidehen#this>
-	&& ?o = <http://www.advogato.org/person/mparaz/foaf.rdf#me>)
+	&& ?o = <http://www.advogato.org/person/wardv/foaf.rdf#me>)
   } limit 20
 ;
 
