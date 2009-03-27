@@ -6,31 +6,44 @@ isvector (in x any)
   return 0;
 }
 
+create procedure
+json_out_vec_tst (in v any)
+{
+  declare _ses any;
+
+  _ses := string_output();
+
+  json_out_vec (v, _ses);
+
+  return (string_output_string(_ses));
+}
+
 create procedure 
 json_out_vec (in v any, inout ses any)
 {
   declare s varchar;
-  http ('[', ses);
+  s := string_output();
+	
+  http ('[', s);
 
-  dbg_obj_print (v[0]);
+--  dbg_obj_print (v[0]);
 
   for (declare i, l int, l := length (v); i < l; i := i + 1)
     {
       if (isvector(v[i]))
 	{
-      	  json_out_vec (v[i], ses);
+      	  json_out_vec (v[i], s);
         }
       else
         {
-          http (sprintf ('"%s",', v[i]), ses);
+          http (sprintf ('"%s",', replace (replace (v[i], '\\', '\\\\'), '"', '\\"')), s); --'
         }
     }
 
-  s := rtrim (string_output_string (ses), ',');
-  s := s || '],';
-
-  ses := string_output ();
+  s := rtrim (string_output_string (s), ',');
+  s := s || ']';
   http (s, ses);
+
 }
 
 DB.DBA.VHOST_REMOVE (lpath=>'/services/rdf/iriautocomplete.get');
@@ -41,14 +54,21 @@ create procedure
 DB.DBA.IRI_AUTOCOMPLETE () __SOAP_HTTP 'text/json'
 {
   declare params any;
-  declare res,ses any;
+  declare res,ses, lines any;
   declare accept varchar;
   declare len int;
-  declare iri_str varchar;
+  declare iri_str, lbl_str varchar;
+  declare langs varchar;
+  
+  iri_str := lbl_str := null;
 
   ses := string_output();
 
   params := http_param ();
+  lines := http_request_header ();
+
+--  dbg_obj_print (params);
+--  dbg_obj_print (lines);
 
   for (declare i, l int,l := length (params); i < l; i := i + 2)
     {
@@ -56,29 +76,53 @@ DB.DBA.IRI_AUTOCOMPLETE () __SOAP_HTTP 'text/json'
           {
             iri_str := params[i+1];
           }
+        else if (params[i] = 'lbl')
+          {
+            lbl_str := params[i+1];
+          }
     }
 
-  if (iri_str = '' or iri_str = null)
-    goto empty;
+  if (iri_str = '') iri_str := null;
+  if (lbl_str = '') lbl_str := null;
+
+--  dbg_obj_print (iri_str);
+--  dbg_obj_print (lbl_str);
 
   set result_timeout = 1500;
 
-  res := DB.DBA.cmp_uri (params[1]);
-  
-
-  if (length (res))
+  if (lines is not null)
     {
-      http ('{', ses);
+      langs := http_request_header_full (lines, 'Accept-Language', 'en');
+    }
 
-      if (isvector (res[0]))
+  if (iri_str is not null)
+    res := DB.DBA.cmp_uri (iri_str);
+  else if (lbl_str is not null)
+    res := DB.DBA.cmp_label (lbl_str, langs);
+  else 
+    goto empty;
+
+--  dbg_obj_print (res);
+
+    if (length (res))
+      {
+        http ('{', ses);
+
+        if (isvector (res[0]))
           http ('"restype":"multiple",', ses);
-      else 
+        else 
           http ('"restype":"single",', ses);
 
-      http ('"results":', ses);
-      json_out_vec (res, ses);
-    }
-  else goto empty;
+        if (iri_str)
+          http ('"qrytype":"iri",', ses);
+	else
+          http ('"qrytype":"lbl",', ses);
+
+        http ('"results":', ses);
+        json_out_vec (res, ses);
+      }
+
+    else goto empty;
 
   ses := rtrim (string_output_string (ses), ',');
   ses := ses || '}';

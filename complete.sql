@@ -159,6 +159,8 @@ cmp_uri (in str varchar)
   declare with_ns varchar;
   declare nss, iris any;
 
+--  dbg_printf ('cmp_uri\n');
+
   if (strstr (str, '://') is null)
     {
       with_ns := cmp_with_ns (str);
@@ -172,7 +174,7 @@ cmp_uri (in str varchar)
 
   nss := cmp_find_ns (str);
 
-  dbg_obj_print ('ns with ', str, ' = ', nss);
+--  dbg_obj_print ('ns with ', str, ' = ', nss);
 
   if (length (nss) = 0)
     return cmp_find_iri (str);
@@ -182,4 +184,112 @@ cmp_uri (in str varchar)
   return vector (iris, nss);
 }
 
+create procedure 
+urilbl_ac_ruin_label (in lbl varchar)
+{
+  return left (upper (regexp_replace (lbl, '[''",.]', '', 1, null)), 
+               _min (length (lbl), 50));
+}
+;
+
+create procedure
+urilbl_ac_init_db () {
+
+  set isolation = 'committed';
+  for (sparql 
+        define output:valmode 'LONG' 
+        define input:inference 'facets' 
+        select ?s ?o (lang(?o)) as ?lng where { ?s virtrdf:label ?o }) do 
+    {
+      insert soft 
+        urilbl_complete_lookup (ull_label_lang, ull_label_ruined, ull_iid, ull_label) 
+        values (lng, urilbl_ac_ruin_label (o), s, o);
+      commit work;
+    }
+}
+;
+
+-- Originally from rdf_mappers/rdfdesc.sql
+-- Determine q of given lang based on value of Accept-Language hdr
+
+create procedure 
+cmp_get_lang_by_q (in accept varchar, in lang varchar)
+{
+  declare format, itm, q varchar;
+  declare arr any;
+  declare i, l int;
+
+  arr := split_and_decode (accept, 0, '\0\0,;');
+  q := 0;
+  l := length (arr);
+  format := null;
+  for (i := 0; i < l; i := i + 2)
+    {
+      declare tmp any;
+      itm := trim(arr[i]);
+      if (itm = lang)
+	{
+	  q := arr[i+1];
+	  if (q is null)
+	    q := 1.0;
+	  else
+	    {
+	      tmp := split_and_decode (q, 0, '\0\0=');
+	      if (length (tmp) = 2)
+		q := atof (tmp[1]);
+	      else
+		q := 1.0;
+	    }
+	  goto ret;
+	}
+    }
+  ret:
+  if (q = 0 and lang = 'en')
+    q := 0.002;
+  if (q = 0 and not length (lang))
+    q := 0.001;
+  return q;
+}
+;
+
+create procedure
+cmp_label (in lbl_str varchar, in langs varchar)
+{
+  declare res any;
+  declare q,best_q float;
+  declare cur_iid any;
+  declare cur_lbl varchar;
+  declare n integer;
+
+  res := vector();
+
+--  dbg_printf ('cmp_label');
+  cur_iid := null;
+  best_q := 0;
+
+  for (select ull_label_lang, ull_label, ull_iid
+         from urilbl_complete_lookup 
+         where ull_label_ruined like urilbl_ac_ruin_label (lbl_str) || '%') do
+    {
+      if (cur_iid is not null and ull_iid <> cur_iid)
+        {
+          res := vector_concat (res, vector (cur_lbl, id_to_iri(cur_iid)));
+          n := n + 1;
+          if (n >= 50) goto done;
+          best_q := 0;
+	}
+
+      cur_iid := ull_iid;
+      q := cmp_get_lang_by_q (langs, ull_label_lang);
+
+      if (q >= best_q) 
+        {
+          best_q := q;
+          cur_lbl := ull_label;
+	}
+    }
+  res := vector_concat (res, vector (cur_lbl, id_to_iri (cur_iid)));
+ done:;
+  return res;
+}
 

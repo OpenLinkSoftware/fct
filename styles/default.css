@@ -12,14 +12,15 @@ tr:hover {
   background-color: #ddd;}
 
 #PG { width: 1000px; 
-      text-align: left; margin: 10px auto 10px auto; background-color: #fff}
+      text-align: left; margin: 10px auto 10px auto; background-color: #fff;}
 
 #HD { 
   width: 100%; 
   float: left; 
   height: 60px;
   text-align: center; 
-  background-color: #006699}
+  background-image: url(/fct/images/bg_header.png);
+  border-bottom: 1px solid #226;}
 
 #HD img { margin: 2px 0 0 0; padding: 0; vertical-align: middle;}
 
@@ -38,7 +39,8 @@ tr:hover {
 #hd_r { float: right; clear: right}
 #hd_r img { margin: 15px 10px 0 0; vertical-align: middle; padding-bottom: 3px; background-color: white; }
 
-#opl_logo { border: 0; float: left; margin-left: 6px;}
+a.logo { margin-left: 10px; float: left;}
+#opl_logo { border: 0; float: left;}
 
 #MD { width: 100%; 
       float: left; 
@@ -100,6 +102,7 @@ p.subj_desc {
   font-size: 12pt; 
   margin: 10px; 
   padding: 10px;
+  background-color: #fff;
   border: 1px solid black;}
 
 div.subj_nav div.nav { 
@@ -188,6 +191,9 @@ div.pg_b_nav { float: left; clear: left; width: 100%; margin-left: 10px;}
 div.autocomplete_list { 
   padding: 0;
   margin: 0;
+  max-height: 500px;
+  overflow-y: auto;
+  overflow-x: auto;
   list-style-type: none;
   text-align: left;
   background: #fff; 
@@ -197,10 +203,21 @@ div.ac_list_option {
   text-align: left; 
   margin: 2px 5px 2px 5px; 
   cursor: pointer; 
-  color: #888 }
+  color: #888;
+  border-top: 1px solid #ddd }
 
-div.ac_list_option:hover { color: #666 }
 
+div.ac_list_option:first-child { background-color: blue; color: #555; }
+
+div.ac_list_option span.opt_lbl { color: #333; margin-right: 10px;}
+
+div.ac_list_option span.opt_iri { font-style: italic;}
+
+div.ac_list_option:first-child span.opt_lbl { color: #fff; margin-right: 10px;}
+div.ac_list_option:first-child span.opt_iri { color: #ddd; margin-right: 10px;}
+
+div.ac_list_option:hover { color: #fff; background-color: blue}
+div.ac_list_option:hover span.opt_lbl { color: #fff };
 span.descr { font-size: 9pt; color: #557; margin-top: 0;}
 
 #result_nfo { float: left; clear: both; width: 100%; margin-top: 8px; margin-left: 5px; color: #446;}

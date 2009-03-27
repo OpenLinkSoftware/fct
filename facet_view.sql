@@ -840,23 +840,34 @@ fct_new ()
     </div> <!-- #TAB_PAGE_TXT -->
     <div id="TAB_PAGE_URI" class="tab_page" style="display: none">
       <h2>OpenLink Entity Finder</h2>
-      <form method="get" action="/about/">
-        <div id="new_uri">
-          <label class="left_txt"
-                 for="new_uri_txt">URI Lookup</label>
-          <input id=  "new_uri_txt" 
-                 size="60" 
-                 type="text" 
-                 name="url" 
-                 autocomplete="off"/>
-          <input type="hidden" name="sid" value="<?= sid ?>">
-          <img id=   "uri_ac_thr" 
-               class="throbber" 
-               src=  "/fct/images/thrb.gif" 
-               alt=  "Loading" style="display: none"/>
-          <input type="submit" value="Describe"/><br/>
-        </div>
+      <form method="get" action="/about/" id="new_uri_fm">
+        <input type="hidden" name="url" id="new_uri_val"/>
+	<input type="hidden" name="sid" value="<?= sid ?>"/>
+	<input type="hidden" name="urilookup" value="1"/>
       </form>
+      <div id="new_uri">
+        <input type=   "checkbox" 
+               checked="true" 
+               id=     "lbl_lookup">
+
+        <label for=  "lbl_lookup" 
+               class="ckb_lbl">Label lookup</label><br/>
+
+        <label class="left_txt"
+               for=  "new_uri_txt">URI Lookup</label>
+
+        <input id=  "new_uri_txt" 
+               size="60" 
+               type="text" 
+               autocomplete="off"/>
+
+        <img id=   "uri_ac_thr" 
+             class="throbber" 
+             src=  "/fct/images/thrb.gif" 
+             alt=  "Loading" style="display: none"/>
+
+        <button id="new_uri_btn">Describe</button><br/>
+      </div>
     </div> <!-- #TAB_PAGE_URI -->
   </div> <!-- #main_srch -->
   <div class="main_expln"><br/>
