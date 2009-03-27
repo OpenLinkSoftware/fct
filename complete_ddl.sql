@@ -4,7 +4,7 @@ create table
 urilbl_complete_lookup (
   ull_label_lang varchar,
   ull_label_ruined varchar,
-  ull_iid iri_id,
+  ull_iid iri_id_8,
   ull_label varchar,
   primary key (ull_label, ull_label_lang, ull_iid));
 

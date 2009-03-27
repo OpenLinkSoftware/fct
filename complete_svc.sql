@@ -36,7 +36,8 @@ json_out_vec (in v any, inout ses any)
         }
       else
         {
-          http (sprintf ('"%s",', replace (replace (v[i], '\\', '\\\\'), '"', '\\"')), s); --'
+          if (isstring(v[i]))
+            http (sprintf ('"%s",', replace (replace (v[i], '\\', '\\\\'), '"', '\\"')), s); --'
         }
     }
 

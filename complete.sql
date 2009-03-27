@@ -201,9 +201,11 @@ urilbl_ac_init_db () {
         define input:inference 'facets' 
         select ?s ?o (lang(?o)) as ?lng where { ?s virtrdf:label ?o }) do 
     {
-      insert soft 
-        urilbl_complete_lookup (ull_label_lang, ull_label_ruined, ull_iid, ull_label) 
-        values (lng, urilbl_ac_ruin_label (o), s, o);
+      if (isstring(o) and o not like 'Unresolved literal for ID%')
+        insert soft 
+          urilbl_complete_lookup (ull_label_lang, ull_label_ruined, ull_iid, ull_label) 
+          values (lng, urilbl_ac_ruin_label (o), s, o);
+
       commit work;
     }
 }
