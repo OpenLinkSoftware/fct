@@ -192,12 +192,20 @@ urilbl_ac_ruin_label (in lbl varchar)
 }
 ;
 
+create procedure 
+urilbl_ac_init_log (in msg varchar)
+{
+  dbg_printf(msg);
+  insert into urilbl_cpl_log (ullog_msg) values (msg);
+}
+
 create procedure
 urilbl_ac_init_db () {
   declare n, n_ins, n_strange integer;
   declare o_str varchar;
 
   set isolation = 'committed';
+  urilbl_ac_init_log ('urilbl_ac_init_db: started');
   for (sparql 
         define output:valmode 'LONG' 
         define input:inference 'facets' 
@@ -226,11 +234,11 @@ urilbl_ac_init_db () {
      cont:;
       n := n + 1;
       if (mod (n, 1000000) = 0) 
-        dbg_printf ('urilbl_ac_init_db: %d rows, %d ins, %d strange...\n', n, n_ins, n_strange);
+        urilbl_ac_init_log (sprintf ('urilbl_ac_init_db: %d rows, %d ins, %d strange...\n', n, n_ins, n_strange));
       commit work;
     }
-  dbg_printf ('urilbl_ac_init_db: Finished. %d rows, %d ins, %d strange./n',
-              n, n_ins, n_strange);
+  urilbl_ac_init_log (sprintf ('urilbl_ac_init_db: Finished. %d rows, %d ins, %d strange./n',
+              n, n_ins, n_strange));
 }
 ;
 
