@@ -226,7 +226,7 @@ urilbl_ac_init_db () {
      cont:;
       n := n + 1;
       if (mod (n, 1000000) = 0) 
-        dbg_printf ('urilbl_ac_init_db: %d rows, %s ins, %d strange...\n', n, n_ins, n_strange);
+        dbg_printf ('urilbl_ac_init_db: %d rows, %d ins, %d strange...\n', n, n_ins, n_strange);
       commit work;
     }
   dbg_printf ('urilbl_ac_init_db: Finished. %d rows, %d ins, %d strange./n',
