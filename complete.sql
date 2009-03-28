@@ -194,6 +194,8 @@ urilbl_ac_ruin_label (in lbl varchar)
 
 create procedure
 urilbl_ac_init_db () {
+  declare n, n_ins, n_strange integer;
+  declare o_str varchar;
 
   set isolation = 'committed';
   for (sparql 
@@ -201,13 +203,34 @@ urilbl_ac_init_db () {
         define input:inference 'facets' 
         select ?s ?o (lang(?o)) as ?lng where { ?s virtrdf:label ?o }) do 
     {
-      if (isstring(o) and o not like 'Unresolved literal for ID%')
-        insert soft 
-          urilbl_complete_lookup (ull_label_lang, ull_label_ruined, ull_iid, ull_label) 
-          values (lng, urilbl_ac_ruin_label (o), s, o);
+      if (__tag of rdf_box = __tag(o)) 
+	o_str := cast (o as varchar);
+      else if (isstring(o) and o not like 'Unresolved literal for ID%')
+	{ 
+	  o_str := o;
+        }
+      else
+	{
+          n_strange := n_strange + 1;
+	  goto cont;
+        } 
 
+      n_ins := n_ins + 1;
+
+      o_str := "LEFT"(o_str, 512);
+
+      insert soft 
+          urilbl_complete_lookup (ull_label_lang, ull_label_ruined, ull_iid, ull_label) 
+          values (lng, urilbl_ac_ruin_label (o_str), s, o_str);
+
+     cont:;
+      n := n + 1;
+      if (mod (n, 1000000) = 0) 
+        dbg_printf ('urilbl_ac_init_db: %d rows, %s ins, %d strange...\n', n, n_ins, n_strange);
       commit work;
     }
+  dbg_printf ('urilbl_ac_init_db: Finished. %d rows, %d ins, %d strange./n',
+              n, n_ins, n_strange);
 }
 ;
 
