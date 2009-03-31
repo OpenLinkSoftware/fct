@@ -847,7 +847,6 @@ fct_new ()
       </form>
       <div id="new_uri">
         <input type=   "checkbox" 
-               checked="true" 
                id=     "lbl_lookup">
 
         <label for=  "lbl_lookup" 

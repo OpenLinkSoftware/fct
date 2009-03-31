@@ -22,7 +22,7 @@ tr:hover {
   background-image: url(/fct/images/bg_header.png);
   border-bottom: 1px solid #226;}
 
-#HD img { margin: 2px 0 0 0; padding: 0; vertical-align: middle;}
+#HD img { margin: 2px 0 0 0; padding: 0; vertical-align: middle; border: 0;}
 
 #HD h1 { 
   font-size: 14pt; 

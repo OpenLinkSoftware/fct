@@ -5,6 +5,7 @@ isvector (in x any)
   if (__TAG (x) = 193) return 1;
   return 0;
 }
+;
 
 create procedure
 json_out_vec_tst (in v any)
@@ -17,6 +18,7 @@ json_out_vec_tst (in v any)
 
   return (string_output_string(_ses));
 }
+;
 
 create procedure 
 json_out_vec (in v any, inout ses any)
@@ -33,6 +35,7 @@ json_out_vec (in v any, inout ses any)
       if (isvector(v[i]))
 	{
       	  json_out_vec (v[i], s);
+          http (',', s);
         }
       else
         {
@@ -44,8 +47,8 @@ json_out_vec (in v any, inout ses any)
   s := rtrim (string_output_string (s), ',');
   s := s || ']';
   http (s, ses);
-
 }
+;
 
 DB.DBA.VHOST_REMOVE (lpath=>'/services/rdf/iriautocomplete.get');
 DB.DBA.VHOST_DEFINE (lpath=>'/services/rdf/iriautocomplete.get', 
