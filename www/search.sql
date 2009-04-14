@@ -531,7 +531,7 @@ create procedure pick_query(in smode varchar, inout val any, inout query varchar
   }
   else if (smode = '8')
     {
-      if (isnull(val)  or val = '') val := '"plaid_skirt"@en';
+      if (isnull(val)  or val = '') val := '"aeon_phoenix"@en';
 s1 := 'sparql
 select ?p ?n ((select count (*) where {?p foaf:interest ?i . ?ps foaf:interest ?i}))
    ((select count (*) where { ?p foaf:interest ?i}))
@@ -546,7 +546,7 @@ s3 := ' .
     }
   else if (smode = '9')
     {
-      if (isnull(val)  or val = '') val := '"plaid_skirt"';
+      if (isnull(val)  or val = '') val := '"aeon_phoenix"';
       s1 :=
       'sparql define input:inference \'b3s\' select ?s ?lbl count(*) where { ?s  ?p2 ?o2 .  ?o2 <http://b3s-demo.openlinksw.com/label> ?lbl . ' ||
       ' ?s  foaf:nick ?o .  filter (bif:contains (?o, ''';

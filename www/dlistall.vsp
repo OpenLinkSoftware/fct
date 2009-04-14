@@ -32,7 +32,7 @@
         <?vsp
           declare i integer;
 
-          for(i:=100;i<105;i:=i+1)
+          for(i:=100;i<104;i:=i+1)
           {
             http (sprintf ('<tr><td><a class="homelinks" href="search.vsp?q=%s&sc=%U">%s</a></td></tr>',cast(i as varchar), puri, label_get(cast(i as varchar))));
           };
