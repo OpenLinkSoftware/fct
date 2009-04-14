@@ -14,7 +14,7 @@
     <div id="header">
       <div id="hd_l">
 	  <h1 id="title"><?vsp http (sprintf ('%s', label)); ?> for
-	      <a href="/ode?uri=<?U puri ?>"><?V puri ?></a>
+	      <a href="/about?url=<?U puri ?>"><?V puri ?></a>
 	  </h1>
       </div> <!-- hd_l -->
     </div> <!-- header -->
@@ -67,7 +67,7 @@
                       tmp := rs[j];
                       if ( isstring(tmp ) and (strstr(tmp,'http://') = 0 or strstr(tmp,'nodeID://')=0))
                       {
-		        http (sprintf ('<td><a class="uri" href="%s">%s</a>', concat('http://b3s.openlinksw.com/ode/?uri=', sprintf ('%U',tmp)), tmp));
+		        http (sprintf ('<td><a class="uri" href="%s">%s</a>', concat('http://b3s.openlinksw.com/about/?url=', sprintf ('%U',tmp)), tmp));
                         http ('</td>');
                       }
                       else
