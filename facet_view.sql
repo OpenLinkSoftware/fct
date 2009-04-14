@@ -818,6 +818,8 @@ fct_new ()
       <div class="tab_act">
         <a href="/fct/facet.vsp?cmd=featured&sid=<?= sid ?>&no_qry=1">Featured Queries</a>
         &nbsp;|&nbsp;
+        <a href="/b3s/">Demo Queries</a>
+        &nbsp;|&nbsp;
         <a href="facet_doc.html">About</a>
     </div>
     </div>

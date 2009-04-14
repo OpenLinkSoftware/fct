@@ -107,3 +107,4 @@ DB.DBA.XML_SET_NS_DECL ('y', 'urn:yahoo:maps', 2);
 DB.DBA.XML_SET_NS_DECL ('yago', 'http://dbpedia.org/class/yago/', 2);
 DB.DBA.XML_SET_NS_DECL ('yt', 'http://gdata.youtube.com/schemas/2007', 2);
 DB.DBA.XML_SET_NS_DECL ('zem', 'http://s.zemanta.com/ns#', 2);
+DB.DBA.XML_SET_NS_DECL ('uniprot', 'http://purl.uniprot.org/', 2);
