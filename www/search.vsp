@@ -179,7 +179,7 @@
                           http (sprintf ('<td><a class="uri" href="%s">%s</a>', concat('http://demo.openlinksw.com/ode/?uri=',tmp), get_curie (tmp)));
                         if (smode in ('5','6','7', '8','9', '101') and j=0)
 			  http (sprintf('&nbsp;<b><a href="dlistall.vsp?p=%U">Drill-down</a></b>',tmp));
-			if (smode = '5')
+			if (0 and smode = '5')
                           http (sprintf('&nbsp;<b><a href="search.vsp?q=1001&sc=%U&fa=Execute">NEs</a></b>',tmp));
                         http ('</td>');
                       }
