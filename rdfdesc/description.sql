@@ -174,6 +174,9 @@ b3s_http_print_r (in _object any, in sid varchar := null)
 {
    declare lang, rdfs_type any;
 
+   if (_object is null) 
+     return;
+
    if (__tag (_object) = 230)
      {
        rdfs_type := 'XMLLiteral';
