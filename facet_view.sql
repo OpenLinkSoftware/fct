@@ -843,7 +843,7 @@ fct_new ()
     <div id="TAB_ROW">
       <div class="tab" id="TAB_TXT">Text Search</div>
       <div class="tab" id="TAB_URILBL">URI Lookup (by Label)</div>
-      <div class="tab" id="TAB_URI">URI Lookup (by Pattern)</div>
+      <div class="tab" id="TAB_URI">URI Lookup</div>
       <div class="tab_act">
         <a href="/fct/facet.vsp?cmd=featured&sid=<?= sid ?>&no_qry=1">Featured Queries</a>
         &nbsp;|&nbsp;
