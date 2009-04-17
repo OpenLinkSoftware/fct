@@ -234,7 +234,8 @@ urilbl_ac_init_db () {
      cont:;
       n := n + 1;
       if (mod (n, 1000000) = 0) 
-        urilbl_ac_init_log (sprintf ('urilbl_ac_init_db: %d rows, %d ins, %d strange...\n', n, n_ins, n_strange));
+        urilbl_ac_init_log (sprintf ('urilbl_ac_init_db: %d rows, %d ins, %d strange...\n', 
+                                      n, n_ins, n_strange));
       commit work;
     }
   urilbl_ac_init_log (sprintf ('urilbl_ac_init_db: Finished. %d rows, %d ins, %d strange./n',
@@ -300,29 +301,35 @@ cmp_label (in lbl_str varchar, in langs varchar)
   cur_iid := null;
   best_q := 0;
 
-  for (select ull_label_lang, ull_label, ull_iid
+  {
+    declare exit handler for sqlstate 'S1TAT' { 
+      goto done;
+    };
+
+    for (select ull_label_lang, ull_label, ull_iid
          from urilbl_complete_lookup 
          where ull_label_ruined like urilbl_ac_ruin_label (lbl_str) || '%') do
-    {
-      if (cur_iid is not null and ull_iid <> cur_iid)
-        {
-          res := vector_concat (res, vector (cur_lbl, id_to_iri(cur_iid)));
-          n := n + 1;
-          if (n >= 50) goto done;
-          best_q := 0;
-	}
+      {
+        if (cur_iid is not null and ull_iid <> cur_iid)
+          {
+            res := vector_concat (res, vector (cur_lbl, id_to_iri(cur_iid)));
+            n := n + 1;
+            if (n >= 50) goto done;
+            best_q := 0;
+  	}
 
-      cur_iid := ull_iid;
-      q := cmp_get_lang_by_q (langs, ull_label_lang);
+        cur_iid := ull_iid;
+        q := cmp_get_lang_by_q (langs, ull_label_lang);
 
-      if (q >= best_q) 
-        {
-          best_q := q;
-          cur_lbl := ull_label;
-	}
-    }
-  res := vector_concat (res, vector (cur_lbl, id_to_iri (cur_iid)));
- done:;
-  return res;
+        if (q >= best_q) 
+          {
+            best_q := q;
+            cur_lbl := ull_label;
+	  }
+      }
+    res := vector_concat (res, vector (cur_lbl, id_to_iri (cur_iid)));
+   done:;
+    return res;
+  }
 }
 

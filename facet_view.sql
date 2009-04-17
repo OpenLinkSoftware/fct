@@ -429,6 +429,8 @@ fct_web (in tree any)
 
 --  dbg_printf ('calling fct_exec with to: %d', timeout);
 
+-- dbg_obj_print (tree);
+
   reply := fct_exec (tree, timeout);
 
 --  dbg_obj_print (reply);
@@ -511,7 +513,8 @@ fct_set_focus (in tree any, in sid int, in pos int)
 }
 
 
-create procedure fct_drop (in tree any, in sid int, in pos int)
+create procedure 
+fct_drop (in tree any, in sid int, in pos int)
 {
   tree := xslt ('file://fct/fct_set_view.xsl', tree, vector ('pos', pos - 1, 'op', 'close'));
 
@@ -633,6 +636,9 @@ fct_set_class (in tree any,
   declare pos int;
 
   pos := fct_view_pos (tree);
+
+--  dbg_printf ('setting class %s at pos: %d', iri, pos);
+
   tree := xslt ('file://fct/fct_set_view.xsl',
                 tree,
                 vector ('pos'   , pos,
@@ -811,18 +817,19 @@ fct_new ()
 	where fct_sid = sid;
     }
   ?>
-  <div id="main_srch">
+  <div id="main_srch" style="display: none">
     <div id="TAB_ROW">
-      <div class="tab" id="TAB_TXT">Search Text</div>
+      <div class="tab" id="TAB_TXT">Text Search</div>
       <div class="tab" id="TAB_URI">URI Lookup</div>
+      <div class="tab" id="TAB_URILBL">URI Lookup by Label</div>
       <div class="tab_act">
         <a href="/fct/facet.vsp?cmd=featured&sid=<?= sid ?>&no_qry=1">Featured Queries</a>
         &nbsp;|&nbsp;
         <a href="/b3s/">Demo Queries</a>
         &nbsp;|&nbsp;
         <a href="facet_doc.html">About</a>
-    </div>
-    </div>
+      </div>
+    </div> <!-- #TAB_ROW -->
     <div id="TAB_CTR">
     </div> <!-- #TAB_CTR -->
     <div id="TAB_PAGE_TXT" class="tab_page" style="display: none">
@@ -848,28 +855,35 @@ fct_new ()
 	<input type="hidden" name="urilookup" value="1"/>
       </form>
       <div id="new_uri">
-        <input type=   "checkbox" 
-               id=     "lbl_lookup" checked="true">
-
-        <label for=  "lbl_lookup" 
-               class="ckb_lbl">Label lookup</label><br/>
-
         <label class="left_txt"
-               for=  "new_uri_txt">URI Lookup</label>
+               for=  "new_uri_txt">URI</label>
 
         <input id=  "new_uri_txt" 
                size="60" 
                type="text" 
                autocomplete="off"/>
-
-        <img id=   "uri_ac_thr" 
-             class="throbber" 
-             src=  "/fct/images/thrb.gif" 
-             alt=  "Loading" style="display: none"/>
-
         <button id="new_uri_btn">Describe</button><br/>
       </div>
     </div> <!-- #TAB_PAGE_URI -->
+    <div id="TAB_PAGE_URILBL" class="tab_page" style="display: none">
+      <h2>OpenLink Entity Finder</h2>
+      <form method="get" action="/about/" id="new_lbl_fm">
+        <input type="hidden" name="url" id="new_lbl_val"/>
+	<input type="hidden" name="sid" value="<?= sid ?>"/>
+	<input type="hidden" name="urilookup" value="1"/>
+      </form>
+      <div id="new_uri">
+        <label class="left_txt"
+               for=  "new_lbl_txt">Label</label>
+
+        <input id=  "new_lbl_txt" 
+               size="60" 
+               type="text" 
+               autocomplete="off"/>
+
+        <button id="new_lbl_btn">Describe</button><br/>
+      </div>
+    </div>
   </div> <!-- #main_srch -->
   <div class="main_expln"><br/>
     Faceted Search &amp; Find Service<br/>

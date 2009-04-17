@@ -67,15 +67,28 @@
       </xsl:element>
     </xsl:if>
 
-    <xsl:if test="$op = 'class' and
-		  $pos = count (./ancestor::*[name () = 'query' or
-		                              name () = 'property' or
-					      name () = 'property-of']) +
-			 count (./preceding::*[name () = 'query' or
-			                       name () = 'property' or
-					       name () = 'property-of'])">
-      <class iri="{$iri}"/>
-    </xsl:if>
+    <xsl:choose>
+      <xsl:when test="$op = 'class' and
+		      $pos = count (./ancestor::*[name () = 'query' or
+		                                  name () = 'property' or
+			                          name () = 'property-of']) +
+			     count (./preceding::*[name () = 'query' or
+			                           name () = 'property' or
+					           name () = 'property-of'])">
+        <class iri="{$iri}"/>
+      </xsl:when>
+
+      <xsl:when test="$op = 'class'">
+        <class iri="{$iri}"/>
+        <xsl:element name="view">
+          <xsl:attribute name="type">list</xsl:attribute>
+	  <xsl:attribute name="limit"> <xsl:value-of select="$limit"/></xsl:attribute>
+	  <xsl:attribute name="offset"> <xsl:value-of select="$offset"/></xsl:attribute>
+	</xsl:element>
+      </xsl:when>
+    </xsl:choose>
+    
+
     <xsl:if test="$op = 'value' and
 		  $pos = count (./ancestor::*[name () = 'query' or
 		                              name () = 'property' or

@@ -35,11 +35,18 @@ tr:hover {
 #HD h1 a { color: #fff}
 
 #h1 div.page-resource-uri {float: left}
+
 #hd_l { float: left; clear: left}
+
 #hd_r { float: right; clear: right}
-#hd_r img { margin: 15px 10px 0 0; vertical-align: middle; padding-bottom: 3px; background-color: white; }
+
+#hd_r img { margin: 15px 10px 0 0; 
+            vertical-align: middle; 
+            padding-bottom: 3px; 
+            background-color: white; }
 
 a.logo { margin-left: 10px; float: left;}
+
 #opl_logo { border: 0; float: left;}
 
 #MD { width: 100%; 
@@ -81,7 +88,13 @@ div.main_expln { float: left; clear: left; text-align: center; width: 100%;}
 #res h3 { margin-top: 0; margin-left: 5px;}
 
 #new_search_txt {}
+
 #new_uri_txt {}
+#new_lbl_txt {}
+
+input.thr { background-image: url(/fct/images/thrb.gif); 
+            background-repeat: no-repeat; 
+            background-position: right;}
 
 table.result { clear:left; width: 100%; margin: 3px; font-size: 9pt;}
 table.result td { max-width: 350px; overflow: hidden; font-size: 9pt;}
@@ -135,7 +148,7 @@ table.description ul.obj {
 
 div.tab { 
   float: left;
-  min-width: 10em;
+  min-width: 12em;
   padding-top: 10px;
   padding-left: 10px;
   padding-bottom: 4px;
@@ -243,6 +256,8 @@ span.descr { font-size: 9pt; color: #557; margin-top: 0;}
 
 input.num { text-align: right;}
 
+div.thr_ctr { display: inline; width: 16px; border: 0; padding: 0;margin: 0;}
+
 .dlg { background-color: #ddd;}
 .dlg .title { margin: 0; 
               text-align: center; 
@@ -300,6 +315,7 @@ div.dbg {
 /*div.dbg { padding: 10px; background-color: yellow; border: 1px solid black}*/
 
 div#pager { margin-top: 10px; float: right;}
+
 div#pager a { background-color: #ddd; 
               padding: 2px; 
               border: 1px solid #335; 

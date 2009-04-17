@@ -129,6 +129,9 @@
               <ul>
                 <li><a href="<?V case when urilookup = '1' then 'javascript:window.history.back()' else refr end ?>">Go Back</a></li>
                 <li><a href="usage.vsp?g=<?U _S ?>&sid=<?V sid ?>&urilookup=<?V urilookup ?>">Usage Statistics</a></li>
+<!--                <li><a href="/fct/facet.vsp?sid=<?V sid ?>&cmd=set_class&iri=<?V gr ?>">Choose <?V ''?> as Type</a></li>
+                <li><a href="/fct/facet.vsp?sid=<?V sid ?>&cmd=open_property">Choose <?V ''?> as Property (p)</a></li>
+                <li><a href="">Choose <?V ''?> as Value (o)</a></li> -->
               </ul>
             </div>
           <?vsp } ?>      
@@ -208,7 +211,7 @@ skip_rev:
         &nbsp; &nbsp; Raw Data in:
         <a href="<?=rdf_link || '&output=n3'?>">N3</a> |
         <a href="<?=rdf_link || '&output=xml'?>">RDF/XML</a>
-        &nbsp; &nbsp;<a href="http://ode.openlinksw.com/">About</a>&nbsp; &nbsp;
+        &nbsp; &nbsp;<a href="/fct/facet_doc.html">About</a>&nbsp; &nbsp;
       </div> <!-- #ft_t -->
       <div id="ft_b">
         <a href="http://linkeddata.org/"><img alt="This material is Open Knowledge" src="/fct/images/LoDLogo.gif" border="0"></a> &nbsp;
