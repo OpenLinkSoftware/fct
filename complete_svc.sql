@@ -43,6 +43,12 @@ json_out_vec_tst (in v any)
 ;
 
 create procedure 
+json_esc_str (in s any)
+{
+  return sprintf ('"%s"', replace (replace (replace (s, '\\', '\\\\'), '"', '\\"'), '\n', '\\n'));
+}
+
+create procedure 
 json_out_vec (in v any, inout ses any)
 {
   declare s varchar;
@@ -62,7 +68,7 @@ json_out_vec (in v any, inout ses any)
       else
         {
           if (isstring(v[i]))
-            http (sprintf ('"%s",', replace (replace (v[i], '\\', '\\\\'), '"', '\\"')), s); --'
+            http (json_esc_str (v[i])||',', s);
         }
     }
 
@@ -121,41 +127,53 @@ DB.DBA.IRI_AUTOCOMPLETE () __SOAP_HTTP 'text/json'
       langs := http_request_header_full (lines, 'Accept-Language', 'en');
     }
 
-  if (iri_str is not null)
-    res := DB.DBA.cmp_uri (iri_str);
-  else if (lbl_str is not null)
-    res := DB.DBA.cmp_label (lbl_str, langs);
-  else 
-    goto empty;
+  {
+    declare exit handler for sqlstate '*' 
+    {
+      http ('{"error": {"sqlstate" : ' || 
+            json_esc_str(__SQL_STATE) || 
+            ',"sqlmessage":' || 
+            json_esc_str(__SQL_MESSAGE) || '},"results":[]}', ses);
+      return ses;
+    };
+
+    signal ('FOO42','Foomatic blurbalizer zonked out!');
+    if (iri_str is not null)
+      res := DB.DBA.cmp_uri (iri_str);
+    else if (lbl_str is not null)
+      res := DB.DBA.cmp_label (lbl_str, langs);
+    else 
+      goto empty;
 
 --  dbg_obj_print (res);
 
-    if (length (res))
-      {
-        http ('{', ses);
+      if (length (res))
+        {
+          http ('{', ses);
 
-        if (isvector (res[0]))
-          http ('"restype":"multiple",', ses);
-        else 
-          http ('"restype":"single",', ses);
+          if (isvector (res[0]))
+            http ('"restype":"multiple",', ses);
+          else 
+            http ('"restype":"single",', ses);
 
-        if (iri_str)
-          http ('"qrytype":"iri",', ses);
-	else
-          http ('"qrytype":"lbl",', ses);
+          if (iri_str)
+            http ('"qrytype":"iri",', ses);
+	  else
+            http ('"qrytype":"lbl",', ses);
 
-        http ('"results":', ses);
-        json_out_vec (res, ses);
-      }
+          http ('"results":', ses);
+          json_out_vec (res, ses);
+        }
 
-    else goto empty;
+      else goto empty;
 
-  ses := rtrim (string_output_string (ses), ',');
-  ses := ses || '}';
+    ses := rtrim (string_output_string (ses), ',');
+    ses := ses || '}';
 
-  return ses;
- empty:
-  return '{results: []}';
+    return ses;
+   empty:
+    return '{results: []}';
+  };
 }
 
 grant execute on DB.DBA.IRI_AUTOCOMPLETE to PROXY;

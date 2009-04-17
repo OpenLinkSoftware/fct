@@ -869,24 +869,6 @@ fct_new ()
         </div>
       </form>
     </div> <!-- #TAB_PAGE_TXT -->
-    <div id="TAB_PAGE_URI" class="tab_page" style="display: none">
-      <h2>OpenLink Entity Finder</h2>
-      <form method="get" action="/about/" id="new_uri_fm">
-        <input type="hidden" name="url" id="new_uri_val"/>
-	<input type="hidden" name="sid" value="<?= sid ?>"/>
-	<input type="hidden" name="urilookup" value="1"/>
-      </form>
-      <div id="new_uri">
-        <label class="left_txt"
-               for=  "new_uri_txt">URI</label>
-
-        <input id=  "new_uri_txt" 
-               size="60" 
-               type="text" 
-               autocomplete="off"/>
-        <button id="new_uri_btn">Describe</button><br/>
-      </div>
-    </div> <!-- #TAB_PAGE_URI -->
     <div id="TAB_PAGE_URILBL" class="tab_page" style="display: none">
       <h2>OpenLink Entity Finder</h2>
       <form method="get" action="/about/" id="new_lbl_fm">
@@ -906,6 +888,24 @@ fct_new ()
         <button id="new_lbl_btn">Describe</button><br/>
       </div>
     </div>
+    <div id="TAB_PAGE_URI" class="tab_page" style="display: none">
+      <h2>OpenLink Entity Finder</h2>
+      <form method="get" action="/about/" id="new_uri_fm">
+        <input type="hidden" name="url" id="new_uri_val"/>
+	<input type="hidden" name="sid" value="<?= sid ?>"/>
+	<input type="hidden" name="urilookup" value="1"/>
+      </form>
+      <div id="new_uri">
+        <label class="left_txt"
+               for=  "new_uri_txt">URI</label>
+
+        <input id=  "new_uri_txt" 
+               size="60" 
+               type="text" 
+               autocomplete="off"/>
+        <button id="new_uri_btn">Describe</button><br/>
+      </div>
+    </div> <!-- #TAB_PAGE_URI -->
   </div> <!-- #main_srch -->
   <div class="main_expln"><br/>
     Faceted Search &amp; Find Service<br/>
