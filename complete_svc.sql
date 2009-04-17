@@ -137,7 +137,6 @@ DB.DBA.IRI_AUTOCOMPLETE () __SOAP_HTTP 'text/json'
       return ses;
     };
 
-    signal ('FOO42','Foomatic blurbalizer zonked out!');
     if (iri_str is not null)
       res := DB.DBA.cmp_uri (iri_str);
     else if (lbl_str is not null)
