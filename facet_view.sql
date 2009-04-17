@@ -1154,7 +1154,15 @@ fct_vsp ()
   start_time := msec_time ();
 
   if ('text' = cmd)
-    fct_set_text (tree, sid, http_param ('search_for'));
+    {
+      if (length (http_param ('search_for')) = 0)
+	{
+	  http (sprintf ('<div class="ses_info">No search criteria</div>'));
+	  fct_new ();
+	  return;
+	}
+      fct_set_text (tree, sid, http_param ('search_for'));
+    }
   else if ('set_focus' = cmd)
     fct_set_focus (tree, sid, atoi (http_param ('n')));
   else if ('set_view' = cmd)
