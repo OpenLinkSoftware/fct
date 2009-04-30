@@ -483,7 +483,10 @@ fct_web (in tree any)
 			    'type',
 			    fct_view_type (tp),
 			    'timeout',
-			    _min (timeout*2, atoi (registry_get ('fct_timeout_max'))))),
+			    _min (timeout*2, atoi (registry_get ('fct_timeout_max'))),
+			    'query',
+			    tree
+			    )),
 	      null, txt);
 
   fct_nav (tree, reply, txt);
