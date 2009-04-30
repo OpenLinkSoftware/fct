@@ -379,6 +379,7 @@ fct_xml_wrap (in tree any, in txt any)
 
   return string_output_string (ntxt);
 }
+;
 
 create procedure
 fct_n_cols (in tree any)
@@ -732,7 +733,7 @@ fct_test (in str varchar, in timeout int := 0)
 
 --  dbg_obj_print (reply);
 
-  return xslt ('file://facet_text.xsl', reply);
+  return xslt (registry_get ('_fct_xslt_') || 'facet_text.xsl', reply);
 }
 ;
 
