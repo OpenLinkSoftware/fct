@@ -228,11 +228,14 @@ ttlp ('
 @prefix dc: <http://purl.org/dc/elements/1.1/>
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 @prefix virtrdf: <http://www.openlinksw.com/schemas/virtrdf#>
+@prefix geonames: <http://www.geonames.org/ontology#>
 
 rdfs:label rdfs:subPropertyOf virtrdf:label .
 dc:title rdfs:subPropertyOf virtrdf:label .
 foaf:name rdfs:subPropertyOf virtrdf:label .
-foaf:nick rdfs:subPropertyOf virtrdf:label .', 'xx', 'facets');
+foaf:nick rdfs:subPropertyOf virtrdf:label .
+geonames:name rdfs:subPropertyOf virtrdf:label . ', 
+'xx', 'facets');
 
 rdfs_rule_set ('facets', 'facets');
 
@@ -607,6 +610,38 @@ fct_text_1 (in tree any,
 }
 ;
 
+create procedure fct_curie_iri (in curie varchar)
+{
+  declare pos int;
+  declare pref, ns, loc varchar;
+
+  pos := strchr (curie, ':');
+  if (pos is null)
+    return null;
+  pref := subseq (curie, 0, pos);
+  loc := subseq (curie, pos + 1);
+  ns := __xml_get_ns_uri (pref, 2); 
+  if (ns is null)
+    return null;
+  return ns || loc;
+}
+;
+
+create procedure 
+fct_curie (in curie varchar)
+{
+  if (curie like '\\[%:%\\]')
+    {
+      declare tmp varchar;
+      tmp := trim (curie, '[]');
+      tmp := fct_curie_iri (tmp);
+      if (tmp is not null)
+	curie := tmp;
+    }
+  return curie; 
+}
+;
+
 create procedure
 fct_text (in tree any,
 	  in this_s int,
@@ -621,7 +656,7 @@ fct_text (in tree any,
 
   if ('class' = n)
     {
-      http (sprintf ('?s%d a <%s> .', this_s, cast (xpath_eval ('./@iri', tree) as varchar)), txt);
+      http (sprintf ('?s%d a <%s> .', this_s, fct_curie (cast (xpath_eval ('./@iri', tree) as varchar))), txt);
       return;
     }
 
@@ -654,7 +689,7 @@ fct_text (in tree any,
       declare new_s int;
       max_s := max_s + 1;
       new_s := max_s;
-      http (sprintf (' ?s%d <%s> ?s%d .', this_s, cast (xpath_eval ('./@iri', tree, 1) as varchar), new_s), txt);
+      http (sprintf (' ?s%d <%s> ?s%d .', this_s, fct_curie (cast (xpath_eval ('./@iri', tree, 1) as varchar)), new_s), txt);
       fct_text_1 (tree, new_s, max_s, txt, pre, post);
     }
 
@@ -663,7 +698,7 @@ fct_text (in tree any,
       declare new_s int;
       max_s := max_s + 1;
       new_s := max_s;
-      http (sprintf (' ?s%d <%s> ?s%d .', new_s, cast (xpath_eval ('./@iri', tree, 1) as varchar), this_s), txt);
+      http (sprintf (' ?s%d <%s> ?s%d .', new_s, fct_curie (cast (xpath_eval ('./@iri', tree, 1) as varchar)), this_s), txt);
       fct_text_1 (tree, new_s, max_s, txt, pre, post);
     }
 
