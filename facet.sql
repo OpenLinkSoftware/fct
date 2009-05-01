@@ -656,7 +656,16 @@ fct_text (in tree any,
 
   if ('class' = n)
     {
-      http (sprintf ('?s%d a <%s> .', this_s, fct_curie (cast (xpath_eval ('./@iri', tree) as varchar))), txt);
+      declare ciri varchar;
+      ciri := fct_curie (cast (xpath_eval ('./@iri', tree) as varchar));
+      if (cast (xpath_eval ('./@exclude', tree) as varchar) = 'yes')
+	{
+	  http (sprintf (' filter (!bif:exists ((select (1) where { ?s%d a <%s> } ))) .', this_s, ciri), txt);
+	}
+      else
+	{
+	  http (sprintf ('?s%d a <%s> .', this_s, ciri), txt);
+	}
       return;
     }
 
@@ -687,10 +696,20 @@ fct_text (in tree any,
   if ('property' = n)
     {
       declare new_s int;
+      declare piri varchar;
       max_s := max_s + 1;
       new_s := max_s;
-      http (sprintf (' ?s%d <%s> ?s%d .', this_s, fct_curie (cast (xpath_eval ('./@iri', tree, 1) as varchar)), new_s), txt);
-      fct_text_1 (tree, new_s, max_s, txt, pre, post);
+      piri := fct_curie (cast (xpath_eval ('./@iri', tree, 1) as varchar));
+      if (cast (xpath_eval ('./@exclude', tree) as varchar) = 'yes')
+	{
+	  http (sprintf (' filter (!bif:exists ((select (1) where { ?s%d <%s> ?s%d } ))) .', this_s, piri, new_s), txt);
+	  return;  
+	}
+      else
+	{
+	  http (sprintf (' ?s%d <%s> ?s%d .', this_s, piri, new_s), txt);
+	  fct_text_1 (tree, new_s, max_s, txt, pre, post);
+	}
     }
 
   if ('property-of' = n)
