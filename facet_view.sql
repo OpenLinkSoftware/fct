@@ -256,6 +256,11 @@ VHOST_DEFINE (lpath=>'/fct',
     	ppath=>case when registry_get('_fct_path_') = 0 then '/fct/' else registry_get('_fct_path_') end, 
 	is_dav=>atoi (case when registry_get('_fct_dav_') = 0 then '0' else registry_get('_fct_dav_') end),
     	vsp_user=>'dba', def_page=>'facet.vsp');
+VHOST_REMOVE (lpath=>'/b3s');
+VHOST_DEFINE (lpath=>'/b3s',
+    	ppath=>case when registry_get('_fct_path_') = 0 then '/fct/' else registry_get('_fct_path_') end || 'www/', 
+	is_dav=>atoi (case when registry_get('_fct_dav_') = 0 then '0' else registry_get('_fct_dav_') end),
+    	vsp_user=>'dba', def_page=>'listall.vsp');
 
 EXEC_STMT ('create table fct_state (fct_sid int primary key, fct_state xmltype)', 0);
 

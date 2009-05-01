@@ -102,6 +102,7 @@ create procedure fct_svc () __soap_http 'text/xml'
   tp := http_request_header (lines, 'Content-Type');
   accept := http_request_header_full (lines, 'Accept', '*/*');
   accept := DB.DBA.HTTP_RDF_GET_ACCEPT_BY_Q (accept);
+  set http_charset='utf-8';
   if (tp <> 'text/xml')
     {
       http_status_set (500);
