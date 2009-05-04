@@ -918,7 +918,7 @@ fct_new ()
     </div> <!-- #TAB_PAGE_TXT -->
     <div id="TAB_PAGE_URILBL" class="tab_page" style="display: none">
       <h2>Entity Search, Find, and Explore</h2>
-      <form method="get" action="/about/" id="new_lbl_fm">
+      <form method="get" action="/describe/" id="new_lbl_fm">
         <input type="hidden" name="url" id="new_lbl_val"/>
 	<input type="hidden" name="sid" value="'); http_value ( sid ); http ('"/>
 	<input type="hidden" name="urilookup" value="1"/>
@@ -943,7 +943,7 @@ fct_new ()
     </div>
     <div id="TAB_PAGE_URI" class="tab_page" style="display: none">
       <h2>Entity Search, Find, and Explore</h2>
-      <form method="get" action="/about/" id="new_uri_fm">
+      <form method="get" action="/describe/" id="new_uri_fm">
         <input type="hidden" name="url" id="new_uri_val"/>
 	<input type="hidden" name="sid" value="'); http_value ( sid ); http ('"/>
 	<input type="hidden" name="urilookup" value="1"/>
