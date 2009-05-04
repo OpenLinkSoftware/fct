@@ -1,27 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
---
---  $Id$
---
---  This file is part of the OpenLink Software Virtuoso Open-Source (VOS)
---  project.
---
---  Copyright (C) 1998-2009 OpenLink Software
---
---  This project is free software; you can redistribute it and/or modify it
---  under the terms of the GNU General Public License as published by the
---  Free Software Foundation; only version 2 of the License, dated June 1991.
---
---  This program is distributed in the hope that it will be useful, but
---  WITHOUT ANY WARRANTY; without even the implied warranty of
---  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
---  General Public License for more details.
---
---  You should have received a copy of the GNU General Public License along
---  with this program; if not, write to the Free Software Foundation, Inc.,
---  51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
---
--->
 <xsl:stylesheet version="1.0"
 		xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
@@ -82,11 +59,16 @@
 	<xsl:attribute name="iri">
 	  <xsl:value-of select="$iri"/>
 	</xsl:attribute>
+	<xsl:if test="$exclude = 'yes'">
+	    <xsl:attribute name="exclude">yes</xsl:attribute>
+	</xsl:if>
+	<xsl:if test="$exclude != 'yes'">
 	<xsl:element name="view">
 	  <xsl:attribute name="type"> <xsl:value-of select="$type"/></xsl:attribute>
 	  <xsl:attribute name="limit"> <xsl:value-of select="$limit"/></xsl:attribute>
 	  <xsl:attribute name="offset"> <xsl:value-of select="$offset"/></xsl:attribute>
 	</xsl:element>
+	</xsl:if>
       </xsl:element>
     </xsl:if>
 
@@ -98,7 +80,11 @@
 			     count (./preceding::*[name () = 'query' or
 			                           name () = 'property' or
 					           name () = 'property-of'])">
-        <class iri="{$iri}"/>
+        <class iri="{$iri}">
+	    <xsl:if test="$exclude = 'yes'">
+		<xsl:attribute name="exclude">yes</xsl:attribute>
+	    </xsl:if>
+	</class>
       </xsl:when>
 
       <xsl:when test="$op = 'class'">
