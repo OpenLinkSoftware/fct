@@ -73,20 +73,26 @@ create procedure s_summary (inout row any)
 }
 
 
-create procedure sum_result (inout final any, inout res any, inout text_exp any, inout s varchar, inout start_inx int, inout end_inx int)
+create procedure sum_result (inout final any, inout res any, inout text_exp any, inout s varchar, inout start_inx int, inout end_inx int, inout s_rank real)
 {
-  declare sorted, inx, tot, exc, elt any;
+  declare sorted, inx, tot, exc, elt, tsum any;
+ tsum := 0;
  tot := '';
  sorted := subseq (res, start_inx, end_inx);
   for (inx := 0; inx < length (sorted); inx := inx + 3)
-    sorted[inx + 2] := sum_o_p_score (sorted[inx], sorted[inx + 1]);
-  dbg_obj_print ('sorted = ', sorted);
+    {
+      tsum := tsum + sorted[inx + 2];
+      sorted[inx + 2] := sum_o_p_score (sorted[inx], sorted[inx + 1]);
+    }
+  --dbg_obj_print ('sorted = ', sorted);
   gvector_sort (sorted, 3, 2, 0);
   for (inx := 0; inx < length (sorted); inx := inx + 3)
   tot	 := tot || rdf_box_data (sorted[inx]);
  exc := search_excerpt (text_exp, tot);
-  dbg_obj_print (' summaries of ', tot, ' = ', exc);
- elt := xmlelement ('row', xmlelement ('col', s), xmlelement ('col', exc));
+  --dbg_obj_print (' summaries of ', tot, ' = ', exc);
+ elt := xmlelement ('row', xmlelement ('col', s), xmlelement ('col', exc),
+		    xmlelement ('col', cast (s_rank as varchar)),
+		    xmlelement ('col', cast (cast (tsum as real) / ((end_inx - start_inx) / 3) as varchar)));
   xte_nodebld_xmlagg_acc (final, elt);
 }
 
@@ -100,7 +106,7 @@ create procedure sum_final (inout x any)
 create procedure s_sum_page (in rows any, in text_exp varchar)
 {
   /* fill the os and translate the iris and make sums */
-  declare inx, s, prev_s, prev_fill, fill, inx2, n any;
+  declare inx, s, prev_s, prev_fill, fill, inx2, n, s_rank any;
   declare dp, os, so, res, final any;
  dp := dpipe (1, 'ID_TO_IRI', '__RO2SQ');
   xte_nodebld_init (final);
@@ -110,33 +116,29 @@ create procedure s_sum_page (in rows any, in text_exp varchar)
       for (inx2 := 3; inx2 < os[1] + 3; inx2 := inx2 + 3)
 	dpipe_input (dp, aref (rows, inx, 0), os[inx2]);
     }
- n := 3 * dpipe_count (dp);
-  dbg_obj_print ('result length ', n);
- res := make_array (n, 'any');  
- fill := 0;
+  n := 3 * dpipe_count (dp);
+  --dbg_obj_print ('result length ', n);
+  res := make_array (n, 'any');  
+  fill := 0;
   for (inx := 0; inx < length (rows); inx := inx + 1)
     {
-    os := aref (rows, inx, 1);
+      os := aref (rows, inx, 1);
+      s_rank := rnk_scale (os[0]);
+    prev_fill := fill;
       for (inx2 := 3; inx2 < os[1] + 3; inx2 := inx2 + 3)
 	{
 	so := dpipe_next (dp, 0);
-	  dbg_obj_print ('res ', fill, so);
+	  --dbg_obj_print ('res ', fill, so);
 	s := so[0];
 	  res[fill] := so[1];
 	    res[fill + 1] := os[inx2 + 1];
 	      res[fill + 2] := os[inx2 + 2];
 	fill := fill + 3;
-	      if (prev_s is not null and so[0] <> prev_s)
-		{
-		  sum_result (final, res, text_exp, s, prev_fill, fill - 3);
-		prev_fill := fill - 3;
-		}
-	      else if (prev_s is null)
-	      prev_s := s;
 	}
+      sum_result (final, res, text_exp, s, prev_fill, fill, s_rank);
     }
   dpipe_next (dp, 1);
-  sum_result (final, res, text_exp, s, prev_fill, fill);
+  sum_result (final, res, text_exp, s, prev_fill, fill, s_rank);
   return sum_final (final);
 }
 
@@ -146,7 +148,7 @@ create procedure vt ()
   declare x any;
   x := vector ('a', 2, 'b', 1);
   gvector_sort (x, 2, 1, 1);
-  dbg_obj_print (x);
+  --dbg_obj_print (x);
 }
 
 create procedure sum_tst (in text_exp varchar, in text_words varchar := null)
