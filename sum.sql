@@ -165,3 +165,7 @@ create procedure sum_tst (in text_exp varchar, in text_words varchar := null)
 }
 
 --  sum_tst ('oori');
+
+--  sparql     select ?s1 as ?c1, <SHORT_OR_LONG::s_sum> (<SHORT_OR_LONG::IRI_RANK> (?s1), ?s1textp, ?o1, ?sc) as ?sm where { ?s1 ?s1textp ?o1 . ?o1 bif:contains  'NEW AND YORK'  option (score ?sc)  . } group by ?s1 order by desc <SHORT_OR_LONG::sum_rank> (?sm)  limit 20;
+-- explain ('sparql     select ?s1 as ?c1, (<SHORT_OR_LONG::s_sum> (<SHORT_OR_LONG::IRI_RANK> (?s1), ?s1textp, ?o1, ?sc)) as ?sm where { ?s1 ?s1textp ?o1 . ?o1 bif:contains  ''NEW AND YORK''  option (score ?sc)  . } group by ?s1 order by desc (<SHORT_OR_LONG::sum_rank> (<SHORT_OR_LONG::s_sum> (<SHORT_OR_LONG::IRI_RANK> (?s1), ?s1textp, ?o1, ?sc)))  limit 20');
+
