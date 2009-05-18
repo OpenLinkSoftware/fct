@@ -185,7 +185,7 @@ directory_init() {
       cp $f vad/code/fct/"`basename $f`"
   done
 
-  for f in `find . -type f | grep -v '.sql' | grep -v 'CVS' | grep -v VirtTripleLoader`
+  for f in `find . -type f | grep -v '.sql' | grep -v '.vad' | grep -v 'vad_' | grep -v 'CVS' | grep -v VirtTripleLoader`
   do
       cp $f vad/vsp/fct/$f
   done
