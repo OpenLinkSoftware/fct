@@ -150,11 +150,63 @@ create procedure sum_tst (in text_exp varchar, in text_words varchar := null)
   declare res any;
   if  (text_words is null)
     text_words := vector (text_exp);
-  res := (select vector_agg (vector (s, sm)) from 
-  (select top 20 s, s_sum (iri_rank (s), p, o, score)  as sm 
+  res := (sparql select (<sql:vector_agg> (<bif:vector> (?c1, ?sm))) as ?res
+    where {
+        { select (<SHORT_OR_LONG::>(?s1)) as ?c1,
+          (<sql:S_SUM> (
+            <SHORT_OR_LONG::IRI_RANK> (?s1),
+            <SHORT_OR_LONG::>(?s1textp),
+            <SHORT_OR_LONG::>(?o1),
+            ?sc ) ) as ?sm
+          where { ?s1 ?s1textp ?o1 . ?o1 bif:contains  "NEW AND YORK"  option (score ?sc) . }
+          order by desc (<sql:sum_rank> ((<sql:S_SUM> (
+            <SHORT_OR_LONG::IRI_RANK> (?s1),
+            <SHORT_OR_LONG::>(?s1textp),
+            <SHORT_OR_LONG::>(?o1),
+            ?sc ) ) ) ) limit 20 } } );
+  --dbg_obj_print (res);
+  res := s_sum_page (res, text_words);
+  return res;
+}
+;
+
+create procedure sum_tst_1 (in text_exp varchar, in text_words varchar := null)
+{
+  declare res any;
+  if  (text_words is null)
+    text_words := vector (text_exp);
+  res := (select vector_agg (vector ("c1", "sm")) from (
+sparql
+select (<SHORT_OR_LONG::>(?s1)) as ?c1, (<sql:S_SUM> (
+    <SHORT_OR_LONG::IRI_RANK> (?s1),
+    <SHORT_OR_LONG::>(?s1textp),
+    <SHORT_OR_LONG::>(?o1),
+    ?sc ) ) as ?sm
+where { ?s1 ?s1textp ?o1 . ?o1 bif:contains  "NEW AND YORK"  option (score ?sc) }
+order by desc (<sql:sum_rank> ((<sql:S_SUM> (
+        <SHORT_OR_LONG::IRI_RANK> (?s1),
+        <SHORT_OR_LONG::>(?s1textp),
+        <SHORT_OR_LONG::>(?o1),
+        ?sc ) ) ) )
+limit 20 ) s option (quietcast)
+);
+  --dbg_obj_print (res);
+  res := s_sum_page (res, text_words);
+  return res;
+}
+;
+
+create procedure sum_tst_2 (in text_exp varchar, in text_words varchar := null)
+{
+  declare res any;
+  if  (text_words is null)
+    text_words := vector (text_exp);
+  res := (select vector_agg (vector (s, sm)) from (
+   select top 20 s, s_sum (iri_rank (s), p, o, score)  as sm
    from rdf_obj, rdf_ft, rdf_quad q1 
    where contains (ro_flags, text_exp) and rf_id = ro_id and q1.o = rf_o group by s 
-   order by sum_rank (sm) option (quietcast) ) s option (quietcast));
+   order by sum_rank (sm) option (quietcast) ) s option (quietcast)
+);
   --dbg_obj_print (res);
   res := s_sum_page (res, text_words);
   return res;
@@ -163,6 +215,20 @@ create procedure sum_tst (in text_exp varchar, in text_words varchar := null)
 
 --  sum_tst ('oori');
 
---  sparql     select ?s1 as ?c1, <SHORT_OR_LONG::s_sum> (<SHORT_OR_LONG::IRI_RANK> (?s1), ?s1textp, ?o1, ?sc) as ?sm where { ?s1 ?s1textp ?o1 . ?o1 bif:contains  'NEW AND YORK'  option (score ?sc)  . } group by ?s1 order by desc <SHORT_OR_LONG::sum_rank> (?sm)  limit 20;
+--  
+sparql
+select (<SHORT_OR_LONG::>(?s1)) as ?c1, (<sql:S_SUM> (
+    <SHORT_OR_LONG::IRI_RANK> (?s1),
+    <SHORT_OR_LONG::>(?s1textp),
+    <SHORT_OR_LONG::>(?o1),
+    ?sc ) ) as ?sm
+where { ?s1 ?s1textp ?o1 . ?o1 bif:contains  "NEW AND YORK"  option (score ?sc)  . }
+order by desc (<sql:sum_rank> ((<sql:S_SUM> (
+        <SHORT_OR_LONG::IRI_RANK> (?s1),
+        <SHORT_OR_LONG::>(?s1textp),
+        <SHORT_OR_LONG::>(?o1),
+        ?sc ) ) ) )
+limit 20;
+
 -- explain ('sparql     select ?s1 as ?c1, (<SHORT_OR_LONG::s_sum> (<SHORT_OR_LONG::IRI_RANK> (?s1), ?s1textp, ?o1, ?sc)) as ?sm where { ?s1 ?s1textp ?o1 . ?o1 bif:contains  ''NEW AND YORK''  option (score ?sc)  . } group by ?s1 order by desc (<SHORT_OR_LONG::sum_rank> (<SHORT_OR_LONG::s_sum> (<SHORT_OR_LONG::IRI_RANK> (?s1), ?s1textp, ?o1, ?sc)))  limit 20');
 
