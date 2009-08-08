@@ -226,10 +226,11 @@ urilbl_ac_init_log (in msg varchar)
 ;
 
 create procedure
-urilbl_ac_init_db () {
+urilbl_ac_init_db () 
+{
   declare n, n_ins, n_strange integer;
   declare o_str varchar;
-
+  declare daq any;
   set isolation = 'committed';
 
   urilbl_ac_init_log ('urilbl_ac_init_db: started');
@@ -244,6 +245,7 @@ urilbl_ac_init_db () {
 -- XXX test that this inference graph exists a priori
 -- XXX check if the unresolved literal problem still needs a workaround
 
+  daq := daq (1);
   for (sparql 
         define output:valmode 'LONG' 
         define input:inference 'facets' 
@@ -265,8 +267,8 @@ urilbl_ac_init_db () {
 
       o_str := "LEFT"(o_str, 512);
 
-      insert soft 
-          urilbl_complete_lookup_2 (ull_label_lang, ull_label_ruined, ull_iid, ull_label) 
+      insert soft urilbl_complete_lookup_2 option (into daq)
+           (ull_label_lang, ull_label_ruined, ull_iid, ull_label) 
           values (lng, urilbl_ac_ruin_label (o_str), s, o_str);
 
      cont:;
@@ -274,8 +276,15 @@ urilbl_ac_init_db () {
       if (mod (n, 1000000) = 0) 
         urilbl_ac_init_log (sprintf ('urilbl_ac_init_db: %d rows, %d ins, %d strange...\n', 
                                       n, n_ins, n_strange));
-      commit work;
+      if (0 = mod (n, 10000))
+	{
+	  daq_results (daq);
+	daq := daq (1);
+	  commit work;
+	}
     }
+  daq_results (daq);
+  commit work;
   cl_exec('registry_set (''urilbl_ac_init_status'',''2'')');
  finished:;
   urilbl_ac_init_log (sprintf ('urilbl_ac_init_db: Finished. %d rows, %d ins, %d strange./n',
