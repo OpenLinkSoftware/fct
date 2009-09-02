@@ -1204,7 +1204,19 @@ fct_vsp ()
 
   select fct_state into tree from fct_state where fct_sid = sid;
   connection_set ('sid', sid);
+  goto exec;
 
+  no_ses:
+  if (sid <> 0 and isstring (http_param ('search_for')) and length (http_param ('search_for')))
+    {
+      tree := xtree_doc ('<query inference="" same-as="" view3="" s-term="" c-term=""/>');
+      insert into fct_state (fct_sid, fct_state) values (sid, tree);
+      connection_set ('sid', sid);
+    }
+  else
+    goto do_new_ses;
+
+exec:;  
   declare s_term varchar;
   s_term := cast (xpath_eval ('/query/@s-term', tree) as varchar);
   if ('' = s_term) s_term := 'e';
@@ -1301,7 +1313,7 @@ fct_vsp ()
 
   return;
 
- no_ses:
+  do_new_ses:
   http (sprintf ('<div class="ses_info">Session id %d lost. New search started</div>', sid));
   fct_new ();
 }
