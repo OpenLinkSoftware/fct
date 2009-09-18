@@ -124,7 +124,7 @@
         <div id="hd_l">
 	  <h1>
             <div id="logo">
-              <a href="http://www.openlinksw.com">
+              <a href="/fct/facet.vsp">
                 <img src="/fct/images/openlink_site_logo.png" 
                      alt="OpenLink Software"/>
               </a>

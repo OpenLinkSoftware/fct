@@ -887,6 +887,13 @@ fct_new ()
         set fct_state = tree
 	where fct_sid = sid;
     }
+
+  declare fct_demo_uri varchar;
+  fct_demo_uri := registry_get ('fct_demo_uri');
+
+  if (0 = fct_demo_uri)
+    fct_demo_uri := '/fct/demo_queries.vsp';
+
   http ('
   <div id="main_srch" style="display: none">
     <div id="TAB_ROW">
@@ -897,11 +904,7 @@ fct_new ()
         <a href="/fct/facet.vsp?cmd=featured&sid='); http_value ( sid ); http ('&no_qry=1">Featured Queries</a>
         &nbsp;|&nbsp;
         <a href="');
-  if (registry_get ('fct_site') = 'bbc')
-    http('/fct/bbc_demo_queries.vsp');
-  else 
-    http ('/b3s/');
-  
+  http ( fct_demo_uri );
   http ('">Demo Queries</a>
         &nbsp;|&nbsp;
         <a href="facet_doc.html">About</a>
@@ -912,7 +915,9 @@ fct_new ()
     <div id="TAB_PAGE_TXT" class="tab_page" style="display: none">
       <h2>Entity Search, Find, and Explore</h2>
       <form method="post"
-            action="/fct/facet.vsp?cmd=text&sid='); http_value ( sid ); http ('" >
+            action="/fct/facet.vsp?cmd=text&sid='); 
+  http_value ( sid ); 
+  http ('" >
         <div id="new_srch">
           <label class="left_txt"
                  for="new_search_txt">Search Text</label>
@@ -1157,7 +1162,7 @@ fct_select_value (in tree any,
                 tree,
 		vector ('pos', pos, 'op', 'value', 'iri', val, 'lang', lang, 'datatype', dtp, 'cmp', op));
 
---  dbg_obj_print (tree);
+dbg_obj_print (tree);
 
   if (op = '=')
     tree := xslt (registry_get ('_fct_xslt_') || 'fct_set_view.xsl',
