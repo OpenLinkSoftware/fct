@@ -427,3 +427,10 @@ ul.demo_qry_list {
 
 ul.demo_qry_list div.expln { margin: 10px; }
 ul.demo_qry_list pre { margin: 10px; }
+
+div#dbg_output {
+  float: left; 
+  clear:left;
+  font-size: 8pt;
+}
+
