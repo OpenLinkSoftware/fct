@@ -29,6 +29,7 @@ function init() {
 var long_literal_counter = 0;
 var long_literal_spans = {};
 var long_literal_texts = {};
+
 function init_long_literals() {
     var spans = document.getElementsByTagName('span');
     for (i = 0; i < spans.length; i++) {
@@ -55,6 +56,7 @@ function init_long_literals() {
 var long_ul_counter = 0;
 var long_uls = {};
 var long_uls_nodes = {};
+
 function init_long_list() 
 {
     var uls = document.getElementsByTagName('ul');
@@ -95,4 +97,34 @@ function expand(i) {
     span.removeChild(span.firstChild);
     span.removeChild(span.firstChild);
     span.insertBefore(long_literal_texts[i], span.firstChild);
+}
+
+function uri_parms_string (p_obj)
+{
+    var parms_s = '?';
+    for (var p in p_obj) {
+	parms_s = parms_s + p + '=' + escape(p_obj[p]).replace('+', '%2B').replace('#', '%23') + '&';
+    }
+    return parms_s.substring(0,parms_s.length-1);
+}
+
+function ifp_cb () 
+{
+    var loc = window.location;
+    var href = loc.protocol+'//'+loc.host+loc.pathname;
+    var parms = OAT.Dom.uriParams();
+
+    parms['ifp'] = $v('ifp_sel');
+    window.location = href+uri_parms_string(parms);
+}
+
+function sas_cb () 
+{
+    var loc = window.location;
+    var href = loc.protocol+'//'+loc.host+loc.pathname;
+    var parms = OAT.Dom.uriParams();
+
+    if ($('sas_ckb').checked) parms['sas'] = 'yes';
+    else parms['sas'] = 'no';
+    window.location = href+uri_parms_string(parms);
 }

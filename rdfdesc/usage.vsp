@@ -32,6 +32,7 @@
    declare urilookup integer;
    declare dbg_enable varchar;
    declare dbg_out any;
+   declare ifp_rule,inf_parms varchar;
 
    white_page := 1;
 
@@ -42,6 +43,7 @@
      sid := get_keyword ('sid', params); 
    else 
      sid := '';
+
    refr := null;
 
    if (sid is not null)
@@ -51,11 +53,16 @@
 
    b3s_parse_inf (sid, params);
    inf := b3s_render_inf_clause ();
+   ifp_rule := connection_get ('ifp');
+   if (ifp_rule is null) { ifp_rule := 'b3sifp'; }
+
+   inf_parms := sprintf ('&inf=%s&sas=%s', coalesce (connection_get ('inf'), ''), coalesce (connection_get('sas'), ''));
 
    host := http_request_header (http_request_header (), 'Host');  
    langs := http_request_header_full (lines, 'Accept-Language', 'en');
    gr := get_keyword ('g', params, '');
    arr := rfc1808_parse_uri (gr);
+
    if (arr[0] = '' and arr[1] = '' and arr[2] <> '')
      gr := 'http://' || gr;
 
@@ -70,7 +77,9 @@
 
    page_resource_uri := gr;
    page_resource_uri := replace (page_resource_uri, '%23', '#');
+
    _S := page_resource_uri; 
+
    proxy_iri := page_resource_uri;
 
    odd_position := 0;
@@ -79,7 +88,8 @@
    http_header ('Cache-Control: no-cache, must-revalidate\r\nPragma: no-cache\r\n');
    label := ''; _subject := '';
 
-   exec (sprintf ('sparql  define input:inference "facets" select ?o (lang(?o)) where { <%S> virtrdf:label ?o }', _S), null, null, vector (), 0, meta, data);
+   exec (sprintf ('sparql  define input:inference "facets" select ?o (lang(?o)) where { <%S> virtrdf:label ?o }', _S), 
+                  null, null, vector (), 0, meta, data);
    label := b3s_label_get (data, langs);
 
    exec (sprintf ('sparql %s prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> prefix dc: <http://purl.org/dc/elements/1.1/> 
@@ -90,8 +100,10 @@
 
   declare __res_desc varchar;
   __res_desc := b3s_uri_curie(page_resource_uri);
+
   if (not length (label))
     label := page_resource_uri;
+
   tp := atoi (get_keyword ('tp', params, '1'));  
 
    dbg_enable := get_keyword ('dbg', params);
@@ -160,18 +172,18 @@
 <!-- proptable -->
     <div id="TAB_ROW">
       <div class="tab <?vsp http (case when tp = 1 then ' tab_selected' else '' end); ?>">
-        <a href="<?V http_path () ?>?g=<?U _S ?>&tp=1&sid=<?V sid ?>&urilookup=<?V urilookup ?>&orig_refr=<?V orig_refr ?>">Referenced by Graphs</a>
+        <a href="<?V http_path () ?>?g=<?U _S ?>&tp=1&sid=<?V sid ?>&urilookup=<?V urilookup ?>&orig_refr=<?V orig_refr ?><?V inf_parms ?>">Referenced by Graphs</a>
       </div>
       <div class="tab <?vsp http (case when tp = 2 then ' tab_selected' else '' end); ?>">
-        <a href="<?V http_path () ?>?g=<?U _S ?>&tp=2&sid=<?V sid ?>&urilookup=<?V urilookup ?>&orig_refr=<?V orig_refr ?>">Source Graphs</a>
+        <a href="<?V http_path () ?>?g=<?U _S ?>&tp=2&sid=<?V sid ?>&urilookup=<?V urilookup ?>&orig_refr=<?V orig_refr ?><?V inf_parms ?>">Source Graphs</a>
       </div>
       <div class="tab <?vsp http (case when tp = 3 then ' tab_selected' else '' end); ?>">
         <a title="A list of other identifiers for the current entity."
-           href="<?V http_path () ?>?g=<?U _S ?>&tp=3&sid=<?V sid ?>&urilookup=<?V urilookup ?>&orig_refr=<?V orig_refr ?>">Direct co-references</a>
+           href="<?V http_path () ?>?g=<?U _S ?>&tp=3&sid=<?V sid ?>&urilookup=<?V urilookup ?>&orig_refr=<?V orig_refr ?><?V inf_parms ?>">Direct co-references</a>
       </div>
       <div class="tab <?vsp http (case when tp = 4 then ' tab_selected' else '' end); ?>">
         <a title="A list of indirect identifiers for the current entity based on Inverse Functional Property values."
-           href="<?V http_path () ?>?g=<?U _S ?>&tp=4&sid=<?V sid ?>&urilookup=<?V urilookup ?>&orig_refr=<?V orig_refr ?>">Indirect co-references</a>
+           href="<?V http_path () ?>?g=<?U _S ?>&tp=4&sid=<?V sid ?>&urilookup=<?V urilookup ?>&orig_refr=<?V orig_refr ?><?V inf_parms ?>">Indirect co-references</a>
       </div>
     </div> <!-- TAB_ROW -->
 
@@ -197,7 +209,7 @@
 	      }
 	    if (tp = 4) -- Expanded ifp
 	      {
-	         qr := sprintf ('sparql select distinct ?syn ?p ?o (sql:rnk_scale (<LONG::IRI_RANK> (?syn))) where { <%S> ?p ?o .  filter (0 != (<LONG::bif:rdf_is_sub> ("b3sifp", ?p, lod:ifp_like, 3))) .  ?syn ?p ?o . } order by desc 4 limit 20', _S);
+	         qr := sprintf ('sparql select distinct ?syn ?p ?o (sql:rnk_scale (<LONG::IRI_RANK> (?syn))) where { <%S> ?p ?o .  filter (0 != (<LONG::bif:rdf_is_sub> ("%s", ?p, lod:ifp_like, 3))) .  ?syn ?p ?o . } order by desc 4 limit 20', _S, ifp_rule);
 		 http ('<tr><th>Subject</th><th>Property</th><th>Object</th><th>Rank</th></tr>\n');
 	      }
 
@@ -246,6 +258,12 @@
 	    exec_close (h1);
 	  ?>
         </table>
+	<div id="inf_opts">
+	  <?vsp if (tp = 4) { ?>
+            <label for="ifp_sel">IFP Inference rule:</label>
+            <select id="ifp_sel" onchange="javascript:ifp_cb();"><?vsp b3s_render_ifp_opts (); ?><br/>
+          <?vsp } ?>
+        </div>
       </div> <!-- .tab_page -->
     </div> <!-- #TAB_CTR -->
     <?vsp b3s_render_dbg_out(dbg_out); ?>

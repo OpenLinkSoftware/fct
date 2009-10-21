@@ -78,6 +78,7 @@
    host := http_request_header (http_request_header (), 'Host');  
    langs := http_request_header_full (lines, 'Accept-Language', 'en');
    gr := get_keyword ('g', params, '');
+
    arr := rfc1808_parse_uri (gr);
 
    if (arr[0] = '' and arr[1] = '' and arr[2] <> '')
@@ -85,6 +86,7 @@
 
    page_resource_uri := gr;
    page_resource_uri := replace (page_resource_uri, '%23', '#');
+   
    _S := page_resource_uri; 
    proxy_iri := page_resource_uri;
 
@@ -105,7 +107,7 @@
    qry_str := sprintf ('sparql %s prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> prefix dc: <http://purl.org/dc/elements/1.1/> select ?o (lang(?o)) where { <%S> rdfs:comment ?o }', inf, _S);
 
    b3s_dbg_out (dbg_out, 'qry: ' || qry_str);
-
+	
    exec (qry_str, null, null, vector (), 0, meta, data);
 
    _subject := b3s_label_get (data, langs);
@@ -175,10 +177,11 @@
                 <li><a href="/fct/facet.vsp?sid=<?V sid ?>&cmd=open_property">Choose <?V ''?> as Property (p)</a></li>
                 <li><a href="">Choose <?V ''?> as Value (o)</a></li> -->
               </ul>
-              <!--h3>Inference</h3>
+              <h3>Inference</h3>
               <ul>
-                <li><input type="checkbox" id="sas_enable"><label for="sas_enable">owl:sameAs</label></li>
-              </ul-->
+                <input id="sas_ckb" type="checkbox" <?= b3s_sas_selected() ?> onchange="javascript:sas_cb();"/> 
+                <label for="sas_ckb">owl:sameAs</label>
+              </ul>
             </div>
         </div>      
 <!-- proptable -->

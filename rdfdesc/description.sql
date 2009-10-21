@@ -67,13 +67,49 @@ create procedure b3s_page_get_type (in val any)
 }
 ;
 
-create procedure 
-b3s_parse_inf (in sid varchar, in params any)
+create procedure
+b3s_render_ifp_opts () 
 {
-  declare _sas, _inf varchar;
+  declare ifp varchar;
+  declare f int;
+  f := 0;
+  ifp := connection_get ('ifp');
+  if (ifp is null) ifp:='b3sifp';
 
-  _sas := null; 
-  _inf := null;
+  for select RS_NAME from SYS_RDF_SCHEMA do 
+    {
+      if (RS_NAME = ifp) 
+        {
+          http (sprintf ('<option value="%s" selected="true">%s</option>', RS_NAME, RS_NAME));
+          f := 1;
+        }
+      else 
+        http (sprintf ('<option value="%s">%s</option>', RS_NAME, RS_NAME));
+    }
+
+  if (f = 0)
+    http ('<option value="**none**" selected="true">None</option>');
+  else 
+    http ('<option value="**none**">None</option>');
+}
+;
+
+create procedure
+b3s_sas_selected ()
+{
+  if (connection_get ('sas') = 'yes') 
+    return ' checked="true" ';
+  else 
+    return ''; 
+}
+;
+ 
+create procedure 
+b3s_parse_inf (in sid varchar, inout params any)
+{
+  declare _sas, _inf, _ifp varchar;
+
+  _sas := _inf := _ifp := null; 
 
   if (sid is not null)
     { 
@@ -99,10 +135,20 @@ b3s_parse_inf (in sid varchar, in params any)
 
   if (_sas is not null)
     {
-      if (_sas = '1')
+      if (_sas = '1' or _sas = 'yes')
         connection_set ('sas', 'yes');
       else 
         connection_set ('sas', null);
+    }
+
+  _ifp := get_keyword ('ifp', params);
+    {
+      if (_ifp is not null)
+        {
+          if (exists (select 1 from SYS_RDF_SCHEMA where rs_name = _ifp))
+            connection_set ('ifp', _ifp);
+          else connection_set ('ifp', null);
+        }
     }
 }
 ;
