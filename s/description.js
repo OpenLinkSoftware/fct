@@ -108,13 +108,13 @@ function uri_parms_string (p_obj)
     return parms_s.substring(0,parms_s.length-1);
 }
 
-function ifp_cb () 
+function inf_cb () 
 {
     var loc = window.location;
     var href = loc.protocol+'//'+loc.host+loc.pathname;
     var parms = OAT.Dom.uriParams();
 
-    parms['ifp'] = $v('ifp_sel');
+    parms['inf'] = $v('inf_sel');
     window.location = href+uri_parms_string(parms);
 }
 
