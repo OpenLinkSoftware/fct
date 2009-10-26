@@ -184,12 +184,12 @@
 	    declare qr varchar;
 	    if (tp = 1) -- refd in data sets
 	      {
-	        qr := sprintf ('sparql select ?g count (*) where { graph ?g { <%S> ?p ?o }} group by ?g order by desc 2 limit 20', _S);
+	        qr := sprintf ('sparql %s select ?g count (*) where { graph ?g { <%S> ?p ?o }} group by ?g order by desc 2 limit 20', b3s_render_inf_clause(), _S);
                 http ('<tr><th class="property">Graph IRI</th><th class="value">Count</th></tr>\n');
 	      }
 	    if (tp = 2) -- defd in data sets
 	      {
-	        qr := sprintf ('sparql select ?g count (*) where { graph ?g { ?s ?p <%S>  }} group by ?g order by desc 2 limit 20', _S);
+	        qr := sprintf ('sparql %s select ?g count (*) where { graph ?g { ?s ?p <%S>  }} group by ?g order by desc 2 limit 20', b3s_render_inf_clause(), _S);
                 http ('<tr><th>Graph IRI</th><th>Count</th></tr>\n');
 	      }
 	    if (tp = 3) -- Expanded sas
