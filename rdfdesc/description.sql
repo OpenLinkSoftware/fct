@@ -338,7 +338,8 @@ b3s_rel_print (in val any, in rel any, in flag int := 0)
 ;
 
 
-create procedure b3s_uri_curie (in uri varchar)
+create procedure 
+b3s_uri_curie (in uri varchar)
 {
   declare delim integer;
   declare uriSearch, nsPrefix varchar;
@@ -394,16 +395,16 @@ b3s_http_url (in url varchar, in sid varchar := null)
 {
   declare host, pref, more, i varchar;
 
-  more := '';
+--  more := '';
 
-  if (sid is not null)
-    more := sprintf ('&sid=%s', sid);
-  else
-    more := '';
+--  if (sid is not null)
+--    more := sprintf ('&sid=%s', sid);
+--  else
+--    more := '';
 
-  i := b3s_render_inf_params();
+  i := b3s_render_ses_params();
   
-  return sprintf ('/describe/?url=%U%s%s', url, more, i);
+  return sprintf ('/describe/?url=%U%s', url, i);
 };
 
 create procedure 
