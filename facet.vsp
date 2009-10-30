@@ -43,12 +43,8 @@
   </div> <!-- hd_r -->	
   <ul id="main_menu">
     <?vsp if (sid is not null) { ?>
-      <li class="sel"><a href="<?= b3s_render_fct_link() ?>" class="sel">Facets</a></li>
+      <!--li class="sel"><a href="<?= b3s_render_fct_link() ?>" class="sel">Facets</a></li-->
     <?vsp } ?>
-    <!--li id="mnu_descr" class="sel"><a href="/describe/?uri=<?V _S ?><?V ses_parms ?>" class="sel">Description</a></li-->
-    <!-- li id="mnu_usage">
-      <a href="usage.vsp?g=<?U _S ?><?V ses_parms ?>">Usage Statistics</a>
-    </li -->
     <!--li id="mnu_settings"><a href="settings.vsp?g=<?U _S ?><?V ses_parms ?>">Settings</a>
       <div id="settings_popup" style="display: none">
         <ul>

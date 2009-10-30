@@ -83,7 +83,8 @@ b3s_handle_ses (inout _path any, inout _lines any, inout _params any)
          ht := WS.WS.PARSE_URI (refr);
          pars := ht[4];
          pars := split_and_decode (pars);
-         sid := get_keyword ('sid', pars);
+         if (pars is not null) 
+           sid := get_keyword ('sid', pars);
        }
    }
 
