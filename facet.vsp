@@ -17,7 +17,9 @@
   b3s_handle_ses (path, lines, params);
 
   sid := connection_get ('sid');
-
+--  dbg_obj_print (path);
+--  dbg_obj_print (lines);
+  
 ?>
 
 </head>
@@ -122,8 +124,7 @@ if ('load' = cmd)
 declare q varchar;
 
 q := http_param ('q');
-
-
+-- dbg_obj_print (q);
 
 declare exit handler for sqlstate '*'
 {
@@ -134,6 +135,8 @@ declare exit handler for sqlstate '*'
   http('  <h3>Diagnostics</h3>\n');
   http(sprintf ('<pre>SQLSTATE: %s</pre><br/>\n', __SQL_STATE));
   http(sprintf ('<pre>SQLMSG  : %s</pre><br/>\n', __SQL_MESSAGE));
+  if (connection_get ('sparql_query') is not null)
+    http(sprintf ('<pre>SPARQL  : %s</pre><br/>\n', connection_get ('sparql_query')));
   http('  </div>\n');
   http('  <div class="btn_bar"><button onclick="document.location=''/fct/facet.vsp?qq=ww''">New Search</button></div>\n');  
   http('</div>\n');
@@ -156,6 +159,7 @@ declare exit handler for sqlstate '*'
 fct_vsp ();
 footer:;
 ?>
+<div class="dbg" style="display: none"><pre><![CDATA[<?vsp http(connection_get ('sparql_query')); ?>]]></div>
 </div><!-- #MD -->
 <div id="FT">
   <a href="http://virtuoso.openlinksw.com/"><img src="/fct/images/virt_power_no_border.png" alt="Powered by OpenLink Virtuoso"/></a>

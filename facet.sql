@@ -1010,6 +1010,8 @@ fct_exec (in tree any,
   qr2 := fct_xml_wrap (tree, qr);
   start_time := msec_time ();
 
+  connection_set ('sparql_query', qr2);
+
   exec (qr2, sqls, msg, vector (), 0, md, res);
   n_rows := row_count ();
   act := db_activity ();
