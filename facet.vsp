@@ -11,6 +11,7 @@
 </script>
 <script type="text/javascript" src="oat/toolkit/loader.js"></script>
 <script type="text/javascript" src="facet.js"></script>
+
 <?vsp 
   declare sid, _S, ses_parms varchar;
 
@@ -122,6 +123,8 @@ if ('load' = cmd)
   }
 
 declare q varchar;
+declare sq varchar;
+sq := connection_get ('sparql_query');
 
 q := http_param ('q');
 -- dbg_obj_print (q);
@@ -158,8 +161,9 @@ declare exit handler for sqlstate '*'
 };
 fct_vsp ();
 footer:;
+
 ?>
-<div class="dbg" style="display: none"><pre><![CDATA[<?vsp http(connection_get ('sparql_query')); ?>]]></div>
+<div class="dbg" style="display: none"><pre><![CDATA[<?vsp if (sq is not null) http(sq); ?>]]></div>
 </div><!-- #MD -->
 <div id="FT">
   <a href="http://virtuoso.openlinksw.com/"><img src="/fct/images/virt_power_no_border.png" alt="Powered by OpenLink Virtuoso"/></a>
