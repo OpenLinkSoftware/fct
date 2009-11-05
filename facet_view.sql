@@ -462,6 +462,8 @@ fct_web (in tree any)
 
   tp := cast (xpath_eval ('//view/@type', tree) as varchar);
 
+-- dbg_obj_print (reply);
+
   http_value (xslt (registry_get ('_fct_xslt_') || 'fct_vsp.xsl',
                     reply,
 		    vector ('sid',
@@ -675,8 +677,6 @@ fct_set_class (in tree any,
 
   pos := fct_view_pos (tree);
 
---  dbg_printf ('setting class %s at pos: %d', iri, pos);
-
   tree := xslt (registry_get ('_fct_xslt_') || 'fct_set_view.xsl',
                 tree,
                 vector ('pos'   , pos,
@@ -794,8 +794,6 @@ function get_and_encode_query (q_elm)
 
   ctr := 0;
 
---  dbg_printf ('isparql qry transform xsl: %s', demo_xsl_uri);
-
   for select res_content, res_name, res_full_path 
         from WS.WS.SYS_DAV_RES 
         where RES_FULL_PATH like demo_dav_path || '%.isparql' do
@@ -884,7 +882,6 @@ create procedure
 fct_load (in from_stored int)
 {
   declare sid int;
---  dbg_printf ('fct_load: from_stored: %d', from_stored);
   
   sid := sequence_next ('fct_seq');
   declare tree any;
@@ -1043,7 +1040,6 @@ fct_set_inf (in tree any, in sid int)
   if (view3 = 0) view3 := '';
   tlogy := http_param ('tlogy');
 
-
   if (0 = sas or 0 = inf or 0 = tlogy)
     {
       declare selected_inf, selected_sas, selected_view3, sel_c_term, sel_s_term  varchar;
@@ -1106,10 +1102,8 @@ fct_set_inf (in tree any, in sid int)
      return;
     }
 
-  if (isstring (sas) and isstring (inf) and
-  isstring (tlogy))
+  if (isstring (sas) and isstring (inf) and isstring (tlogy))
     {
---      dbg_printf ('tlogy: %s', tlogy);
 
       if (inf <> '' and not exists (select 1 from sys_rdf_schema where rs_name = inf))
 	{
@@ -1203,8 +1197,6 @@ fct_select_value (in tree any,
 {
   declare pos int;
 
---  dbg_printf ('in fct_select_value()');
-
   if (op is null or op = '' or op = 0)
     op := '=';
 
@@ -1214,14 +1206,12 @@ fct_select_value (in tree any,
                 tree,
 		vector ('pos', pos, 'op', 'value', 'iri', val, 'lang', lang, 'datatype', dtp, 'cmp', op));
 
--- dbg_obj_print (tree);
-
-  if (op = '=')
-    tree := xslt (registry_get ('_fct_xslt_') || 'fct_set_view.xsl',
-                  tree,
-		  vector ('pos', 0, 'op', 'view', 'type', 'list', 'limit', 20, 'offset', 0));
-
---  dbg_obj_print (tree);
+  if (op = '=') 
+    {
+      tree := xslt (registry_get ('_fct_xslt_') || 'fct_set_view.xsl',
+                    tree,
+	            vector ('pos', 0, 'op', 'view', 'type', 'list', 'limit', 20, 'offset', 0));
+    }
 
   update fct_state set fct_state = tree where fct_sid = sid;
 
@@ -1248,7 +1238,9 @@ fct_vsp ()
     }
 
   sid := http_param ('sid');
+
 --  dbg_obj_print (sid);
+
   if (0 <> sid) { sid := atoi (sid); }
   _to := http_param ('timeout');
 
@@ -1263,7 +1255,7 @@ fct_vsp ()
   connection_set ('sid', sid);
   goto exec;
 
-  no_ses:
+ no_ses:
   if (sid <> 0 and isstring (http_param ('search_for')) and length (http_param ('search_for')))
     {
       tree := xtree_doc ('<query inference="" same-as="" view3="" s-term="" c-term=""/>');
@@ -1366,11 +1358,12 @@ exec:;
 
   insert into fct_log (fl_sid, fl_cli_ip, fl_where, fl_state, fl_cmd, fl_msec)
          values (sid, http_client_ip(), 'RETURN', _state, cmd, msec_time () - start_time);
+
   commit work;
 
   return;
 
-  do_new_ses:
+ do_new_ses:
   http (sprintf ('<div class="ses_info">Session id %d lost. New search started</div>', sid));
   fct_new ();
 }

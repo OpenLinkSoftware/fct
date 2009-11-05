@@ -429,6 +429,21 @@ fct_dtp (in x any)
 }
 ;
 
+
+--
+-- Handle any DTs which need special serialization in FILTER, etc.
+--
+
+create procedure
+fct_sparql_ser (in x any)
+{
+  if (__TAG (x) = __TAG (getdate()))
+    return date_iso8601(__ro2sq (x));
+
+  return '';
+}
+;
+	
 create procedure
 fct_lang (in x any)
 {
@@ -521,7 +536,8 @@ fct_xml_wrap (in tree any, in txt any)
 				xmlelement ("column",
 						xmlattributes (fct_lang ("c1") as "xml:lang",
 							       fct_dtp ("c1") as "datatype",
-							       fct_short_form(__ro2sq("c1")) as "shortform"),
+							       fct_short_form(__ro2sq("c1")) as "shortform",
+                                                               fct_sparql_ser ("c1") as "sparql_ser"),
 							       __ro2sq ("c1")),
 				xmlelement ("column", fct_label ("c1", 0, ''facets'' )))))
 	     from (sparql define output:valmode "LONG"', ntxt);
@@ -753,6 +769,8 @@ fct_cond (in tree any, in this_s int, in txt any)
 
   op := coalesce (cast (xpath_eval ('./@op', tree) as varchar), '=');
 
+ -- Op is Op :)
+
   if (0 = op)
     op := '=';
 
@@ -780,7 +798,8 @@ fct_text_1 (in tree any,
 }
 ;
 
-create procedure fct_curie_iri (in curie varchar)
+create procedure 
+fct_curie_iri (in curie varchar)
 {
   declare pos int;
   declare pref, ns, loc varchar;
@@ -851,14 +870,17 @@ fct_text (in tree any,
       declare prop, sc_opt, v varchar;
       v := cast (xpath_eval ('//view/@type', tree) as varchar);
       prop := cast (xpath_eval ('./@property', tree, 1) as varchar);
+
       if ('text' = v or 'text-d' = v)
         sc_opt := ' option (score ?sc) ';
       else
         sc_opt := '';
+
       if (prop is not null)
 	prop := '<' || prop || '>';
       else
 	prop := sprintf ('?s%dtextp', this_s);
+
       http (sprintf (' ?s%d %s ?o%d . ?o%d bif:contains  ''%s'' %s .', this_s, prop, this_s, this_s,
 		     fti_make_search_string (cast (tree as varchar)), sc_opt), txt);
     }
@@ -867,9 +889,11 @@ fct_text (in tree any,
     {
       declare new_s int;
       declare piri varchar;
+
       max_s := max_s + 1;
       new_s := max_s;
       piri := fct_curie (cast (xpath_eval ('./@iri', tree, 1) as varchar));
+
       if (cast (xpath_eval ('./@exclude', tree) as varchar) = 'yes')
 	{
 	  http (sprintf (' filter (!bif:exists ((select (1) where { ?s%d <%s> ?v%d } ))) .', this_s, piri, new_s), txt);
@@ -881,6 +905,7 @@ fct_text (in tree any,
       else
 	{
 	  http (sprintf (' ?s%d <%s> ?s%d .', this_s, piri, new_s), txt);
+
 	  fct_text_1 (tree, new_s, max_s, txt, pre, post);
 	}
     }
@@ -1005,9 +1030,11 @@ fct_exec (in tree any,
 
   sqls := '00000';
   qr := fct_query (xpath_eval ('//query', tree, 1));
+
   query := qr;
 
   qr2 := fct_xml_wrap (tree, qr);
+
   start_time := msec_time ();
 
   connection_set ('sparql_query', qr2);
@@ -1022,6 +1049,8 @@ fct_exec (in tree any,
     results[0] := xtree_doc ('<result/>');
   else
     results[0] := res[0][0];
+
+-- dbg_obj_print (results);
 
   inx := 1;
 
