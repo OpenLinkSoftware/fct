@@ -124,31 +124,32 @@ var uri_ac;
 
 function init()
 {
-    
-    uri_ac = new OAT.Autocomplete('new_uri_txt',
-			          'new_uri_val',
-                                  'new_uri_btn', 
-                                  'new_uri_fm', 
-                                  {get_ac_matches: fct_uri_ac_get_matches});
+    if ($('main_srch')) {
+	uri_ac = new OAT.Autocomplete('new_uri_txt',
+			              'new_uri_val',
+                                      'new_uri_btn', 
+                                      'new_uri_fm', 
+                                      {get_ac_matches: fct_uri_ac_get_matches});
 
-    lbl_ac = new OAT.Autocomplete('new_lbl_txt',
-				  'new_lbl_val',
-				  'new_lbl_btn',
-				  'new_lbl_fm',
-                                  {get_ac_matches: fct_lbl_ac_get_matches});
+	lbl_ac = new OAT.Autocomplete('new_lbl_txt',
+				      'new_lbl_val',
+				      'new_lbl_btn',
+				      'new_lbl_fm',
+                                      {get_ac_matches: fct_lbl_ac_get_matches});
 				  
 
-    var tabs = new OAT.Tab ('TAB_CTR', {dockMode: false});
+	var tabs = new OAT.Tab ('TAB_CTR', {dockMode: false});
 
-    tabs.add ('TAB_TXT', 'TAB_PAGE_TXT');
-    tabs.add ('TAB_URI', 'TAB_PAGE_URI');
-    tabs.add ('TAB_URILBL', 'TAB_PAGE_URILBL');
+	tabs.add ('TAB_TXT', 'TAB_PAGE_TXT');
+	tabs.add ('TAB_URI', 'TAB_PAGE_URI');
+	tabs.add ('TAB_URILBL', 'TAB_PAGE_URILBL');
+	
+	tabs.go (0);
 
-    tabs.go (0);
+	OAT.MSG.attach ('*', OAT.MSG.AJAX_START, function () { ac_show_thr () });
 
-    OAT.MSG.attach ('*', OAT.MSG.AJAX_START, function () { ac_show_thr () });
-
-    OAT.Dom.show ('main_srch');  
+	OAT.Dom.show ('main_srch');
+    }
 }
 
 // opts = { loader: function  - function gets called when user hits tab or stops entering text
