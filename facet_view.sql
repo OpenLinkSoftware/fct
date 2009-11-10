@@ -57,15 +57,15 @@ fct_view_info (in tree any, in ctx int, in txt any)
   http ('<h3 id="view_info">', txt);
   if ('list' = mode)
     {
-      http (sprintf ('showing list of %s%d', connection_get ('s_term'), pos), txt);
+      http (sprintf ('List of %s%d', connection_get ('s_term'), pos), txt);
     }
   if ('list-count' = mode)
     {
-      http (sprintf ('showing list of distinct %s%d with counts', connection_get ('s_term'), pos), txt);
+      http (sprintf ('List of distinct %s%d with counts', connection_get ('s_term'), pos), txt);
     }
   if ('properties' = mode)
     {
-      http (sprintf ('showing properties of %s%d', connection_get ('s_term'), pos), txt);
+      http (sprintf ('Properties of %s%d', connection_get ('s_term'), pos), txt);
     }
   if ('properties-in' = mode)
     {
@@ -197,23 +197,19 @@ fct_query_info (in tree any,
       declare prop varchar;
       prop := cast (xpath_eval ('./@property', tree, 1) as varchar);
 
-      http (sprintf (' %s has %s whose value contains <span class="value">"%s"</span>. ',
-                     fct_var_tag (this_s, ctx),
-		     case
-		       when prop is not null
-		       then 'property <span class="iri">' || fct_short_form (prop) || '</span>'
-		       else 'any property'
-                     end,
-		     cast (tree as varchar)),
-	    txt);
+      if (prop is not null)
+        http (sprintf (' %s has <span class="iri"><a href="/fct/facet.vsp?sid=%d&cmd=drop_text_prop">%s</a></span> containing text <span class="value">"%s"</span>. ', 
+                       fct_var_tag (this_s, ctx),
+                       connection_get ('sid'),
+                       fct_short_form (prop),
+                       cast (tree as varchar)), txt);
+      else
+        http(sprintf (' %s has <a class="qry_info_cmd" href="/fct/facet.vsp?sid=%d&cmd=set_view&type=text-properties&limit=20&offset=0&cno=%d">any property</a> containing text <span class="value">"%s"</span>. ', 
+                      fct_var_tag (this_s, ctx), 
+                      connection_get('sid'), 
+                      cno,
+                      cast (tree as varchar)), txt);
 
---      if (prop is not null)
---        {
---	  http (sprintf (' <a class="qry_nfo_cmd" href="/fct/facet.vsp?sid=%d&cmd=drop_cond&cno=%d">Drop</a>',
---		     connection_get ('sid'),
---		     cno)
---               ,txt);
---        }
     }
   else if ('property' = n)
     {
@@ -462,8 +458,6 @@ fct_web (in tree any)
 
   tp := cast (xpath_eval ('//view/@type', tree) as varchar);
 
--- dbg_obj_print (reply);
-
   http_value (xslt (registry_get ('_fct_xslt_') || 'fct_vsp.xsl',
                     reply,
 		    vector ('sid',
@@ -554,10 +548,28 @@ fct_drop (in tree any, in sid int, in pos int)
 create procedure
 fct_drop_cond (in tree any, in sid int, in cno int)
 {
+
   tree := xslt (registry_get ('_fct_xslt_') || 'fct_drop_cond.xsl', tree, vector ('cno', cno));
 
   update fct_state set fct_state = tree where fct_sid = sid;
   commit work;
+
+  fct_web (tree);
+}
+;
+
+create procedure
+fct_drop_text_prop (in tree any, in sid int)
+{
+
+  declare txt varchar;
+  txt := xpath_eval ('//text', tree);
+  
+  tree := xslt (registry_get ('_fct_xslt_') || 'fct_set_text.xsl', tree, vector ('text', txt, 'prop', 'none'));
+
+  update fct_state set fct_state = tree where fct_sid = sid;
+  commit work;
+
   fct_web (tree);
 }
 ;
@@ -893,8 +905,6 @@ fct_load (in from_stored int)
     from fct_stored_qry
     where fsq_id = from_stored;
 
---  dbg_obj_print (sid);
-
   insert into fct_state (fct_sid, fct_state)
     values (sid, tree);
 
@@ -1182,7 +1192,7 @@ fct_bold_tags (in s varchar)
     };
 
   ret := xtree_doc (sprintf ('<span class="srch_xerpt">%s</span>', s));
-  -- dbg_obj_print (ret);
+
   return ret;
 }
 ;
@@ -1238,8 +1248,6 @@ fct_vsp ()
     }
 
   sid := http_param ('sid');
-
---  dbg_obj_print (sid);
 
   if (0 <> sid) { sid := atoi (sid); }
   _to := http_param ('timeout');
@@ -1315,12 +1323,14 @@ exec:;
     fct_drop (tree, sid, atoi (http_param ('n')));
   else if ('drop_cond' = cmd)
     fct_drop_cond (tree, sid, atoi (http_param ('cno')));
+  else if ('drop_text_prop' = cmd) 
+    fct_drop_text_prop (tree, sid);
   else if ('set_class' = cmd)
     fct_set_class (tree, sid, http_param ('iri'), http_param ('exclude'));
   else if ('open' = cmd)
     fct_open_iri (tree, sid, http_param ('iri'));
   else if ('refresh' = cmd)
-    {
+    {	
       if (xpath_eval ('/query/*', tree) is null)
         {
 	  fct_new ();
