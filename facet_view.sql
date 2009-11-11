@@ -983,7 +983,7 @@ fct_new ()
           <input id=  "new_search_txt" 
                  size="60" 
                  type="text" 
-                 name="search_for"/>
+                 name="q"/>
           <input type=submit  value="Search"><br/>
         </div>
       </form>
@@ -1238,10 +1238,14 @@ fct_vsp ()
   declare tree any;
   declare sid, start_time int;
   declare _to int;
-
+  declare s_for varchar;
+  
   cmd := http_param ('cmd');
+  s_for := http_param ('q');
+ 
+  if (s_for = 0 or trim (s_for) = '') s_for := null;
 
-  if (0 = cmd)
+  if (0 = cmd and s_for is null)
     {
       fct_new ();
       return;
@@ -1250,6 +1254,7 @@ fct_vsp ()
   sid := http_param ('sid');
 
   if (0 <> sid) { sid := atoi (sid); }
+
   _to := http_param ('timeout');
 
   if (_to = 0) _to := atoi (registry_get ('fct_timeout_min'));
@@ -1260,21 +1265,27 @@ fct_vsp ()
   whenever not found goto no_ses;
 
   select fct_state into tree from fct_state where fct_sid = sid;
-  connection_set ('sid', sid);
   goto exec;
 
  no_ses:
-  if (sid <> 0 and isstring (http_param ('search_for')) and length (http_param ('search_for')))
-    {
-      tree := xtree_doc ('<query inference="" same-as="" view3="" s-term="" c-term=""/>');
-      insert into fct_state (fct_sid, fct_state) values (sid, tree);
-      connection_set ('sid', sid);
-    }
-  else
+  if (s_for is not null) {
+    sid := sequence_next ('fct_seq');
+    tree := xtree_doc ('<query inference="" same-as="" view3="" s-term="" c-term=""/>');
+
+
+    insert into fct_state (fct_sid, fct_state)
+      values (sid, tree);
+
+    cmd := 'text';
+  }
+  else 
     goto do_new_ses;
 
 exec:;  
   declare s_term varchar;
+
+  connection_set ('sid', sid);
+
   s_term := cast (xpath_eval ('/query/@s-term', tree) as varchar);
   if ('' = s_term) s_term := 'e';
   connection_set ('s_term', s_term);
@@ -1292,13 +1303,13 @@ exec:;
 
   if ('text' = cmd)
     {
-      if (length (http_param ('search_for')) = 0)
+      if (s_for is null)
 	{
 	  http (sprintf ('<div class="ses_info">No search criteria</div>'));
 	  fct_new ();
 	  return;
 	}
-      fct_set_text (tree, sid, http_param ('search_for'));
+      fct_set_text (tree, sid, s_for);
     }
   else if ('set_focus' = cmd)
     fct_set_focus (tree, sid, atoi (http_param ('n')));

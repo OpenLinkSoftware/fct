@@ -6,6 +6,10 @@
 <head>
 <title>Entity Search, Find, and Explore</title>
 <link rel="stylesheet" media="screen" type="text/css" href="styles/default.css"/>
+<link rel="search" type="application/opensearchdescription+xml" 
+           href="opensearchdescription.vsp"
+           title="Faceted search" />
+
 <script type="text/javascript" >
     var featureList=["map", "combolist", "ajax2", "tab", "json"];
 </script>
@@ -122,12 +126,9 @@ if ('load' = cmd)
       }
   }
 
-declare q varchar;
 declare sq varchar;
-sq := connection_get ('sparql_query');
 
-q := http_param ('q');
--- dbg_obj_print (q);
+sq := connection_get ('sparql_query');
 
 declare exit handler for sqlstate '*'
 {
@@ -152,7 +153,7 @@ declare exit handler for sqlstate '*'
 	         http_client_ip (),
 		 _state,
 		 'ERR_HANDLER',
-		 http_param('cmd'), 
+		 http_param('cmd'), 	
 		 __SQL_STATE,
 		 __SQL_MESSAGE,
 		 serialize(params));
