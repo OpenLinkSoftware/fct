@@ -967,10 +967,10 @@ fct_new ()
   http ('">Demo Queries</a>
         &nbsp;|&nbsp;
         <a href="facet_doc.html">About</a>
-        <span id="opensearch_container" style="display:none">&nbsp;|&nbsp;
+        <!--span id="opensearch_container" style="display:none">&nbsp;|&nbsp;
         <a href="" 
            id="opensearch_link" 
-           title="Install OpenSearch Plugin">Search from browser</a></span>
+           title="Install OpenSearch Plugin">Search from browser</a></span-->
       </div>
     </div> <!-- #TAB_ROW -->
     <div id="TAB_CTR">
@@ -1037,7 +1037,7 @@ fct_new ()
     </div> <!-- #TAB_PAGE_URI -->
   </div> <!-- #main_srch -->
   <div class="main_expln"><br/>
-    Hint: <i>You can add this engine in search bar of an OpenSearch - capable browser</i><br/>
+    Hint: <i>You can <a id="opensearch_link" href="#">add this engine</a> in search bar of an OpenSearch - capable browser</i><br/>
   </div>
  ');
 }
@@ -1231,6 +1231,24 @@ fct_select_value (in tree any,
 
   commit work;
   fct_web (tree);
+}
+;
+
+create procedure 
+fct_gen_opensearch_link ()
+{
+  declare uriqa_str varchar;
+  uriqa_str := cfg_item_value( virtuoso_ini_path(), 'URIQA','DefaultHost');
+
+  if (uriqa_str is null)
+    {
+      if (server_http_port () <> '80')
+        uriqa_str := 'localhost:'||server_http_port ();
+      else
+        uriqa_str := 'localhost';
+    }
+
+  http (sprintf ('<link rel="search" type="application/opensearchdescription+xml" href="opensearchdescription.vsp" title="Search &amp; Find (%s)" />', uriqa_str));
 }
 ;
 

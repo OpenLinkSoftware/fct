@@ -154,7 +154,6 @@ function init()
             ((typeof window.external.AddSearchProvider == "unknown") || 
              (typeof window.external.AddSearchProvider == "function"))) 
           {
-              OAT.Dom.show ('opensearch_container');
               OAT.Event.attach ('opensearch_link', 
                                 'click', 
                                 function () { window.external.AddSearchProvider(location.protocol+'//'+location.host+'/fct/opensearchdescription.vsp'); });
