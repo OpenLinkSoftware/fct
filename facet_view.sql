@@ -1037,7 +1037,7 @@ fct_new ()
     </div> <!-- #TAB_PAGE_URI -->
   </div> <!-- #main_srch -->
   <div class="main_expln"><br/>
-    Faceted Search &amp; Find Service<br/>
+    Hint: <i>You can add this engine in search bar of an OpenSearch - capable browser</i><br/>
   </div>
  ');
 }
