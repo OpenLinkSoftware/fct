@@ -967,6 +967,10 @@ fct_new ()
   http ('">Demo Queries</a>
         &nbsp;|&nbsp;
         <a href="facet_doc.html">About</a>
+        <span id="opensearch_container" style="display:none">&nbsp;|&nbsp;
+        <a href="" 
+           id="opensearch_link" 
+           title="Install OpenSearch Plugin">Search from browser</a></span>
       </div>
     </div> <!-- #TAB_ROW -->
     <div id="TAB_CTR">

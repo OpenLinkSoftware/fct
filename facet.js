@@ -149,6 +149,16 @@ function init()
 	OAT.MSG.attach ('*', OAT.MSG.AJAX_START, function () { ac_show_thr () });
 
 	OAT.Dom.show ('main_srch');
+	
+        if ((typeof window.external =="object") && 
+            ((typeof window.external.AddSearchProvider == "unknown") || 
+             (typeof window.external.AddSearchProvider == "function"))) 
+          {
+              OAT.Dom.show ('opensearch_container');
+              OAT.Event.attach ('opensearch_link', 
+                                'click', 
+                                function () { window.external.AddSearchProvider(location.protocol+'//'+location.host+'/fct/opensearchdescription.vsp'); });
+          }
     }
 }
 
