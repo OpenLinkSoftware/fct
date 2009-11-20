@@ -142,7 +142,6 @@ create procedure
 cmp_find_ns (in str varchar)
 {
   declare nss any;
-
   nss := (select vector_agg (rp_name) 
             from (select top 20 rp_name 
                     from rdf_prefix 
@@ -203,9 +202,14 @@ cmp_uri (in str varchar)
   if (length (nss) = 0)
     return cmp_find_iri (str);
 
-  iris := cmp_find_iri (nss[0], 1);
+  vectorbld_init (iris);
+  foreach (any x in nss) do
+    {
+      vectorbld_acc (iris, cmp_find_iri (x, 1));
+    }
+  vectorbld_final (iris);
 
-  return vector (iris, nss);
+  return iris;
 }
 ;
 
