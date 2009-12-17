@@ -272,7 +272,7 @@ create procedure rnk_get_ranks (in s_first iri_id)
 
 create procedure rnk_score (in nth_iter int)
 {
-  declare cr cursor for select o, p, iri_stat (s) from rdf_quad table option (no cluster, index rdf_quad_pogs) where o >#i0 and o < iri_id_from_num (0hexffffffffffffff00);
+  declare cr cursor for select o, p, iri_stat (s) from rdf_quad table option (no cluster, index rdf_quad_op) where o >#i0 and o < iri_id_from_num (0hexffffffffffffff00);
   declare s_first, s_prev, nth, sn, rnk, ssc, fill, n_iters int;
   declare sc double precision;
   declare s, p iri_id;
