@@ -49,7 +49,7 @@ VAD_NAME_RELEASE="$VAD_PKG_NAME"_dav.vad
 NEED_VERSION=06.00.3117
 DSN="$HOST:$PORT"
 SQLDEPS="ns.sql facet.sql complete_ddl.sql"
-EXCEPT="b3sq.sql facet_test.sql fct_inx.sql srank.sql srank_1.sql complete_cl.sql complete_single.sql"
+EXCEPT="b3sq.sql facet_test.sql fct_inx.sql srank.sql srank_1.sql srank23.sql complete_cl.sql complete_single.sql"
 
 HOST_OS=`uname -s | grep WIN`
 if [ "x$HOST_OS" != "x" ]
@@ -309,7 +309,7 @@ else
   echo "    registry_set('_"$VAD_NAME"_path_', '/vad/vsp/$VAD_NAME/');" >> $STICKER
   echo "    registry_set('_"$VAD_NAME"_dav_', '$ISDAV');" >> $STICKER
 fi
-  echo "    if (not exists (select 1 from DB.DBA.SYS_KEYS where upper (KEY_NAME) = 'RDF_QUAD_OPGS') and (select count(*) from (select top 10000 1 as x from RDF_QUAD) stb) < 10000) { " >> $STICKER
+  echo "    if (lt (sys_stat ('st_dbms_ver'), '06.00.3126') and not exists (select 1 from DB.DBA.SYS_KEYS where upper (KEY_NAME) = 'RDF_QUAD_OPGS') and (select count(*) from (select top 10000 1 as x from RDF_QUAD) stb) < 10000) { " >> $STICKER
    echo "      log_message ('Altering the index layout on RDF_QUAD'); " >> $STICKER
   echo "       DB.DBA.VAD_LOAD_SQL_FILE('"$BASE_PATH_CODE"$VAD_NAME/fct_inx.sql', 0, 'report', $ISDAV);" >> $STICKER
   echo "       log_message ('done.'); " >> $STICKER
@@ -347,7 +347,10 @@ fi
   echo "      DB.DBA.VAD_LOAD_SQL_FILE('"$BASE_PATH_CODE"$VAD_NAME/complete_cl.sql', 0, 'report', $ISDAV); " >> $STICKER
   echo "    }    " >> $STICKER
 
-  echo "    if (exists (select 1 from DB.DBA.SYS_KEYS where upper (KEY_NAME) = 'RDF_QUAD_OPGS')) " >> $STICKER
+  echo "    if (exists (select 1 from DB.DBA.SYS_KEYS where upper (KEY_NAME) = 'RDF_QUAD_SP')) " >> $STICKER
+
+  echo "      DB.DBA.VAD_LOAD_SQL_FILE('"$BASE_PATH_CODE"$VAD_NAME/srank23.sql', 0, 'report', $ISDAV); " >> $STICKER
+  echo "    else if (exists (select 1 from DB.DBA.SYS_KEYS where upper (KEY_NAME) = 'RDF_QUAD_OPGS')) " >> $STICKER
 
   echo "      DB.DBA.VAD_LOAD_SQL_FILE('"$BASE_PATH_CODE"$VAD_NAME/srank.sql', 0, 'report', $ISDAV); " >> $STICKER
   echo "    else { " >> $STICKER
