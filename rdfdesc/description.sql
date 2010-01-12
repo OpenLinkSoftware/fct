@@ -588,6 +588,12 @@ again:
        http (charset_recode (_object, '_WIDE_', 'UTF-8'));
        http ('</span>');
      }
+   else if (__tag (_object) = 238)
+     {
+       http (sprintf ('<span %s>', rdfa));
+       http (cast (_object as varchar));
+       http ('</span>');
+     }
    else
      http (sprintf ('FIXME %i', __tag (_object)));
 
