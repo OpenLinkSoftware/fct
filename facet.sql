@@ -554,8 +554,8 @@ fct_xml_wrap (in tree any, in txt any)
                                                               __ro2sq ("c1")),
                                                   xmlelement ("column",
                                                               fct_label ("c1", 0, ''facets'' )),
-                                                  xmlelement ("column", "c2"),
-                                                  xmlelement ("column", "c3")
+                                                  xmlelement ("column", __ro2sq ("c2")),
+                                                  xmlelement ("column", __ro2sq ("c3"))
 						  	)))
              from (sparql define output:valmode "LONG" ', ntxt);
 
