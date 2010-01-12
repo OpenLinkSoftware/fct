@@ -107,7 +107,10 @@ cmp_label (in lbl_str varchar, in langs varchar)
         if (q >= best_q) 
           {
             best_q := q;
-            cur_lbl := ull_label;
+	    if (__tag (ull_label) = 246)
+	      cur_lbl := rdf_box_data (ull_label);
+	    else
+	      cur_lbl := ull_label;
 	  }
       }
     res := vector_concat (res, vector (cur_lbl, id_to_iri (cur_iid)));

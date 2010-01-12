@@ -125,9 +125,22 @@ create procedure rnk_store_w (inout first int, inout str varchar, inout fill int
 }
 ;
 
+create procedure rnk_get_stat (in s_first int)
+{
+  declare  str varchar;
+  str := (select rst_string  from rdf_iri_stat where rst_iri = iri_id_from_num (s_first));
+  if (str is null)
+    return make_string (1536);
+  if (length (str) < 1536)
+    return str || make_string (1536 - length (str));
+  return str;
+}
+;
+
 create procedure rnk_count_refs_srv ()
 {
-  declare cr cursor for select s, p from rdf_quad table option (no cluster, index rdf_quad_sp) where isiri_id (o);
+  -- use psog (pk) instead of sp
+  declare cr cursor for select s, p from rdf_quad table option (no cluster, index primary key) where isiri_id (o);
   declare s_first, s_prev, nth, sn, cnt, fill int;
   declare s, p iri_id;
   declare str varchar;
@@ -159,11 +172,12 @@ create procedure rnk_count_refs_srv ()
 	  fill := nth + 6;
 	  cnt := 1;
 	  s_prev := sn;
-	  if (sn - s_first > 255)
+	  if (sn - s_first > 255 or s_first > sn)
 	    {
 	      rnk_store_w (s_first, str, fill);
-	      str := make_string (1536);
 	      s_first := bit_and (sn, 0hexffffffffffffff00);
+	      --str := make_string (1536);
+	      str := rnk_get_stat (s_first);
 	      fill := 0;
 	    }
 	}
@@ -258,7 +272,7 @@ create procedure rnk_store_sc (inout first int, inout str varchar, inout fill in
 }
 ;
 
-create procedure rnk_get_ranks (in s_first iri_id)
+create procedure rnk_get_ranks (in s_first int)
 {
   declare  str varchar;
   str := (select rnk_string  from rdf_iri_rank where rnk_iri = iri_id_from_num (s_first));
@@ -396,6 +410,7 @@ create procedure s_rank ()
 	cl_exec('__dbf_set(''cl_max_keep_alives_missed'',3000)');
     }
   log_enable (2);
+  delete from rdf_iri_stat;  
   delete from rdf_iri_rank;  
   log_enable (1);
   cl_exec ('rnk_count_refs_srv ()');
