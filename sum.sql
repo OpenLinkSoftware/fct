@@ -189,6 +189,18 @@ create procedure s_sum_page_c (in rows any, in text_exp varchar)
 
 create procedure s_sum_page (in rows any, in text_exp varchar)
 {
+  declare i int;
+  if (__tag (text_exp) = 193)
+    foreach (any v in text_exp) do
+      {
+	if (iswidestring (v))
+	  {
+	    v := charset_recode (v, '_WIDE_', 'UTF-8');
+	    text_exp [i] := v;
+	  }
+	i := i + 1;
+      }
+
   if (sys_stat ('cl_run_local_only'))
     return s_sum_page_s (rows, text_exp);
   else

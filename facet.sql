@@ -695,7 +695,7 @@ fct_view (in tree any, in this_s int, in txt any, in pre any, in post any)
   if ('text-d' = mode)
     {
       declare exp any;
-      exp := cast (xpath_eval ('//text', tree) as varchar);
+      exp := charset_recode (xpath_eval ('string (//text)', tree), '_WIDE_', 'UTF-8');
       http (sprintf ('select 
 		  	(<sql:s_sum_page> (<sql:vector_agg> (<bif:vector> (?c1, ?sm)), <bif:vector> (%s)))  as ?res where { { 
       select (<SHORT_OR_LONG::>(?s%d)) as ?c1,  (<sql:S_SUM> ( <SHORT_OR_LONG::IRI_RANK> (?s%d), <SHORT_OR_LONG::>(?s%dtextp), <SHORT_OR_LONG::>(?o%d), ?sc ) ) as ?sm ', element_split (exp), this_s, this_s, this_s, this_s), pre);
@@ -885,7 +885,7 @@ fct_text (in tree any,
 	prop := sprintf ('?s%dtextp', this_s);
 
       http (sprintf (' ?s%d %s ?o%d . ?o%d bif:contains  ''%s'' %s .', this_s, prop, this_s, this_s,
-		     fti_make_search_string (cast (tree as varchar)), sc_opt), txt);
+		     fti_make_search_string (charset_recode (xpath_eval ('string (.)', tree), '_WIDE_', 'UTF-8')), sc_opt), txt);
     }
 
   if ('property' = n)
