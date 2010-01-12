@@ -43,7 +43,7 @@ urilbl_ac_init_db ()
 
       o_str := "LEFT"(o_str, 512);
 
-      insert soft rdf_label (rl_o, rl_ro_id, rl_text, rl_lang) values (o, id, urilbl_ac_ruin_label (o_str), lng);
+      insert soft rdf_label option (into daq) (rl_o, rl_ro_id, rl_text, rl_lang) values (o, id, urilbl_ac_ruin_label (o_str), lng);
 
      cont:;
       n := n + 1;
