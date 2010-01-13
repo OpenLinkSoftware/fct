@@ -196,7 +196,7 @@ FCT_LABEL_DP_L (in x any, in g_id iri_id_8, in ctx varchar, in lng varchar)
   best_l := 0;
   best_q := 0;
   for select o, p
-        from rdf_quad table option (no cluster)
+        from rdf_quad table option (no cluster, index rdf_quad)
         where s = x and p in (rdf_super_sub_list (ctx, label_iri, 3)) do
     {
       if (is_rdf_box (o))
@@ -252,7 +252,7 @@ FCT_LABEL_S (in x any, in g_id iri_id_8, in ctx varchar, in lng varchar)
   best_l := 0;
   best_q := 0;
   for select o, p
-        from rdf_quad table option (no cluster)
+        from rdf_quad table option (no cluster, index rdf_quad)
         where s = x and p in (rdf_super_sub_list (ctx, label_iri, 3)) do
     {
       if (is_rdf_box (o))
