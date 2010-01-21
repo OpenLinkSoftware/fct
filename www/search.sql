@@ -24,7 +24,8 @@ create procedure label_get(in smode varchar)
 {
   declare label varchar;
   if (smode='1') label := 'Text Search';
-  else if (smode='2') label := 'Graphs With Text';
+  --else if (smode='2') label := 'Graphs With Text';
+  else if (smode='2') label := 'Graph associated with a Full Text Pattern';
   else if (smode='3') label := 'Types of Things With Text';
   else if (smode='4') label := 'Interests Around';
   else if (smode='5') label := 'Top 100 Authors by Text';
@@ -36,8 +37,9 @@ create procedure label_get(in smode varchar)
   else if (smode='11') label := 'Product Count By Manufacturer';
   else if (smode='12') label := 'Vendors with offers';
   else if (smode='13') label := 'Manufacturer with products';
-  else if (smode='14') label := 'Places of worship within given km of Paris';
+  else if (smode='14') label := 'Places of worship around Paris with Cafe''s in close proximity';
   else if (smode='15') label := 'Motorways across England & Scotland';
+  else if (smode='16') label := 'Places of worship around London with Cities in close proximity';
   else if (smode='100') label := 'Concept Cloud';
   else if (smode='101') label := 'Social Net';
   else if (smode='102') label := 'Graphs in Social Net';
@@ -53,6 +55,24 @@ create procedure label_get(in smode varchar)
 }
 ;
 
+create procedure input_getcustom (in num varchar)
+{
+  if (num = 2)
+    return 'Cafe Proximity to Place of Worship';
+  else if (num = 3)
+    return 'City Latitude';
+  else if (num = 4)
+    return 'City Longitude';
+  if (num = 5)
+    return 'Class URI';
+  if (num = 6)
+    return 'City Proximity to Place of Worship';
+
+  else return '';
+}
+;
+
+
 create procedure input_get (in num varchar)
 {
   declare t1, t2 any;
@@ -60,7 +80,7 @@ create procedure input_get (in num varchar)
   	'Search for',
 	'Search for',
 	'Search for',
-	'interest URI',
+	'Interest',
 	'Search for',
 	'Person URI',
 	'Person URI',
@@ -69,9 +89,10 @@ create procedure input_get (in num varchar)
 	'Nickname',
 	'Number of items',
         'Price value',
-	'Manufacturer URI',
-        'Proximity',
-        'Latitude'
+	'Manufacturer',
+        'City Proximity to Place of Worship',
+        'Latitude',
+        'Place of Worship URI'
 	);
   t2 := vector (
   	'',
@@ -80,7 +101,7 @@ create procedure input_get (in num varchar)
 	''
 	);
   num := atoi (num) - 1;
-  if (num > -1 and num < 15)
+  if (num > -1 and num < 16)
     return t1[num];
   else if (num > 98 and num < 102)
     return t2[num - 99];
@@ -97,8 +118,8 @@ create procedure desc_get (in num varchar)
 	'What sources talk the most about a given subject? Show the top N graphs containing triples with the given text pattern. Sort by descending triple count.',
 	'What types of objects contain a text pattern. Find matches, get the type. Group by type, order by count.',
 	'What else are people interested in X interested in? What else do Harry Potter fans like?',
-	'Who writes the most about a topic. Show for each author the number of works mentioning the topic and total number of works.'
-||'<br>For all documents and posts we have extracted named entities the entity could shows the entities which occur in the works of each author.'
+	'Who writes the most about a topic. Show for each author the number of works mentioning the topic and total number of works. '
+||'<br>For all documents and posts we have extracted named entities the entity could shows the entities which occur in the works of each author. '
 ||'There are statistics about named entities occurring together, these are used for display a list of related entities. '
 	,
 	'Show the people a person directly or indirectly knows. Sort by distance and count of connections of the known person',
@@ -109,8 +130,9 @@ create procedure desc_get (in num varchar)
 	'Show product total by manufacturer where total is greater than given value.',
         'Show all vendors with all offers and their prices that are greater than given value.',
         'Show products count for given manufacturer.',
-        'Places of worship, within certain km of Paris, that have cafes in close proximity.',
-        'Show motorways across England & Scotland from DBpedia.'
+        'Show places of worship, within certain km of Paris, that have cafes in close proximity.',
+        'Show motorways across England & Scotland from DBpedia.',
+        'Shows cities within cerain proximity of London.'
 	);
   t2 := vector (
   	'',
@@ -119,7 +141,7 @@ create procedure desc_get (in num varchar)
 	''
 	);
   num := atoi (num) - 1;
-  if (num > -1 and num < 15)
+  if (num > -1 and num < 16)
     return t1[num];
   else if (num > 98 and num < 102)
     return t2[num - 99];
@@ -145,7 +167,8 @@ create procedure head_get (in num varchar)
     vector ('Vendor', 'Offer', 'Business Function', 'Customer Type', 'Offer Object', 'Type of Good', 'Price'),
     vector ('Total Products'),
     vector ('Cafe URI', 'Latitude', 'Longitude', 'Cafe Name', 'Church Name', 'Count'),
-    vector ('Road', 'Service', 'Latitude Longitude')
+    vector ('Road', 'Service', 'Latitude Longitude'),
+    vector ('City URI', 'Count')
   );
   t2 := vector (
     vector (),
@@ -155,7 +178,7 @@ create procedure head_get (in num varchar)
   );
   t3 := vector ();
   num := atoi (num) - 1;
-  if (num > -1 and num < 15)
+  if (num > -1 and num < 16)
     return t1[num];
   else if (num > 98 and num < 102)
     return t2[num - 99];
@@ -198,7 +221,7 @@ create procedure get_curie (in val any)
 
   res := null;
   if (strstr (val, 'http://dbpedia.org/resource/') = 0 ) res :=  'dbpedia';
-  if (strstr (val, 'http://dbpedia.org/property/') = 0 ) res :=  'p';
+  if (strstr (val, 'http://dbpedia.org/property/') = 0 ) res :=  'dbpprop';
   if (strstr (val, 'http://dbpedia.openlinksw.com/wikicompany/') = 0 ) res :=  'wikicompany';
   if (strstr (val, 'http://dbpedia.org/class/yago/') = 0 ) res :=  'yago';
   if (strstr (val, 'http://www.w3.org/2003/01/geo/wgs84_pos#') = 0 ) res :=  'geo';
@@ -384,7 +407,7 @@ create procedure words_to_string(in val any)
 }
 ;
 
-create procedure pick_query(in smode varchar, inout val any, inout query varchar, inout val2 any := null)
+create procedure pick_query(in smode varchar, inout val any, inout query varchar, inout val2 any := null, inout val3 any := null, inout val4 any := null)
 {
   declare s1, s2, s3, s4, s5 varchar;
 
@@ -429,11 +452,22 @@ create procedure pick_query(in smode varchar, inout val any, inout query varchar
 --    filter (bif:contains (?o, "paris and dakar"))
 --  } } group by ?g order by desc 2 limit 50
 --;
-    if (isnull(val) or val = '') val := 'paris and dakar';
-    s1 := 'sparql SELECT ?g COUNT (*) WHERE { graph ?g { ?s ?p ?o . FILTER (bif:contains (?o, \'';
+
+-- old variant
+--    if (isnull(val) or val = '') val := 'paris and dakar';
+--    s1 := 'sparql SELECT ?g COUNT (*) WHERE { graph ?g { ?s ?p ?o . FILTER (bif:contains (?o, \'';
     --validate_input(val);
+--    s2 := trim (fti_make_search_string(val), '()');
+--    s3 := '\')) } } GROUP BY ?g ORDER BY DESC 2 LIMIT 50';
+--    query := concat('',s1, s2, s3,'');
+
+
+    if (isnull(val) or val = '') val := '"Linked Data"';
+    s1 := 'sparql SELECT ?g COUNT (*) WHERE { graph ?g { ?s ?p ?o . ?s a ?c .  ' ||
+    ' FILTER (bif:contains (?o, ''';
+    validate_input(val);
     s2 := trim (fti_make_search_string(val), '()');
-    s3 := '\')) } } GROUP BY ?g ORDER BY DESC 2 LIMIT 50';
+    s3 := ''')) } } GROUP BY ?g ORDER BY DESC 2 LIMIT 50';
     query := concat('',s1, s2, s3,'');
   }
   else if (smode='3')
@@ -453,7 +487,8 @@ create procedure pick_query(in smode varchar, inout val any, inout query varchar
 --group by ?tp
 --order by desc 2;
     if (isnull(val)  or val = '') val := '"Paris Hilton"';
-    s1 := 'sparql SELECT ?tp COUNT(*) WHERE { graph ?g  { ?s ?p ?o . ?s a ?tp  FILTER (bif:contains (?o, ''';
+    s1 := 'sparql SELECT ?tp COUNT(*) WHERE { graph ?g  { ?s ?p ?o . ?s a ?tp  . ' ||
+    ' FILTER (bif:contains (?o, ''';
     validate_input(val);
     s2 := trim (fti_make_search_string(val), '()');
     s3 := ''') ) } } GROUP BY ?tp ORDER BY DESC 2';
@@ -473,15 +508,29 @@ create procedure pick_query(in smode varchar, inout val any, inout query varchar
 --order by desc 2
 --limit 20
 --;
-  if (isnull(val)  or val = '') val := 'http://www.livejournal.com/interests.bml?int=harry+potter';
-  s1 := 'sparql SELECT ?i2 COUNT (*) WHERE   { ?p foaf:interest <';
-  validate_input(val);
-  s2 := val;
-  s3 := '> . ?p foaf:interest ?i2  } GROUP BY ?i2 ORDER BY DESC 2 LIMIT 20';
-  query := concat('',s1, s2, s3,'');
+
+
+-- old variant
+--  if (isnull(val)  or val = '') val := 'http://www.livejournal.com/interests.bml?int=harry+potter';
+--  s1 := 'sparql SELECT ?i2 COUNT (*) WHERE   { ?p foaf:interest <';
+--  validate_input(val);
+--  s2 := val;
+--  s3 := '> . ?p foaf:interest ?i2  } GROUP BY ?i2 ORDER BY DESC 2 LIMIT 20';
+--  query := concat('',s1, s2, s3,'');
+
+
+    if (isnull(val)  or val = '') val := 'Kingsley Idehen';
+    s1 := 'sparql SELECT ?i2 COUNT (*) WHERE  { ?p foaf:interest ?i1 . ' ||
+    ' ?p foaf:name ?name . ' ||
+    ' FILTER ( bif:contains (?name, \'';
+    validate_input(val);
+    s2 := trim (fti_make_search_string(val), '()');
+    s3 := '\')) . ?p foaf:interest ?i2  } GROUP BY ?i2 ORDER BY DESC 2 LIMIT 20';
+    query := concat('',s1, s2, s3,'');
   }
   else if (smode='5')
   {
+
 -- this query crashes the server:
 ----* The Most One-Sidedly Known People
 --sparql
@@ -516,7 +565,9 @@ create procedure pick_query(in smode varchar, inout val any, inout query varchar
 --;
 
     if (isnull(val) or val = '') val := 'semantic and web';
-    s1 := 'sparql SELECT ?auth ?cnt ((SELECT COUNT (DISTINCT ?xx) WHERE { ?xx dc:creator ?auth } )) WHERE { { SELECT ?auth COUNT (DISTINCT ?d) as ?cnt WHERE { ?d dc:creator ?auth .  ?d ?p ?o   FILTER (bif:contains (?o, \'' ;
+    s1 := 'sparql SELECT ?auth ?cnt ((SELECT COUNT (DISTINCT ?xx) ' ||
+    ' WHERE { ?xx dc:creator ?auth } )) WHERE { { SELECT ?auth COUNT (DISTINCT ?d) as ?cnt ' ||
+    ' WHERE { ?d dc:creator ?auth .  ?d ?p ?o  . FILTER (bif:contains (?o, \'' ;
     validate_input(val);
     s2 := trim (fti_make_search_string(val), '()');
     s3 := '\') && isIRI (?auth)) } GROUP BY ?auth ORDER BY DESC 2 LIMIT 100 } } ' ;
@@ -579,16 +630,50 @@ create procedure pick_query(in smode varchar, inout val any, inout query varchar
   }
   else if (smode = '8')
     {
-      if (isnull(val)  or val = '') val := '"aeon_phoenix"@en';
-s1 := 'sparql
-SELECT ?p ?n ((SELECT COUNT (*) WHERE {?p foaf:interest ?i . ?ps foaf:interest ?i}))
-   ((SELECT COUNT (*) WHERE { ?p foaf:interest ?i}))
-WHERE {
-?ps foaf:nick ';
-if (val not like '"%"' and strchr (val, '@') is null)
-  val := '"'||val||'"';
-s2 := val;
-s3 := ' .
+
+-- old variant
+--      if (isnull(val)  or val = '') val := '"aeon_phoenix"@en';
+--      s1 := 'sparql
+--SELECT ?p ?n ((SELECT COUNT (*) WHERE {?p foaf:interest ?i . ?ps foaf:interest ?i}))
+--((SELECT COUNT (*) WHERE { ?p foaf:interest ?i}))
+--WHERE {
+--?ps foaf:nick ';
+--if (val not like '"%"' and strchr (val, '@') is null)
+--  val := '"'||val||'"';
+--s2 := val;
+--s3 := ' .
+--{ SELECT DISTINCT ?p ?psi WHERE { ?p foaf:interest ?i . ?psi foaf:interest ?i } } .  FILTER (?ps = ?psi) ?p foaf:nick ?n } ORDER BY DESC 3 LIMIT 50';
+--      query := concat(s1, s2, s3);
+--    }
+--  else if (smode = '9')
+--    {
+--      if (isnull(val)  or val = '') val := '"SQL"';
+--
+---- b3s variant:
+--
+----      if (isnull(val)  or val = '') val := '"aeon_phoenix"';
+----      s1 :=
+----      'sparql define input:inference \'b3s\' select ?s ?lbl count(*) where { ?s  ?p2 ?o2 .  ?o2 <http://b3s-demo.openlinksw.com/label> ?lbl . ' ||
+----      ' ?s  foaf:nick ?o .  filter (bif:contains (?o, ''';
+--
+--      s1 :=
+--      'sparql define input:inference \'virtrdf-label\' SELECT ?s ?lbl COUNT(*) WHERE { ?s  ?p2 ?o2 .  ?o2 <http://www.w3.org/2000/01/rdf-schema#label> ?lbl . ' ||
+--      ' ?s  foaf:nick ?o .  FILTER (bif:contains (?o, ''';
+--      validate_input(val);
+--      s2 := trim (fti_make_search_string(val), '()');
+--      s3 := ''')) } GROUP BY ?s ?lbl ORDER BY DESC 3';
+--      query := s1 || s2 || s3;
+
+
+      if (isnull(val)  or val = '') val := '"kidehen"';
+      s1 := 'sparql SELECT ?p ?n ((SELECT COUNT (*) WHERE {?p foaf:interest ?i . ?ps foaf:interest ?i})) ' ||
+      ' ((SELECT COUNT (*) WHERE { ?p foaf:interest ?i})) ' ||
+      ' WHERE { '||
+      ' ?ps foaf:nick ?nick . ' ||
+      ' FILTER (bif:contains (?nick, \'';
+      validate_input(val);
+      s2 := trim (fti_make_search_string(val), '()');
+s3 := '\')) .
 { SELECT DISTINCT ?p ?psi WHERE { ?p foaf:interest ?i . ?psi foaf:interest ?i } } .  FILTER (?ps = ?psi) ?p foaf:nick ?n } ORDER BY DESC 3 LIMIT 50';
       query := concat(s1, s2, s3);
     }
@@ -610,6 +695,7 @@ s3 := ' .
       s2 := trim (fti_make_search_string(val), '()');
       s3 := ''')) } GROUP BY ?s ?lbl ORDER BY DESC 3';
       query := s1 || s2 || s3;
+
     }
   else if (smode = '10')
     {
@@ -660,22 +746,38 @@ s3 := ' .
     }
   else if (smode = '13')
     {
-      if (isnull(val)  or val = '') val := 'http://openean.kaufkauf.net/id/';
+      if (isnull(val)  or val = '') val := '"Manufacturer"';
       s1 := 'sparql SELECT COUNT(?prd) AS ?total WHERE { ?prd gr:hasManufacturer ?mnf . ' ||
-      ' ?mnf rdfs:isDefinedBy ?name . ' ||
-      ' FILTER( ?name = <';
+      ' ?mnf gr:legalName ?name . ' ||
+      ' FILTER( bif:contains (?name, ''';
       validate_input(val);
-      s2 := val;
-      s3 := '> ) } LIMIT 50';
+      s2 := trim (fti_make_search_string(val), '()');
+      s3 := ''')) } LIMIT 50';
       query := concat('',s1, s2, s3,'');
     }
   else if (smode = '14')
   {
     if (isnull(val)  or val = '') val := '5';
     if (isnull(val2)  or val2 = '') val2 := '0.2';
-    s1 := 'SELECT DISTINCT ?cafe ?lat ?long ?cafename ?churchname ( bif:round(bif:st_distance (?churchgeo, ?cafegeo)) ) WHERE { ?church a lgv:place_of_worship . ?church geo:geometry ?churchgeo . ?church lgv:name ?churchname . ?cafe a lgv:cafe . ?cafe lgv:name ?cafename . ?cafe geo:geometry ?cafegeo . ?cafe geo:lat ?lat. ?cafe geo:long ?long . FILTER ( bif:st_intersects (?churchgeo, bif:st_point (2.3498, 48.853), ';
+    if (isnull(val3)  or val3 = '') val3 := '2.3498';
+    if (isnull(val4)  or val4 = '') val4 := '48.853';
+    s1 := 'SELECT DISTINCT ?cafe ?lat ?long ?cafename ?churchname ' ||
+    ' ( bif:round(bif:st_distance (?churchgeo, ?cafegeo)) ) ' ||
+    ' WHERE ' ||
+    ' { ' ||
+    '   ?church a lgv:place_of_worship . ' ||
+    '   ?church geo:geometry ?churchgeo . ' ||
+    '   ?church lgv:name ?churchname . ' ||
+    '   ?cafe a lgv:cafe . ' ||
+    '   ?cafe lgv:name ?cafename . ' ||
+    '   ?cafe geo:geometry ?cafegeo . ' ||
+    '   ?cafe geo:lat ?lat . ' ||
+    '   ?cafe geo:long ?long . ' ||
+    '   FILTER ( bif:st_intersects (?churchgeo, bif:st_point (';
+    validate_input(val3);
+    validate_input(val4);
     validate_input(val);
-    s2 := val;
+    s2 := concat( val3, ',', val4,'),', val);
     s3 := ')  && bif:st_intersects (?cafegeo, ?churchgeo, ';
     validate_input(val2);
     s4 := val2;
@@ -687,27 +789,46 @@ s3 := ' .
       if (isnull(val)  or val = '') val := '52.000';
 
       s1 :=
-      'sparql SELECT ?road ?services ?lat ?long WHERE {' ||
+      'sparql SELECT ?road ?services ?lat ?long WHERE ' ||
       '  { ' ||
       '    { ' ||
-      '     ?services p:road ?road . ' ||
+      '     ?services dbpprop:road ?road . ' ||
       '      ?road a yago:MotorwaysInEngland . ' ||
-      '      ?services p:lat ?lat . ' ||
-      '      ?services p:long ?long . ' ||
+      '      ?services dbpprop:lat ?lat . ' ||
+      '      ?services dbpprop:long ?long . ' ||
       '    } ' ||
       '    UNION ' ||
       '    { ' ||
-      '      ?services p:road ?road . ' ||
+      '      ?services dbpprop:road ?road . ' ||
       '      ?road a yago:MotorwaysInScotland . ' ||
-      '      ?services p:lat ?lat . ' ||
-      '      ?services p:long ?long . ' ||
+      '      ?services dbpprop:lat ?lat . ' ||
+      '      ?services dbpprop:long ?long . ' ||
       '    } ' ||
-      '    FILTER (?lat >';
+      '    FILTER (?lat > ';
       validate_input(val);
       s2 := val;
       s3 := ') } LIMIT 50';
       query := s1 || s2 || s3;
     }
+  else if (smode='16')
+  {
+    if (isnull(val)  or val = '') val := 'http://dbpedia.org/resource/London';
+    if (isnull(val2)  or val2 = '') val2 := 'http://dbpedia.org/ontology/City';
+    if (isnull(val3)  or val3 = '') val3 := '10';
+    s1 := 'sparql SELECT DISTINCT ?m ( bif:round(bif:st_distance (?geo, ?gm)) ) ' ||
+    ' WHERE { <';
+    validate_input(val);
+    s2 := val;
+    s3 := '> geo:geometry ?gm . ' ||
+    ' ?m geo:geometry ?geo . ' ||
+    ' ?m a <';
+    validate_input(val2);
+    s4 := val2;
+    s5 := '> . FILTER (bif:st_intersects (?geo, ?gm,';
+    validate_input(val3);
+    s5 := concat(s5, val3, ')) } ORDER BY DESC 2 LIMIT 50');
+    query := concat('',s1, s2, s3, s4, s5, '');
+  }
   --smode > 99 is reserved for drill-down queries
   else if (smode = '1001' or smode = '104')
     {
