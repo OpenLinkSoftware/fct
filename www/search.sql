@@ -761,7 +761,7 @@ s3 := '\')) .
     if (isnull(val2)  or val2 = '') val2 := '0.2';
     if (isnull(val3)  or val3 = '') val3 := '2.3498';
     if (isnull(val4)  or val4 = '') val4 := '48.853';
-    s1 := 'SELECT DISTINCT ?cafe ?lat ?long ?cafename ?churchname ' ||
+    s1 := 'sparql SELECT DISTINCT ?cafe ?lat ?long ?cafename ?churchname ' ||
     ' ( bif:round(bif:st_distance (?churchgeo, ?cafegeo)) ) ' ||
     ' WHERE ' ||
     ' { ' ||
