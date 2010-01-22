@@ -254,9 +254,9 @@
 			  http ('Incomplete box');
 			else
 			  {
-			    if (smode = '8' and j = 1)
+			    if ((smode = '8' or smode ='9' or smode ='10') and j = 1)
 			      http (sprintf ('<a href="search.vsp?q=%U&sc=%U&fa=Execute">', smode, tmp));
-			    if (smode = '8' and j = 2)
+			    if ((smode = '8' or smode ='9' or smode ='10') and j = 2)
 			      http (sprintf ('<a href="search.vsp?q=1005&sc=%U&fa=Execute">', rs[1]));
 		            if ((smode = '1' and j = 2) or (smode = '1002' and j = 2) or (smode = '1003' and j = 2))
                               http (tmp);
@@ -266,7 +266,7 @@
 				  tmp := charset_recode (tmp, 'UTF-8', '_WIDE_');
 			        http_value(tmp);
 		              }
-			    if (smode = '8' and (j = 1 or j = 2))
+			    if ( (smode = '8' or smode ='9' or smode ='10') and (j = 1 or j = 2))
 			      http ('</a>');
 			  }
                         http('</td>');

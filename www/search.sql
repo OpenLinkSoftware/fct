@@ -171,7 +171,7 @@ create procedure head_get (in num varchar)
     vector ('Person', 'Nick name', 'Shared Interests', 'Total Interests'),
     vector ('Thing', 'Nick name', 'Occurrences'),
     vector ('Thing', 'Nick name', 'Occurrences'),
-    vector ('Total Products'),
+    vector ('Manifacturer URI', 'Total Products'),
     vector ('Vendor', 'Offer', 'Business Function', 'Customer Type', 'Offer Object', 'Type of Good', 'Price'),
     vector ('Total Products'),
     vector ('Cafe URI', 'Latitude', 'Longitude', 'Cafe Name', 'Church Name', 'Count'),
