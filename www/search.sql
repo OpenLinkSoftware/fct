@@ -40,6 +40,7 @@ create procedure label_get(in smode varchar)
   else if (smode='14') label := 'Places of worship around Paris with Cafe''s in close proximity';
   else if (smode='15') label := 'Motorways across England & Scotland';
   else if (smode='16') label := 'Places of worship around London with Cities in close proximity';
+  else if (smode='17') label := 'Places with coordinates';
   else if (smode='100') label := 'Concept Cloud';
   else if (smode='101') label := 'Social Net';
   else if (smode='102') label := 'Graphs in Social Net';
@@ -67,7 +68,12 @@ create procedure input_getcustom (in num varchar)
     return 'Class URI';
   if (num = 6)
     return 'City Proximity to Place of Worship';
-
+  if (num = 7)
+    return 'Geometry Longitude';
+  if (num = 8)
+    return 'Person URI';
+  if (num = 9)
+    return 'Person URI';
   else return '';
 }
 ;
@@ -83,7 +89,7 @@ create procedure input_get (in num varchar)
 	'Interest',
 	'Search for',
 	'Person URI',
-	'Person URI',
+	'Property',
 	'Nickname',
 	'Nickname',
 	'Nickname',
@@ -92,7 +98,8 @@ create procedure input_get (in num varchar)
 	'Manufacturer',
         'City Proximity to Place of Worship',
         'Latitude',
-        'Place of Worship URI'
+        'Place of Worship URI',
+        'Geometry Latitude'
 	);
   t2 := vector (
   	'',
@@ -101,7 +108,7 @@ create procedure input_get (in num varchar)
 	''
 	);
   num := atoi (num) - 1;
-  if (num > -1 and num < 16)
+  if (num > -1 and num < 17)
     return t1[num];
   else if (num > 98 and num < 102)
     return t2[num - 99];
@@ -132,7 +139,8 @@ create procedure desc_get (in num varchar)
         'Show products count for given manufacturer.',
         'Show places of worship, within certain km of Paris, that have cafes in close proximity.',
         'Show motorways across England & Scotland from DBpedia.',
-        'Shows cities within cerain proximity of London.'
+        'Shows cities within cerain proximity of London.',
+        'Shows geometries with their coordinates.'
 	);
   t2 := vector (
   	'',
@@ -141,7 +149,7 @@ create procedure desc_get (in num varchar)
 	''
 	);
   num := atoi (num) - 1;
-  if (num > -1 and num < 16)
+  if (num > -1 and num < 17)
     return t1[num];
   else if (num > 98 and num < 102)
     return t2[num - 99];
@@ -167,8 +175,9 @@ create procedure head_get (in num varchar)
     vector ('Vendor', 'Offer', 'Business Function', 'Customer Type', 'Offer Object', 'Type of Good', 'Price'),
     vector ('Total Products'),
     vector ('Cafe URI', 'Latitude', 'Longitude', 'Cafe Name', 'Church Name', 'Count'),
-    vector ('Road', 'Service', 'Latitude Longitude'),
-    vector ('City URI', 'Count')
+    vector ('Road', 'Service', 'Latitude', 'Longitude'),
+    vector ('City URI', 'Count'),
+    vector ('Geometry URI', 'Latitude', 'Longitude')
   );
   t2 := vector (
     vector (),
@@ -178,7 +187,7 @@ create procedure head_get (in num varchar)
   );
   t3 := vector ();
   num := atoi (num) - 1;
-  if (num > -1 and num < 16)
+  if (num > -1 and num < 17)
     return t1[num];
   else if (num > 98 and num < 102)
     return t2[num - 99];
@@ -202,7 +211,7 @@ create procedure validate_input(inout val varchar)
 create procedure get_curie (in val any)
 {
 
-  declare delim, delim1, delim2, delim3 integer;
+ declare delim, delim1, delim2, delim3 integer;
   declare pref, res, suff varchar;
 
   delim1 := coalesce (strrchr (val, '/'), -1);
@@ -246,6 +255,14 @@ create procedure get_curie (in val any)
   if (res is null)
     return val;
   return res||':'||suff;
+}
+;
+
+
+create procedure print_http(inout val varchar)
+{
+  if (strstr (val, 'http') = 0)
+    val := concat('<', val, '>');
 }
 ;
 
@@ -617,16 +634,23 @@ create procedure pick_query(in smode varchar, inout val any, inout query varchar
 --    filter (?s= <http://myopenlink.net/dataspace/person/kidehen#this>
 --	&& ?o = <http://www.advogato.org/person/mparaz/foaf.rdf#me>)
 --  } limit 20;
-    if (isnull(val)  or val = '') val := 'http://myopenlink.net/dataspace/person/kidehen#this';
-    if (isnull(val2)  or val2 = '') val2 := 'http://www.advogato.org/person/mparaz/foaf.rdf#me';
-    s1 := 'sparql SELECT ?link ?g ?step ?path WHERE { { SELECT ?s ?o ?g WHERE { graph ?g {?s foaf:knows ?o } } } OPTION (transitive, t_distinct, t_in(?s), t_out(?o), t_no_cycles, T_shortest_only, t_step (?s) as ?link, t_step (''path_id'') as ?path, t_step (''step_no'') as ?step, t_direction 3) . FILTER (?s= <';
+
+    if (isnull(val)  or val = '') val := 'foaf:knows';
+    if (isnull(val2)  or val2 = '') val2 := 'http://myopenlink.net/dataspace/person/kidehen#this';
+    if (isnull(val3)  or val3 = '') val3 := 'http://www.advogato.org/person/mparaz/foaf.rdf#me';
+-- old variant with foaf:knows
+--  s1 := 'sparql SELECT ?link ?g ?step ?path WHERE { { SELECT ?s ?o ?g WHERE { graph ?g {?s foaf:knows ?o } } } OPTION (transitive, t_distinct, t_in(?s), t_out(?o), t_no_cycles, T_shortest_only, t_step (?s) as ?link, t_step (''path_id'') as ?path, t_step (''step_no'') as ?step, t_direction 3) . FILTER (?s= <';
+    s1 := 'sparql SELECT ?link ?g ?step ?path WHERE { { SELECT ?s ?o ?g WHERE { graph ?g {?s ';
     validate_input(val);
+    print_http(val);
     s2 := val;
-    s3 := '>  && ?o = <';
+    s1 := concat(s1, s2, ' ?o } } } OPTION (transitive, t_distinct, t_in(?s), t_out(?o), t_no_cycles, T_shortest_only, t_step (?s) as ?link, t_step (''path_id'') as ?path, t_step (''step_no'') as ?step, t_direction 3) . FILTER (?s= <');
     validate_input(val2);
-    s4 := val2;
-    s5 := '>)  } LIMIT 20';
-    query := concat('',s1, s2, s3, s4, s5, '');
+    s3 := val2;
+    validate_input(val3);
+    s4 := val3;
+    s5 := concat(s3, '>  && ?o = <', s4, '>)  } LIMIT 20' );
+    query := concat('',s1, s5, '');
   }
   else if (smode = '8')
     {
@@ -666,7 +690,7 @@ create procedure pick_query(in smode varchar, inout val any, inout query varchar
 
 
       if (isnull(val)  or val = '') val := '"kidehen"';
-      s1 := 'sparql SELECT ?p ?n ((SELECT COUNT (*) WHERE {?p foaf:interest ?i . ?ps foaf:interest ?i})) ' ||
+      s1 := 'sparql SELECT DISTINCT ?p ?n ((SELECT COUNT (*) WHERE {?p foaf:interest ?i . ?ps foaf:interest ?i})) ' ||
       ' ((SELECT COUNT (*) WHERE { ?p foaf:interest ?i})) ' ||
       ' WHERE { '||
       ' ?ps foaf:nick ?nick . ' ||
@@ -828,6 +852,35 @@ s3 := '\')) .
     validate_input(val3);
     s5 := concat(s5, val3, ')) } ORDER BY DESC 2 LIMIT 50');
     query := concat('',s1, s2, s3, s4, s5, '');
+  }
+  else if ( smode='17' )
+  {
+    if (isnull(val)  or val = '') val := '-80.000';
+    if (isnull(val2)  or val2 = '') val2 := '-140.000';
+    s1 := 'sparql SELECT DISTINCT ?s (bif:round(?lat)) AS ?lat (bif:round(?long)) AS ?long ' ||
+      ' WHERE ' ||
+      '   { ' ||
+      '     { ' ||
+      '       SELECT ?g ?s WHERE  ' ||
+      '         {  ' ||
+      '           graph ?g { ' ||
+      '             ?s geo:geometry ?geo }  ' ||
+      '         } ' ||
+      '       LIMIT 100  ' ||
+      '     } ' ||
+      '     graph ?g { ' ||
+      '       ?s geo:lat ?lat . ' ||
+      '       ?s geo:long ?long . } ' ||
+      '     FILTER (datatype (?lat) IN (xsd:integer, xsd:float, xsd:double)) . ' ||
+      '     FILTER (datatype (?long) IN (xsd:integer, xsd:float, xsd:double)) . ' ||
+      '    FILTER (?lat < ';
+    validate_input(val);
+    s2 := val;
+    validate_input(val2);
+    s3 := val2;
+    s4 := concat(s2, ' && ?long > ', s3);
+    s5 := ' ) }  LIMIT 50';
+    query := s1 || s4 || s5;
   }
   --smode > 99 is reserved for drill-down queries
   else if (smode = '1001' or smode = '104')
