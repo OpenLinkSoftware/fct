@@ -32,11 +32,11 @@ create procedure label_get(in smode varchar)
   else if (smode='6') label := 'Social Connections a la LinkedIn';
   else if (smode='7') label := 'Connection Between';
   else if (smode='8') label := 'People With Shared Interests';
-  else if (smode='9') label := 'Cloud Around Person';
+  else if (smode='9') label := 'Cloud around a Text Pattern';
   else if (smode='10') label := 'Cloud Around Person With Filtered Out Blank Nodes';
   else if (smode='11') label := 'Product Count By Manufacturer';
   else if (smode='12') label := 'Vendors with offers';
-  else if (smode='13') label := 'Manufacturer with products';
+  --else if (smode='13') label := 'Products with certain text patterns in Manfacturer''s legal name';
   else if (smode='14') label := 'Places of worship around Paris with Cafe''s in close proximity';
   else if (smode='15') label := 'Motorways across England & Scotland';
   else if (smode='16') label := 'Places of worship around London with Cities in close proximity';
@@ -95,7 +95,7 @@ create procedure input_get (in num varchar)
 	'Nickname',
 	'Number of items',
         'Price value',
-	'Manufacturer',
+--	'Manufacturer',
         'City Proximity to Place of Worship',
         'Latitude',
         'Place of Worship URI',
@@ -108,7 +108,7 @@ create procedure input_get (in num varchar)
 	''
 	);
   num := atoi (num) - 1;
-  if (num > -1 and num < 17)
+  if (num > -1 and num < 16)
     return t1[num];
   else if (num > 98 and num < 102)
     return t2[num - 99];
@@ -132,11 +132,11 @@ create procedure desc_get (in num varchar)
 	'Show the people a person directly or indirectly knows. Sort by distance and count of connections of the known person',
 	'Given two people, find what chain of acquaintances links them together. For each step in the chain show the person linked to, the graph linking this person to the previous person, the number of the step and the number of the path. Note that there may be many paths through which the people are linked.',
 	'Given a person, find people with the most interests in common with this person. Show the person, number of shared interests and the total number of interests.',
-	'Show names of things surrounding a person. These may be interests, classes of things, other people and so forth. For each label show the count of occurrences, largest count first. This uses the b3s:label superproperty which includes rdfs:label, dc:title, and other qualities which have a general meaning of label.',
+	'Show names of things surrounding a person by given text pattern. These may be interests, classes of things, other people and so forth. For each label show the count of occurrences, largest count first. This uses the b3s:label superproperty which includes rdfs:label, dc:title, and other qualities which have a general meaning of label.',
 	'Show names of things surrounding a person with filtered out blank nodes. These things may be interests, classes of things, other people and so forth. For each label show the count of occurrences, largest count first. This uses the b3s:label superproperty which includes rdfs:label, dc:title, and other qualities which have a general meaning of label.',
 	'Show product total by manufacturer where total is greater than given value.',
         'Show all vendors with all offers and their prices that are greater than given value.',
-        'Show products count for given manufacturer.',
+--        'Show products count for given manufacturer.',
         'Show places of worship, within certain km of Paris, that have cafes in close proximity.',
         'Show motorways across England & Scotland from DBpedia.',
         'Shows cities within cerain proximity of London.',
@@ -149,7 +149,7 @@ create procedure desc_get (in num varchar)
 	''
 	);
   num := atoi (num) - 1;
-  if (num > -1 and num < 17)
+  if (num > -1 and num < 16)
     return t1[num];
   else if (num > 98 and num < 102)
     return t2[num - 99];
@@ -173,7 +173,7 @@ create procedure head_get (in num varchar)
     vector ('Thing', 'Nick name', 'Occurrences'),
     vector ('Manifacturer URI', 'Total Products'),
     vector ('Vendor', 'Offer', 'Business Function', 'Customer Type', 'Offer Object', 'Type of Good', 'Price'),
-    vector ('Total Products'),
+--    vector ('Total Products'),
     vector ('Cafe URI', 'Latitude', 'Longitude', 'Cafe Name', 'Church Name', 'Count'),
     vector ('Road', 'Service', 'Latitude', 'Longitude'),
     vector ('City URI', 'Count'),
@@ -187,7 +187,7 @@ create procedure head_get (in num varchar)
   );
   t3 := vector ();
   num := atoi (num) - 1;
-  if (num > -1 and num < 17)
+  if (num > -1 and num < 16)
     return t1[num];
   else if (num > 98 and num < 102)
     return t2[num - 99];
@@ -768,17 +768,18 @@ s3 := '\')) .
       s3 := ') } LIMIT 50';
       query := s1 || s2 || s3;
     }
-  else if (smode = '13')
-    {
-      if (isnull(val)  or val = '') val := '"Manufacturer"';
-      s1 := 'sparql SELECT COUNT(?prd) AS ?total WHERE { ?prd gr:hasManufacturer ?mnf . ' ||
-      ' ?mnf gr:legalName ?name . ' ||
-      ' FILTER( bif:contains (?name, ''';
-      validate_input(val);
-      s2 := trim (fti_make_search_string(val), '()');
-      s3 := ''')) } LIMIT 50';
-      query := concat('',s1, s2, s3,'');
-    }
+-- for now is removed from the list
+--  else if (smode = '13')
+--    {
+--      if (isnull(val)  or val = '') val := '"Manufacturer"';
+--      s1 := 'sparql SELECT COUNT(?prd) AS ?total WHERE { ?prd gr:hasManufacturer ?mnf . ' ||
+--      ' ?mnf gr:legalName ?name . ' ||
+--      ' FILTER( bif:contains (?name, ''';
+--      validate_input(val);
+--      s2 := trim (fti_make_search_string(val), '()');
+--      s3 := ''')) } LIMIT 50';
+--      query := concat('',s1, s2, s3,'');
+--    }
   else if (smode = '14')
   {
     if (isnull(val)  or val = '') val := '5';

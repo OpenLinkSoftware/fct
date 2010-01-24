@@ -40,9 +40,9 @@
         <?vsp
 	  declare qrlist any;
           declare i integer;
-	  qrlist := vector ('1','2','3','8','4','5','6','7','9','10','14','16','17','15','11','12','13');
+	  qrlist := vector ('1','2','3','8','4','5','6','7','9','10','14','16','17','15','11','12');
 
-          for(i:=0;i<17;i:=i+1)
+          for(i:=0;i<16;i:=i+1)
 	  {
 	    declare num int;
 	    num := qrlist [i];
