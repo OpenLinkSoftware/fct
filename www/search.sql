@@ -24,7 +24,6 @@ create procedure label_get(in smode varchar)
 {
   declare label varchar;
   if (smode='1') label := 'Text Search';
-  --else if (smode='2') label := 'Graphs With Text';
   else if (smode='2') label := 'Graph associated with a Full Text Pattern';
   else if (smode='3') label := 'Types of Things With Text';
   else if (smode='4') label := 'Interests Around';
@@ -36,11 +35,10 @@ create procedure label_get(in smode varchar)
   else if (smode='10') label := 'Cloud Around Person With Filtered Out Blank Nodes';
   else if (smode='11') label := 'Product Count By Manufacturer';
   else if (smode='12') label := 'Vendors with offers';
-  --else if (smode='13') label := 'Products with certain text patterns in Manfacturer''s legal name';
-  else if (smode='14') label := 'Places of worship around Paris with Cafe''s in close proximity';
-  else if (smode='15') label := 'Motorways across England & Scotland';
-  else if (smode='16') label := 'Places of worship around London with Cities in close proximity';
-  else if (smode='17') label := 'Places with coordinates';
+  else if (smode='13') label := 'Places of worship around Paris with Cafe''s in close proximity';
+  else if (smode='14') label := 'Motorways across England & Scotland';
+  else if (smode='15') label := 'Places of worship around London with Cities in close proximity';
+  else if (smode='16') label := 'Places with coordinates';
   else if (smode='100') label := 'Concept Cloud';
   else if (smode='101') label := 'Social Net';
   else if (smode='102') label := 'Graphs in Social Net';
@@ -53,17 +51,19 @@ create procedure label_get(in smode varchar)
   else if (smode='1005') label := 'Shared Interests';
   else label := 'No such query';
   return label;
+
+  --else if (smode='13') label := 'Products with certain text patterns in Manfacturer''s legal name';
 }
 ;
 
 create procedure input_getcustom (in num varchar)
 {
   if (num = 2)
-    return 'Cafe Proximity to Place of Worship';
-  else if (num = 3)
     return 'City Latitude';
+  else if (num = 3)
+    return 'Cafe Proximity to Place of Worship';
   else if (num = 4)
-    return 'City Longitude';
+    return 'City Proximity to Place of Worship';
   if (num = 5)
     return 'Class URI';
   if (num = 6)
@@ -96,7 +96,7 @@ create procedure input_get (in num varchar)
 	'Number of items',
         'Price value',
 --	'Manufacturer',
-        'City Proximity to Place of Worship',
+        'City Longitude',
         'Latitude',
         'Place of Worship URI',
         'Geometry Latitude'
@@ -780,12 +780,15 @@ s3 := '\')) .
 --      s3 := ''')) } LIMIT 50';
 --      query := concat('',s1, s2, s3,'');
 --    }
-  else if (smode = '14')
+  else if (smode = '13')
   {
-    if (isnull(val)  or val = '') val := '5';
-    if (isnull(val2)  or val2 = '') val2 := '0.2';
-    if (isnull(val3)  or val3 = '') val3 := '2.3498';
-    if (isnull(val4)  or val4 = '') val4 := '48.853';
+    if (isnull(val)  or val = '') val := '2';
+    if (isnull(val2)  or val2 = '') val2 := '48';
+
+    if (isnull(val3)  or val3 = '') val3 := '5';
+    if (isnull(val4)  or val4 = '') val4 := '0.2';
+
+
     s1 := 'sparql SELECT DISTINCT ?cafe ?lat ?long ?cafename ?churchname ' ||
     ' ( bif:round(bif:st_distance (?churchgeo, ?cafegeo)) ) ' ||
     ' WHERE ' ||
@@ -799,17 +802,17 @@ s3 := '\')) .
     '   ?cafe geo:lat ?lat . ' ||
     '   ?cafe geo:long ?long . ' ||
     '   FILTER ( bif:st_intersects (?churchgeo, bif:st_point (';
-    validate_input(val3);
-    validate_input(val4);
     validate_input(val);
-    s2 := concat( val3, ',', val4,'),', val);
-    s3 := ')  && bif:st_intersects (?cafegeo, ?churchgeo, ';
     validate_input(val2);
-    s4 := val2;
+    validate_input(val3);
+    s2 := concat( val, ',', val2,'),', val3);
+    s3 := ')  && bif:st_intersects (?cafegeo, ?churchgeo, ';
+    validate_input(val4);
+    s4 := val4;
     s5 := ') ) } LIMIT 50';
     query := concat('',s1, s2, s3, s4, s5, '');
   }
-  else if (smode = '15')
+  else if (smode = '14')
     {
       if (isnull(val)  or val = '') val := '52.000';
 
@@ -835,7 +838,7 @@ s3 := '\')) .
       s3 := ') } LIMIT 50';
       query := s1 || s2 || s3;
     }
-  else if (smode='16')
+  else if (smode='15')
   {
     if (isnull(val)  or val = '') val := 'http://dbpedia.org/resource/London';
     if (isnull(val2)  or val2 = '') val2 := 'http://dbpedia.org/ontology/City';
@@ -854,7 +857,7 @@ s3 := '\')) .
     s5 := concat(s5, val3, ')) } ORDER BY DESC 2 LIMIT 50');
     query := concat('',s1, s2, s3, s4, s5, '');
   }
-  else if ( smode='17' )
+  else if ( smode='16' )
   {
     if (isnull(val)  or val = '') val := '-80.000';
     if (isnull(val2)  or val2 = '') val2 := '-140.000';
