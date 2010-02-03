@@ -187,7 +187,7 @@ create procedure head_get (in num varchar)
     vector ('Road', 'Service', 'Latitude', 'Longitude'),
     vector ('City URI', 'Count'),
     vector ('Geometry URI', 'Latitude', 'Longitude'),
-    vector ('SKOS Broader', 'SKOS Narrower', 'SKOS Level', 'Geo Point')
+    vector ('SKOS Broader', 'SKOS Narrower', 'SKOS Level', 'Entity URI', 'Entity Name', 'Geo Point')
   );
   t2 := vector (
     vector (),
