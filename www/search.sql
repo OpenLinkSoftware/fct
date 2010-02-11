@@ -127,7 +127,7 @@ create procedure input_getcustom (in num varchar)
   if (num = 12)
     return 'Narrower';
   if (num = 13)
-    return 'Things Proximity to the Place';
+    return 'Thing(s) Proximity (km)';
   if (num = 14)
     return 'Language';
   if (num = 15)
@@ -200,17 +200,17 @@ create procedure head_get (in num varchar)
     vector ('Person URI', 'Graph', 'Step No.', 'Path'),
     vector ('Person', 'Nick name', 'Shared Interests', 'Total Interests'),
     vector ('Thing', 'Nick name', 'Occurrences'),
-    vector ('Thing', 'Nick name', 'Occurrences'),
+    vector ('Thing', 'Text Pattern', 'Occurrences'),
     vector ('Manifacturer URI', 'Total Products'),
     vector ('Vendor', 'Offer', 'Business Function', 'Customer Type', 'Offer Object', 'Type of Good', 'Price'),
 --    vector ('Total Products'),
     vector ('Cafe URI', 'Latitude', 'Longitude', 'Cafe Name', 'Church Name', 'Count'),
     vector ('Road', 'Service', 'Latitude', 'Longitude'),
-    vector ('City URI', 'Count'),
+    vector ('City URI', 'Distance (km)'),
     vector ('Geometry URI', 'Latitude', 'Longitude'),
     vector ('SKOS Broader', 'SKOS Narrower', 'SKOS Level', 'Entity URI', 'Entity Name', 'Geo Point'),
     vector ('Resource URI', 'Name', 'Location'),
-    vector ('Distance'),
+    vector ('First City Location', 'Second City Location', 'Distance'),
     vector ('Institution URI', 'Name', 'Established' ,'Location')
   );
   t2 := vector (
@@ -991,7 +991,8 @@ s3 := '\')) .
     validate_input(val);
     validate_input(val2);
 
-    s1 := 'sparql SELECT ( bif:st_distance( ?nyl, ?ln ) ) AS ?distanceBetweenNewYorkCityAndLondon ' ||
+    s1 := 'sparql SELECT ?nyl ?ln ( bif:st_distance( ?nyl, ?ln ) ) AS ?distanceBetweenNewYorkCityAndLondon ' ||
+          ' FROM <http://dbpedia.org> ' ||
           ' WHERE ' ||
           '  { ' ||
           '    <';
