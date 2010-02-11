@@ -210,7 +210,7 @@ create procedure head_get (in num varchar)
     vector ('Geometry URI', 'Latitude', 'Longitude'),
     vector ('SKOS Broader', 'SKOS Narrower', 'SKOS Level', 'Entity URI', 'Entity Name', 'Geo Point'),
     vector ('Resource URI', 'Name', 'Location'),
-    vector ('First City Location', 'Second City Location', 'Distance'),
+    vector ('First City Name', 'First City Location', 'Second City Name', 'Second City Location', 'Distance'),
     vector ('Institution URI', 'Name', 'Established' ,'Location')
   );
   t2 := vector (
@@ -991,7 +991,7 @@ s3 := '\')) .
     validate_input(val);
     validate_input(val2);
 
-    s1 := 'sparql SELECT ?nyl ?ln ( bif:st_distance( ?nyl, ?ln ) ) AS ?distanceBetweenNewYorkCityAndLondon ' ||
+    s1 := 'sparql SELECT ?nylLabel ?nyl ?lnLabel ?ln (bif:round ( bif:st_distance( ?nyl, ?ln ) ) ) AS ?distanceBetweenNewYorkCityAndLondon ' ||
           ' FROM <http://dbpedia.org> ' ||
           ' WHERE ' ||
           '  { ' ||
@@ -1000,7 +1000,7 @@ s3 := '\')) .
     s3 := '> geo:geometry ?nyl . ' ||
          '<';
     s4 := val2;
-    s5 := '>  geo:geometry ?ln } ';
+    s5 := concaT('>  geo:geometry ?ln .  <', s2, '> rdfs:label ?nylLabel .  <', s4, '> rdfs:label ?lnLabel } ');
     query := concat('', s1, s2, s3, s4, s5, '');
   }
   else if ( smode='20' )
