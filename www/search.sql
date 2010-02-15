@@ -211,7 +211,7 @@ create procedure head_get (in num varchar)
     vector ('SKOS Broader', 'SKOS Narrower', 'SKOS Level', 'Entity URI', 'Entity Name', 'Geo Point'),
     vector ('Resource URI', 'Name', 'Location'),
     vector ('First City Name', 'First City Location', 'Second City Name', 'Second City Location', 'Distance'),
-    vector ('Institution URI', 'Name', 'Established' ,'Location')
+    vector ('Institution URI', 'Name', 'Established' ,'Latitude', 'Longitude')
   );
   t2 := vector (
     vector (),
@@ -1015,16 +1015,18 @@ s3 := '\')) .
     validate_input(val3);
     validate_input(val4);
 
-    s1 := 'sparql SELECT DISTINCT ?thing AS ?uri ?thingLabel AS ?name ?date AS ?established ?matchgeo AS ?location ' ||
+    s1 := 'sparql SELECT DISTINCT ?thing AS ?uri ?thingLabel AS ?name ?date AS ?established ?lat ?long  ' ||
           'WHERE ' ||
           ' { ' ||
           '   <';
     s2 := val;
     s3 := '> geo:geometry ?sourcegeo . ' ||
           ' ?resource geo:geometry ?matchgeo . ' ||
+          ' ?resource geo:lat ?lat . ' ||
+          ' ?resource geo:long ?long . ' ||
           ' FILTER( bif:st_intersects( ?matchgeo, ?sourcegeo, ';
     s4 := concat (val2, ' ) ) . ?thing ?somelink ?resource . ?thing <', val3);
-    s5 := concat('> ?date . ?thing rdfs:label ?thingLabel . FILTER( lang( ?thingLabel ) = "', val4, '" ) } ORDER BY ASC( ?date )');
+    s5 := concat('> ?date . ?thing rdfs:label ?thingLabel . FILTER( lang( ?thingLabel ) = "', val4, '" ) } ');
     query := concat('', s1, s2, s3, s4, s5, '');
   }
   --smode > 99 is reserved for drill-down queries
