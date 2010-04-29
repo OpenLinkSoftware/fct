@@ -353,6 +353,8 @@ create procedure b3s_label_get (inout data any, in langs any)
 	    }
 	 }
      }
+   if (not isstring (label))
+     label := cast (label as varchar);
    return label;
 }
 ;
