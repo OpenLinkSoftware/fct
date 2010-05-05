@@ -325,8 +325,9 @@ skip_rev:
 	<a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" 
 	    src="/fct/images/creativecommons.png" /></a><br />
 	This work is licensed under a 
-	<a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-Share Alike 3.0 Unported License</a>.</br>
-        Copyright &copy; 2010 OpenLink Software
+	<a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-Share Alike 3.0 Unported License</a>.<br />
+	<?vsp fct_virt_info (); ?><br /> 
+	Copyright &copy; 2010 OpenLink Software 
       </div> <!-- #ft_b -->
     </div> <!-- #FT -->
     </div> <!-- #PG -->

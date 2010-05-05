@@ -1413,3 +1413,14 @@ exec:;
   fct_new ();
 }
 ;
+
+create procedure fct_virt_info ()
+{
+ ?>
+	<a href="http://www.openlinksw.com/virtuoso/">OpenLink Virtuoso</a> version <?V sys_stat ('st_dbms_ver') ?>, 
+	on <?V sys_stat ('st_build_opsys_id') ?>, 
+	<?V case when sys_stat ('cl_run_local_only') = 1 then 'Single' else 'Cluster' end ?> Edition 
+	<?V case when sys_stat ('cl_run_local_only') = 0 then sprintf ('(%d nodes)', sys_stat ('cl_n_hosts')) else '' end ?> 
+<?vsp
+}
+;

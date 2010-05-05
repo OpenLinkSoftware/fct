@@ -89,6 +89,7 @@
       <div id="ft_t">
       </div> <!-- #ft_t -->
       <div id="ft_b">
+	<?vsp fct_virt_info (); ?><br /> 
 	Copyright &copy; 2010 OpenLink Software | <a href="/fct/facet_doc.html">About</a>
       </div> <!-- #ft_b -->
     </div> <!-- #FT -->
