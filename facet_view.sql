@@ -61,18 +61,15 @@ fct_view_info (in tree any, in ctx int, in txt any)
     }
   if ('list-count' = mode)
     {
-      http (sprintf ('List of distinct %s%d with counts', connection_get ('s_term'), pos), txt);
+      http ('Displaying List of Distinct Entity Names ordered by Count', txt);
     }
   if ('properties' = mode)
     {
-      http (sprintf ('Properties of %s%d', connection_get ('s_term'), pos), txt);
+      http ('Displaying Attributes of Entities', txt);
     }
   if ('properties-in' = mode)
     {
-      http (sprintf ('showing %s where %s%d is the value',
-      	   	     connection_get ('c_term'),
-                     connection_get ('s_term'),
-		     pos), txt);
+      http ('Displaying Attributes with Entity Reference Values', txt);
     }
 
   if ('text-properties' = mode)
@@ -85,12 +82,11 @@ fct_view_info (in tree any, in ctx int, in txt any)
     }
   if ('classes' = mode)
     {
-      http (sprintf ('Displaying types of %s%d', connection_get ('s_term'), pos), txt);
+      http ('Displaying Entity Types', txt);
     }
   if ('text' = mode or 'text-d' = mode)
     {
-      http (sprintf ('Displaying values and text summaries associated with pattern %s%d', 
-	             connection_get ('s_term'), pos), txt);
+      http ('Displaying Ranked Enitity Names and Text summaries', txt);
     }
 --  if (offs)
 --    http (sprintf ('  values %d - %d', 1 + offs, lim), txt);
@@ -346,14 +342,14 @@ fct_nav (in tree any,
     fct_view_link ('text-properties', 'Properties containing the text', txt);
 
   if ('properties-in' <> tp)
-    fct_view_link ('properties-in', 'Referencing properties', txt, 'Displaying Attributes with Entity Reference Values');
+    fct_view_link ('properties-in', 'Referencing Attributes', txt, 'Displaying Attributes with Entity Reference Values');
 
   if ('text' <> tp and tp <> 'text-d')
     {
       if (tp <> 'list-count')
 	fct_view_link ('list-count', 'Distinct values with counts', txt, 'Displaying List of Distinct Entity Names ordered by Count');
       if (tp <> 'list')
-	fct_view_link ('list', 'Show values', txt, 'Displaying Ranked Enitity Names and Text summaries');
+	fct_view_link ('list', 'Show Matching Values', txt, 'Displaying Ranked Enitity Names and Text summaries');
     }
 
   if ('classes' <> tp)
