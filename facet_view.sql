@@ -330,7 +330,7 @@ fct_nav (in tree any,
   fct_set_conn_tlogy (tree);
 
   http ('<div id="fct_nav">', txt);
-  http ('<h3>Navigation</h3>', txt);
+  http ('<h3>Entity Relations Navigation</h3>', txt);
   http ('<ul class="n1">', txt);
 
   if ('text-properties' = tp)
@@ -338,6 +338,12 @@ fct_nav (in tree any,
       fct_view_link ('text', 'Return to text match list', txt);
       return;
     }
+
+  if ('classes' <> tp)
+    if (connection_get('c_term') = 'class') 
+	fct_view_link ('classes', 'Classes', txt);
+    else 
+	fct_view_link ('classes', 'Types', txt, 'Displaying Entity Types');
 
   if ('properties' <> tp)
     fct_view_link ('properties', 'Attributes', txt, 'Displaying Attributes of Entities');
@@ -351,16 +357,10 @@ fct_nav (in tree any,
   if ('text' <> tp and tp <> 'text-d')
     {
       if (tp <> 'list-count')
-	fct_view_link ('list-count', 'Distinct values with counts', txt, 'Displaying List of Distinct Entity Names ordered by Count');
+	fct_view_link ('list-count', 'Distinct values (Aggregated)', txt, 'Displaying List of Distinct Entity Names ordered by Count');
       if (tp <> 'list')
 	fct_view_link ('list', 'Show Matching Values', txt, 'Displaying Ranked Enitity Names and Text summaries');
     }
-
-  if ('classes' <> tp)
-    if (connection_get('c_term') = 'class') 
-	fct_view_link ('classes', 'Classes', txt);
-    else 
-	fct_view_link ('classes', 'Types', txt, 'Displaying Entity Types');
 
   if ('geo' <> tp)
     {
@@ -380,7 +380,7 @@ fct_nav (in tree any,
 	    		'<option value="dbpprop:placeOfDeath">dbpedia:placeOfDeath</option>'||
 	    		'<option value="dbpprop:deathPlace">dbpedia:deathPlace</option>'||
 			'</select></li>',
-                 connection_get ('sid'), 'geo', 'Map'), txt);
+                 connection_get ('sid'), 'geo', 'Places'), txt);
     }
 
   http ('</ul><ul class="n2">', txt);
