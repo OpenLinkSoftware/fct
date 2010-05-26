@@ -343,16 +343,16 @@ fct_nav (in tree any,
     if (connection_get('c_term') = 'class') 
 	fct_view_link ('classes', 'Classes', txt);
     else 
-	fct_view_link ('classes', 'Types', txt, 'Displaying Entity Types');
+	fct_view_link ('classes', 'Types', txt, 'Entity Category or Class');
 
   if ('properties' <> tp)
-    fct_view_link ('properties', 'Attributes', txt, 'Displaying Attributes of Entities');
+    fct_view_link ('properties', 'Attributes', txt, 'Entity Characteristic or Property');
 
   if ('text' = tp and pos = 0)
     fct_view_link ('text-properties', 'Properties containing the text', txt);
 
   if ('properties-in' <> tp)
-    fct_view_link ('properties-in', 'Referencing Attributes', txt, 'Displaying Attributes with Entity Reference Values');
+    fct_view_link ('properties-in', 'Referencing Attributes', txt, 'Characteristics or Properties with Entity References as values');
 
   if ('text' <> tp and tp <> 'text-d')
     {
@@ -365,7 +365,7 @@ fct_nav (in tree any,
   if ('geo' <> tp)
     {
       --fct_view_link ('geo', 'Map', txt);
-      http (sprintf ('<li><a id="map_link" href="/fct/facet.vsp?cmd=set_view&sid=%d&type=%s&limit=20&offset=0">%s</a>&nbsp;'||
+      http (sprintf ('<li><a id="map_link" href="/fct/facet.vsp?cmd=set_view&sid=%d&type=%s&limit=20&offset=0" title="%V">%s</a>&nbsp;'||
 	    		'<select name="map_of" onchange="javascript:link_change(this.value)">'||
 	    		'<option value="">Shown items</option>'||
 	    		'<option value="any">Any location</option>'||
@@ -380,7 +380,7 @@ fct_nav (in tree any,
 	    		'<option value="dbpprop:placeOfDeath">dbpedia:placeOfDeath</option>'||
 	    		'<option value="dbpprop:deathPlace">dbpedia:deathPlace</option>'||
 			'</select></li>',
-                 connection_get ('sid'), 'geo', 'Places'), txt);
+                 connection_get ('sid'), 'geo', 'Geospatial Entities projected over Map overlays', 'Places'), txt);
     }
 
   http ('</ul><ul class="n2">', txt);
