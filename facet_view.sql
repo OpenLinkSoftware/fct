@@ -63,6 +63,10 @@ fct_view_info (in tree any, in ctx int, in txt any)
     {
       http ('Displaying List of Distinct Entity Names ordered by Count', txt);
     }
+  if ('geo' = mode)
+    {
+      http ('Displaying Places associated with Entities', txt);
+    }
   if ('properties' = mode)
     {
       http ('Displaying Attributes of Entities', txt);
