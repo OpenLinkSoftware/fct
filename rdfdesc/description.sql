@@ -156,7 +156,7 @@ create procedure b3s_type (in subj varchar, out url varchar)
   if (length (subj))
     {
       exec (sprintf ('sparql select ?l ?tp  { <%S> a ?tp . optional { ?tp rdfs:label ?l } }', subj), 
-	  null, null, vector (), 0, meta, data);
+	  null, null, vector (), 100, meta, data);
       if (length (data))
 	{
 	  if (data[0][0] is not null)
