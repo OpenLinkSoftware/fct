@@ -125,8 +125,9 @@
   declare best_q, curr float;
   declare inx int;
 
-  accept := http_request_header_full (lines, 'Accept', '*/*');
-  --dbg_obj_print_vars (accept);
+  accept := http_request_header_full (lines, 'Accept', 'text/html');
+  if (accept = '*/*')
+    accept := 'text/html';
   -- accepted types
   qs := vector ('text/html', 'application/xhtml+xml', 'text/n3', 'text/rdf+n3', 'application/rdf+xml', 'application/json', 'text/plain');
   -- quality prefs
