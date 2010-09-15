@@ -1,5 +1,5 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN" "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" version="XHTML+RDFa 1.0">
 <?vsp
 --
 --
@@ -175,8 +175,6 @@
     label := page_resource_uri;
   --http_flush (1);
 ?>
-
-<!-- header -->
 <head>
     <base href="http://<?V host ?>/fct/rdfdesc/" />
     <title>About: <?vsp http (sprintf ('%s', label)); ?></title>
