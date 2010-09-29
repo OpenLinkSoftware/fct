@@ -300,6 +300,39 @@ fct_query_info (in tree any,
 		     cno),
             txt);
     }
+  if ('value-range' = n)
+    {
+      declare hi, lo any;	
+      hi := xpath_eval ('./@hi', tree);
+      lo := xpath_eval ('./@lo', tree);
+
+      if (hi <> '' and lo <> '') {
+	http (sprintf (' %s is between %s and %s . <a class="qry_nfo_cmd" href="/fct/facet.vsp?sid=%d&cmd=drop_cond&cno=%d">Drop</a>', 
+                       fct_var_tag (this_s, ctx), 
+                       cast (lo as varchar),
+                       cast (hi as varchar),
+		       connection_get ('sid'),
+                       cno),
+              txt);
+      }
+      else if (hi <> '') {
+       	http (sprintf (' %s <= %s . <a class="qry_nfo_cmd" href="/fct/facet.vsp?sid=%d&cmd=drop_cond&cno=%d">Drop</a>', 
+                       fct_var_tag (this_s, ctx), 
+                       cast (hi as varchar),
+		       connection_get ('sid'),
+                       cno),
+              txt);
+	
+      }
+      else if (lo <> '') {
+       	http (sprintf (' %s >= %s . <a class="qry_nfo_cmd" href="/fct/facet.vsp?sid=%d&cmd=drop_cond&cno=%d">Drop</a>', 
+                       fct_var_tag (this_s, ctx), 
+                       cast (lo as varchar),
+		       connection_get ('sid'),
+                       cno),
+              txt);
+      }
+    }
   if (ctx)
     http ('<br/>', txt);
   else
@@ -1296,8 +1329,37 @@ fct_select_value (in tree any,
 ;
 
 create procedure 
-fct_gen_opensearch_link ()
+fct_value_range (in tree any, 
+                 in sid int, 
+                 in lang varchar, 
+                 in dtp varchar,
+                 in lo varchar,
+                 in hi varchar)
 {
+  declare pos int;
+
+  pos := fct_view_pos (tree);
+
+
+  tree := xslt (registry_get ('_fct_xslt_') || 'fct_set_view.xsl',
+                tree,
+		vector ('pos', pos, 'op', 'value-range', 'hi', hi, 'lo', lo, 'lang', lang, 'datatype', dtp));
+
+  tree := xslt (registry_get ('_fct_xslt_') || 'fct_set_view.xsl',
+                tree,
+                vector ('pos', 0, 'op', 'view', 'type', 'list', 'limit', 20, 'offset', 0));
+
+  update fct_state set fct_state = tree where fct_sid = sid;
+
+  commit work;
+  fct_web (tree);
+}
+;
+
+
+create procedure 
+fct_gen_opensearch_link ()
+	{
   declare uriqa_str varchar;
   uriqa_str := cfg_item_value( virtuoso_ini_path(), 'URIQA','DefaultHost');
 
@@ -1441,6 +1503,13 @@ exec:;
 		      http_param ('lang'),
 		      http_param ('datatype'),
 		      http_param ('op'));
+  else if ('value_range' = cmd)
+    fct_value_range (tree, 
+                     sid, 
+                     http_param('lang'),
+                     http_param('datatype'),
+                     http_param('lo'),
+                     http_param('hi'));
   else if ('save' = cmd)
     fct_save (tree, 
 	      sid,

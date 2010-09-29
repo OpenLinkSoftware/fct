@@ -169,6 +169,15 @@ function init(){
         </xsl:for-each>
       </xsl:when>
       <xsl:otherwise>
+        <xsl:if test="/facets/result/@type=''">
+          <form>
+            <input type="hidden" name="cmd" value="value_range"/>
+            <input type="hidden" name="sid"><xsl:attribute name="value"><xsl:value-of select="$sid"/></xsl:attribute></input>
+            Value range between <input name="lo" type="text"/>
+            and <input name="hi" type="text"/>
+            <input type="submit" value="set"/>
+          </form>                
+        </xsl:if>
         <xsl:for-each select="/facets/result">
 	  <xsl:call-template name="render-result">
 	    <xsl:with-param name="view-type"><xsl:value-of select="$type"/></xsl:with-param>
@@ -278,7 +287,7 @@ function init(){
             <td>
               <xsl:value-of select="./@rank"/>
             </td>
-	</xsl:if>
+	  </xsl:if>
 	    <td>
 	      <xsl:if test="'url' = column[1]/@dataview-type">
 		<a>

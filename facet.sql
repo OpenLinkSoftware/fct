@@ -643,6 +643,8 @@ fct_view (in tree any, in this_s int, in txt any, in pre any, in post any)
 
   mode := fct_get_mode (tree, './@type');
 
+--  dbg_printf('view mode: %s', mode);
+
   if ('list' = mode)
     {
       http (sprintf ('select distinct ?s%d as ?c1 ', this_s), pre);
@@ -743,9 +745,6 @@ fct_view (in tree any, in this_s int, in txt any, in pre any, in post any)
 
     }
 
---  dbg_printf ('Pre : %s', string_output_string (pre));
---  dbg_printf ('Post: %s', string_output_string(post));
-
   fct_post (tree, post, lim, offs);
 
 }
@@ -790,6 +789,29 @@ fct_cond (in tree any, in this_s int, in txt any)
     op := '=';
 
   http (sprintf (' filter (?s%d %s %s) . ', this_s, op, lit), txt);
+}
+;
+
+create procedure 
+fct_cond_range (in tree any, in this_s int, in txt any)
+{
+  declare hi, lo varchar;
+
+  lo := xpath_eval ('./@lo', tree);
+  hi := xpath_eval ('./@hi', tree);
+
+  if (lo <> '' and hi <> '') { 
+    http(sprintf (' filter (?s%d >= %s && ?s%d <= %s) .', this_s, lo, this_s, hi), txt);
+  }
+  else if (lo <> '') 
+  {
+    http(sprintf (' filter (?s%d >= %s) .', this_s, lo), txt);
+  }
+  else if (hi <> '') 
+  {
+    http(sprintf (' filter (?s%d <= %s) .', this_s, hi), txt);
+  }
+  else return;
 }
 ;
 
@@ -858,6 +880,11 @@ fct_text (in tree any,
 
   n := cast (xpath_eval ('name ()', tree, 1) as varchar);
 
+   
+--  dbg_printf('fct_text pre: %s, post: %s', string_output_string(pre), string_output_string(post));
+--  dbg_printf('n: %s', n);
+--  dbg_obj_print (tree);
+
   if ('class' = n)
     {
       declare ciri varchar;
@@ -904,9 +931,11 @@ fct_text (in tree any,
     {
       declare new_s int;
       declare piri varchar;
+      declare flt_expr varchar;
 
       max_s := max_s + 1;
       new_s := max_s;
+
       piri := fct_curie (cast (xpath_eval ('./@iri', tree, 1) as varchar));
 
       if (cast (xpath_eval ('./@exclude', tree) as varchar) = 'yes')
@@ -917,10 +946,9 @@ fct_text (in tree any,
 	  fct_text_1 (tree, new_s, max_s, txt, pre, post);
 	  return;
 	}
-      else
+      else	
 	{
 	  http (sprintf (' ?s%d <%s> ?s%d .', this_s, piri, new_s), txt);
-
 	  fct_text_1 (tree, new_s, max_s, txt, pre, post);
 	}
     }
@@ -939,7 +967,12 @@ fct_text (in tree any,
       fct_cond (tree, this_s, txt);
     }
 
-  if (n = 'view')
+  if ('value-range' = n)
+    {
+      fct_cond_range (tree, this_s, txt);
+    }
+
+  if ('view' = n)
     {
       fct_view (tree, this_s, txt, pre, post);
     }
