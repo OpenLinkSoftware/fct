@@ -538,6 +538,10 @@ fct_web (in tree any)
 
   http('<div id="sparql_a_ctr"></div>', txt);
 
+  if (DB.DBA.VAD_CHECK_VERSION('fct_pivot_bridge') is not NULL) {
+      http('<div id="pivot_a_ctr"></div>', txt);
+  }
+
   http ('</div>', txt);
 
   tp := cast (xpath_eval ('//view/@type', tree) as varchar);
