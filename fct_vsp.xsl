@@ -176,6 +176,7 @@ function init(){
             Value range between <input name="lo" type="text"/>
             and <input name="hi" type="text"/>
             <input type="submit" value="set"/>
+            <span class="info">Plain integer, or RDF datatype (Ex: "1988-01-01"^^xsd:date, "Neubauten"@de)</span>
           </form>                
         </xsl:if>
         <xsl:for-each select="/facets/result">

@@ -1087,6 +1087,8 @@ fct_exec (in tree any,
 
   connection_set ('sparql_query', qr2);
 
+--  dbg_obj_print (qr2);
+
   exec (qr2, sqls, msg, vector (), 0, md, res);
   n_rows := row_count ();
   act := db_activity ();
