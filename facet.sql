@@ -245,7 +245,7 @@ FCT_LABEL_S (in x any, in g_id iri_id_8, in ctx varchar, in lng varchar)
   declare q, best_q, str_lang, lng_pref any;
 
   if (not isiri_id (x))
-    return vector (null, 1);
+    return null;
   rdf_check_init ();
   label_iri := iri_id_from_num (atoi (registry_get ('fct_label_iri')));
   best_str := null;
