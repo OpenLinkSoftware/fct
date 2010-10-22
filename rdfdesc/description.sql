@@ -148,22 +148,28 @@ b3s_handle_ses (inout _path any, inout _lines any, inout _params any)
 }
 ;
 
-create procedure b3s_type (in subj varchar, in _from varchar, out url varchar)
+-- XXX should probably find the most specific if more than one class and inference rule is set
+
+create procedure b3s_type (in subj varchar, 
+                           in _from varchar, 
+                           out url varchar, 
+                           out c_iri varchar)
 {
   declare meta, data, ll any;
   ll := 'unknown';
   url := 'javascript:void()';
   if (length (subj))
-    {
+    {	
       exec (sprintf ('sparql select ?l ?tp %s where { <%S> a ?tp . optional { ?tp rdfs:label ?l } }', _from, subj), 
 	  null, null, vector (), 100, meta, data);
       if (length (data))
 	{
 	  if (data[0][0] is not null)
   	    ll := data[0][0];
-	  else  
+	  else
 	    ll := b3s_uri_local_part (data[0][1]);
 	  url := b3s_http_url (data[0][1]);
+          c_iri := data[0][1];
 	}
     }
   return ll;
@@ -516,7 +522,7 @@ b3s_http_print_l (in p_text any, inout odd_position int, in r int := 0, in sid v
 {
    declare short_p, p_prefix, int_redirect, url any;
 
-   odd_position :=  odd_position + 1;
+   odd_position := odd_position + 1;
    p_prefix := b3s_uri_curie (p_text);
    url := b3s_http_url (p_text, sid);
 
@@ -736,3 +742,9 @@ create procedure fct_links_mup (in subj any, in desc_link any)
 }
 ;
 
+create procedure
+fct_make_selector (in subj any, in sid integer) 
+{
+  return null;
+}	
+;
