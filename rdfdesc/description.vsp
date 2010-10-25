@@ -34,8 +34,11 @@
   declare inf_parm varchar;
   declare ses_parms varchar;
   declare all_langs, dset any;
-  declare c_iri, iri_type, iri_uri, _F, _from varchar;
+  declare c_iri, iri_type, iri_uri, _F, _from, topof varchar;
+  declare page, n_per_page, lim, ofs, dis_next int;
 
+  n_per_page := 100;
+  dis_next := 0;
   dbg_enable := get_keyword ('dbg', params);
   if (dbg_enable = '1') 
     {
@@ -70,12 +73,17 @@
     all_langs := vector (dset, 1.0);
   gr := get_keyword ('g', params, '');
   _from := get_keyword ('graph', params, '');
---  dbg_obj_print_vars (gr, _F);
+  --  dbg_obj_print_vars (gr, _F);
   if (length (_from))
     _F := concat ('FROM <', _from, '>');
   else
     _F := '';
 
+  if ({?'prev'} is not null)  
+    page := atoi (get_keyword ('op', params, '0'));
+  else  
+    page := atoi (get_keyword ('p', params, '0'));
+  --topof := '';
   b3s_dbg_out (dbg_out, 'sid     : ' || sid);
   b3s_dbg_out (dbg_out, 'gr      : ' || gr);
 
@@ -275,68 +283,74 @@ if (_subject <> '') {
     <table class="description"> 
 
 <?vsp
-      declare vis, printed int;
+      declare vis, printed, _skip int;
       declare all_lang any;
       declare curr_pred any;
+      declare dt1, dt2 varchar;
 
       if (connection_get ('s_term') = 's')
         http ('<tr><th class="property">Properties</th><th class="value">Objects</th></tr>');
       else
         http ('<tr><th class="property">Attributes</th><th class="value">Values</th></tr>');
       all_lang := vector ('*', 1.0);
+      topof := sprintf (' TOP %d  ', n_per_page * (page + 1));
+      _skip := n_per_page * page;
       
-      qry_str := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT LONG VARCHAR from (sparql %s define output:valmode "LONG" select distinct ?p ?o %s where { <%S> ?p ?o }  order by 1) sp', inf, _F, _S);
+      dt1 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT LONG VARCHAR, 0 as FLAG int from (sparql %s define output:valmode "LONG" select distinct ?p ?o %s where { <%S> ?p ?o }  order by 1) sp1', inf, _F, _S);
+
+      dt2 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT LONG VARCHAR, 1 as FLAG int from (sparql %s define output:valmode "LONG" select distinct ?p ?o %s where { ?o ?p <%S> } order by 1) sp1', inf, _F, _S);
+
+      --topof := '';
+      qry_str := sprintf ('select %s PRED, OBJECT, FLAG from (%s UNION ALL %s) un0', topof, dt1, dt2);
+--      dbg_printf ('%s', qry_str);
+
       exec (qry_str, null, null, vector (), 0, null, null, h1); 
       curr_pred := '';
+      inx := 0;
       while (0 = exec_next (h1, null, null, data))	
 	{
-           declare PRED, OBJECT any;
+           declare PRED, OBJECT, FLAG any;
+	   if (inx <= _skip)
+	     goto nxt1;
 	   pred := data[0];  
            object := data[1];
+           FLAG := data[2];
 	   if (not length (PRED))
 	     goto nxt1;
 
 	   if (curr_pred <> pred)
 	     {
                if (curr_pred <> '') http ('</ul></td></tr>');
-	       b3s_http_print_l (PRED, odd_position, 0, sid);
+	       b3s_http_print_l (PRED, odd_position, flag, sid);
 	       curr_pred := pred;
 	     }
            vis := b3s_http_print_r (OBJECT, sid, PRED, true_label, 1, all_langs, _from);
 	   nxt1:;
-	}
-      exec_close (h1);
-      if (curr_pred <> '') http ('</ul></td></tr>');
-
-      qry_str := sprintf ('select id_to_iri ("p") as PRED, __ro2sq("o") as OBJECT LONG VARCHAR from (sparql %s define output:valmode "LONG" select distinct ?p ?o %s where { ?o ?p <%S> } order by 1) sp', inf, _F, _S);
-      exec (qry_str, null, null, vector (), 0, null, null, h1); 
-      inx := 0;	
-      curr_pred := '';
-      while (0 = exec_next (h1, null, null, data))	
-	{
-           declare PRED, OBJECT any;
-	   PRED := data[0];  
-	   OBJECT := data[1];
 	   inx := inx + 1;
-	   if (not length (PRED))
-	     goto nxt2;
-	   if (curr_pred <> pred)
-	     {
-               if (curr_pred <> '') http ('</ul></td></tr>');
-	       b3s_http_print_l (PRED, odd_position, 1, sid);
-	       curr_pred := pred;
-	     }
-           vis := b3s_http_print_r (OBJECT, sid, PRED, true_label, 0, all_langs, _from);
-	   nxt2:;
 	}
       exec_close (h1);
       if (curr_pred <> '') http ('</ul></td></tr>');
+--      dbg_obj_print (inx);
+      if (inx < (n_per_page * (page + 1)))
+        dis_next := 1;
+
       if  (odd_position = 0)
 	 {
 	    http ('<tr><td colspan="2"><p>No further information is available.</p></td></tr>');
 	 }
 ?>
       </table>
+      <div id="nav">
+	<form action="" method="post">
+	  <?vsp if (topof <> '') {  if (page > 0) { ?>   
+	      <input type="hidden" name="op" value="<?V page - 1 ?>"/>
+	      <input type="submit" name="prev" value="&#9666; Prev"/>
+	<?vsp } if (not dis_next) { ?>   
+	      <input type="hidden" name="p" value="<?V page + 1 ?>"/>
+	      <input type="submit" name="next" value="Next &#9656;"/>
+	<?vsp } } ?>   
+	</form>
+      </div>
     </div> <!--  #MD -->
     <?vsp b3s_render_dbg_out (dbg_out); ?>
 <!-- footer -->

@@ -515,3 +515,9 @@ div#dbg_output {
 span.pivot_pg a { text-decoration: none; }
 span.pivot_pg a:hover { text-decoration: underline; }
 
+div#nav {
+    float: left;
+    clear: left;
+    text-align: center;
+    margin-left: 50px;
+}
