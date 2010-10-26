@@ -303,14 +303,11 @@ function init(){
             </td>
 	  </xsl:if>
 	    <td>
-	      <xsl:if test="'url' = column[1]/@dataview-type">
-		<a>
-		  <xsl:attribute name="href">
+	      <xsl:if test="'url' = column[1]/@datatype">
+		<a><xsl:attribute name="href">
 		    /describe/?url=<xsl:value-of select="urlify (column[1])"/>&amp;sid=<xsl:value-of select="$sid"/>
 		  </xsl:attribute>
-		  <xsl:attribute name="class">describe</xsl:attribute>
-		    Describe
-		</a>
+		  <xsl:attribute name="class">describe</xsl:attribute>Describe</a>
 	      </xsl:if>
 	      <xsl:if test="$view-type = 'properties' or $view-type = 'classes'">
 		  <input type="checkbox" name="cb" value="{position (.)}" checked="true" onclick="javascript:fct_sel_neg (this)"/>
