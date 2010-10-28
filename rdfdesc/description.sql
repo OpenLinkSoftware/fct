@@ -482,6 +482,18 @@ b3s_uri_curie (in uri varchar)
 }
 ;
 
+create procedure b3s_prop_label (in uri any)
+{
+  declare ll varchar;
+  ll := (select top 1 __ro2sq (O) from DB.DBA.RDF_QUAD where S = __i2idn (uri) and P = __i2idn ('http://www.w3.org/2000/01/rdf-schema#label') OPTION (QUIETCAST));
+  if (length (ll) = 0)
+    ll := b3s_uri_curie (uri);
+  if (isstring (ll) and ll like 'opl%:isDescribedUsing')
+    ll := 'Described Using Terms From';  
+  return ll;
+}
+;
+
 create procedure
 b3s_trunc_uri (in s varchar, in maxlen int := 80)
 {
@@ -523,7 +535,7 @@ b3s_http_print_l (in p_text any, inout odd_position int, in r int := 0, in sid v
    declare short_p, p_prefix, int_redirect, url any;
 
    odd_position := odd_position + 1;
-   p_prefix := b3s_uri_curie (p_text);
+   p_prefix := b3s_prop_label (p_text);
    url := b3s_http_url (p_text, sid);
 
    if (not length (p_text))
