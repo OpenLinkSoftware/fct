@@ -187,7 +187,7 @@
   __res_desc := b3s_uri_curie(page_resource_uri);
   fct_links_hdr (_S, rdf_link);
   if (not length (label))
-    label := page_resource_uri;
+    label := b3s_trunc_uri (page_resource_uri);
   --http_flush (1);
 ?>
 <head>
