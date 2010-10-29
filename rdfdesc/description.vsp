@@ -36,6 +36,10 @@
   declare all_langs, dset any;
   declare c_iri, iri_type, iri_uri, _F, _from, topof varchar;
   declare page, n_per_page, lim, ofs, dis_next int;
+  declare vis, printed, _skip, _last int;
+  declare all_lang any;
+  declare curr_pred any;
+  declare dt1, dt2, count_str varchar;
 
   n_per_page := 100;
   dis_next := 0;
@@ -79,8 +83,13 @@
   else
     _F := '';
 
+   _last := atoi (get_keyword ('lp', params, '0'));
   if ({?'prev'} is not null)  
     page := atoi (get_keyword ('op', params, '0'));
+  else if ({?'first'} is not null)  
+    page := 0; 
+  else if ({?'last'} is not null)  
+    page := _last;
   else  
     page := atoi (get_keyword ('p', params, '0'));
   --topof := '';
@@ -283,26 +292,31 @@ if (_subject <> '') {
     <table class="description"> 
 
 <?vsp
-      declare vis, printed, _skip int;
-      declare all_lang any;
-      declare curr_pred any;
-      declare dt1, dt2 varchar;
 
       if (connection_get ('s_term') = 's')
         http ('<tr><th class="property">Properties</th><th class="value">Objects</th></tr>');
       else
         http ('<tr><th class="property">Attributes</th><th class="value">Values</th></tr>');
       all_lang := vector ('*', 1.0);
-      topof := sprintf (' TOP %d  ', n_per_page * (page + 1));
+      topof := sprintf (' TOP %d, %d  ', n_per_page * page, n_per_page);
       _skip := n_per_page * page;
       
       dt1 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT LONG VARCHAR, 0 as FLAG int from (sparql %s define output:valmode "LONG" select distinct ?p ?o %s where { <%S> ?p ?o }  order by 1) sp1', inf, _F, _S);
-
-      dt2 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT LONG VARCHAR, 1 as FLAG int from (sparql %s define output:valmode "LONG" select distinct ?p ?o %s where { ?o ?p <%S> } order by 1) sp1', inf, _F, _S);
+      dt2 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT LONG VARCHAR, 1 as FLAG int from (sparql %s define output:valmode "LONG" select distinct ?p ?o %s where { ?o ?p <%S> } order by 1) sp2', inf, _F, _S);
 
       --topof := '';
       qry_str := sprintf ('select %s PRED, OBJECT, FLAG from (%s UNION ALL %s) un0', topof, dt1, dt2);
---      dbg_printf ('%s', qry_str);
+      --dbg_printf ('%s', qry_str);
+      if (_last = 0)
+        { 
+	  dt1 := sprintf ('select count(*) as cnt from (sparql %s define output:valmode "LONG" select distinct ?p ?o %s where { <%S> ?p ?o }  order by 1) sp1', inf, _F, _S);
+	  dt2 := sprintf ('select count(*) as cnt from (sparql %s define output:valmode "LONG" select distinct ?p ?o %s where { ?o ?p <%S> } order by 1) sp2', inf, _F, _S);
+	  count_str := sprintf ('select sum (cnt) from (%s UNION ALL %s) un0', dt1, dt2);
+	  --dbg_printf ('%s', count_str);
+	  exec (count_str, null, null, vector (), 0, meta, data);
+	  _last := data[0][0]; -- sum is supposed to have always number
+	  _last := _last / n_per_page;
+        }
 
       exec (qry_str, null, null, vector (), 0, null, null, h1); 
       curr_pred := '';
@@ -310,8 +324,8 @@ if (_subject <> '') {
       while (0 = exec_next (h1, null, null, data))	
 	{
            declare PRED, OBJECT, FLAG any;
-	   if (inx <= _skip)
-	     goto nxt1;
+	   --if (inx <= _skip)
+	   --  goto nxt1;
 	   pred := data[0];  
            object := data[1];
            FLAG := data[2];
@@ -331,7 +345,7 @@ if (_subject <> '') {
       exec_close (h1);
       if (curr_pred <> '') http ('</ul></td></tr>');
 --      dbg_obj_print (inx);
-      if (inx < (n_per_page * (page + 1)))
+      if (inx < n_per_page)
         dis_next := 1;
 
       if  (odd_position = 0)
@@ -342,12 +356,20 @@ if (_subject <> '') {
       </table>
       <div id="nav">
 	<form action="" method="post">
-	  <?vsp if (topof <> '') {  if (page > 0) { ?>   
+	      <input type="hidden" name="lp" value="<?V _last ?>"/>
+	      <?vsp if (topof <> '' and _last > 0) {  if (1 or page > 0) { ?>   
+  	      <input type="submit" name="first" value="&#9666;&#9666; First" <?vsp if (page <= 0) { http ('disabled="true"'); } ?> />
+	      &nbsp;
 	      <input type="hidden" name="op" value="<?V page - 1 ?>"/>
-	      <input type="submit" name="prev" value="&#9666; Prev"/>
-	<?vsp } if (not dis_next) { ?>   
+	      <input type="submit" name="prev" value="&#9666; Prev" <?vsp if (page <= 0) { http ('disabled="true"'); } ?> />
+	      &nbsp;&nbsp;&nbsp;
+	<?vsp } if (1 or not dis_next) { ?>   
 	      <input type="hidden" name="p" value="<?V page + 1 ?>"/>
-	      <input type="submit" name="next" value="Next &#9656;"/>
+	      <input type="submit" name="next" value="Next &#9656;" <?vsp if (dis_next) { http ('disabled="true"'); } ?> />
+	       &nbsp;
+	       <input type="submit" name="last" value="Last &#9656;&#9656;" <?vsp if (dis_next) { http ('disabled="true"'); } ?> />
+	       &nbsp;&nbsp;&nbsp;
+	       Page <?V page + 1 ?> of <?V _last + 1 ?>
 	<?vsp } } ?>   
 	</form>
       </div>
