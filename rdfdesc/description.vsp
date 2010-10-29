@@ -33,7 +33,7 @@
   declare dbg_out any;
   declare inf_parm varchar;
   declare ses_parms varchar;
-  declare all_langs, dset any;
+  declare all_langs, lang_parm any;
   declare c_iri, iri_type, iri_uri, _F, _from, topof varchar;
   declare page, n_per_page, lim, ofs, dis_next int;
   declare vis, printed, _skip, _last int;
@@ -72,9 +72,12 @@
     host := http_request_header (http_request_header (), 'Host');  
   langs := http_request_header_full (lines, 'Accept-Language', 'en');
   all_langs := b3s_get_lang_acc (lines);
-  dset := get_keyword ('lang', params, '');
-  if (length (dset))
-    all_langs := vector (dset, 1.0);
+  lang_parm := get_keyword ('lang', params, '');
+  if (length (lang_parm))
+    {
+      all_langs := vector (lang_parm, 1.0);
+      langs := lang_parm;
+    }
   gr := get_keyword ('g', params, '');
   _from := get_keyword ('graph', params, '');
   --  dbg_obj_print_vars (gr, _F);
