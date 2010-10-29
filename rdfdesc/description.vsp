@@ -360,7 +360,7 @@ if (_subject <> '') {
 ?>
       </table>
       <div id="nav">
-	  <form action="/describe/?url=<?V gr ?>" method="post">
+	  <form action="/describe/?url=<?U gr ?>" method="post">
 	      <input type="hidden" name="lp" value="<?V _last ?>"/>
 	      <?vsp if (topof <> '' and _last > 0) {  if (1 or page > 0) { ?>   
   	      <input type="submit" name="first" value="&#9666;&#9666; First" <?vsp if (page <= 0) { http ('disabled="true"'); } ?> />
