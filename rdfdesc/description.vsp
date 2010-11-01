@@ -95,6 +95,8 @@
     page := _last;
   else if ({?'next'} is not null) 
     page := atoi (get_keyword ('p', params, '0'));
+  else if ({?'go'} is not null) 
+    page := atoi (get_keyword ('gp', params, '1')) - 1;
   else 
     page := atoi (get_keyword ('p', params, '1')) - 1;
   --topof := '';
@@ -377,7 +379,8 @@ if (_subject <> '') {
 	       &nbsp;
 	       <input type="submit" name="last" value="Last &#9656;&#9656;" <?vsp if (dis_next) { http ('disabled="true"'); } ?> />
 	       &nbsp;&nbsp;&nbsp;
-	       Page <?V page + 1 ?> of <?V _last + 1 ?>
+	       Page <?V page + 1 ?> of <?V _last + 1 ?>  &nbsp;&nbsp;&nbsp;
+	       <input type="text" value="<?V page + 1 ?>" size="5" name="gp" /> &nbsp; <input type="submit" name="go" value="Go"/>
 	<?vsp } } ?>   
 	</form>
       </div>
@@ -390,6 +393,7 @@ if (_subject <> '') {
         <a href="http://linkeddata.uriburner.com/ode/?uri=<?vsp http_url (page_resource_uri); ?>">OpenLink Data Explorer</a> 
         &nbsp; &nbsp; Raw Data in:
         <a href="<?=rdf_link || sprintf ('&output=%U', 'text/rdf+n3') ?>">N3</a> |
+        <a href="<?=rdf_link || sprintf ('&output=%U', 'text/plain') ?>">NTriples</a> |
         <a href="<?=rdf_link || sprintf ('&output=%U', 'application/rdf+xml') ?>">RDF/XML</a> |
         <a href="<?=rdf_link || sprintf ('&output=%U', 'application/rdf+json')?>">RDF/JSON</a> |
         <a href="<?=rdf_link || sprintf ('&output=%U', 'application/atom+xml')?>">OData/Atom</a> |
