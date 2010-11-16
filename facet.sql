@@ -480,7 +480,7 @@ fct_get_mode (in tree any, in xp any)
     view_type := 'text';
 
   return view_type;  
-}
+} 
 ;
 
 create procedure
@@ -603,6 +603,7 @@ fct_n_cols (in tree any)
 {
   declare tp varchar;
   tp := cast (xpath_eval ('//view/@type', tree, 1) as varchar);
+--  dbg_printf ('fct_n_cols: tp: %s', tp);
   if ('list' = tp)
     return 1;
   else if ('geo' = tp)
@@ -650,7 +651,7 @@ element_split (in val any)
 ;
 
 create procedure
-fct_view (in tree any, in this_s int, in txt any, in pre any, in post any)
+fct_view (in tree any, in this_s int, in txt any, in pre any, in post any, in plain integer := 0)
 {
   declare lim, offs int;
   declare mode varchar;
@@ -669,36 +670,43 @@ fct_view (in tree any, in this_s int, in txt any, in pre any, in post any)
       http (sprintf ('select distinct ?s%d as ?c1 ', this_s), pre);
       http (sprintf (' order by desc (<LONG::IRI_RANK> (?s%d)) ', this_s), post);
     }
+
   if ('list-count' = mode)
     {
       http (sprintf ('select ?s%d as ?c1 count (*) as ?c2 ', this_s), pre);
       http (sprintf (' group by ?s%d order by desc 2', this_s), post);
     }
+
   if ('entities-list' = mode)
     {
       http (sprintf ('select distinct ?s%d as ?c1 ', this_s), pre);
       http (sprintf (' order by desc (<LONG::IRI_RANK> (?s%d)) ', this_s), post);
     }
+
   if ('properties' = mode)
     {
       if (length (fct_inf_clause (tree)) > 0)
 	http (sprintf ('select ?s%dp as ?c1 count (distinct (?s%d)) as ?c2 ', this_s, this_s), pre);
       else
 	http (sprintf ('select ?s%dp as ?c1 count (*) as ?c2 ', this_s), pre);
+
       http (sprintf (' ?s%d ?s%dp ?s%do .', this_s, this_s, this_s), txt);
       http (sprintf (' group by ?s%dp order by desc 2', this_s), post);
     }
+
   if ('properties-in' = mode)
     {
       http (sprintf ('select ?s%dip as ?c1 count (*) as ?c2 ', this_s), pre);
       http (sprintf (' ?s%do ?s%dip ?s%d .', this_s, this_s, this_s), txt);
       http (sprintf (' group by ?s%dip order by desc 2', this_s), post);
     }
+
   if ('text-properties' = mode)
     {
       http (sprintf ('select  ?s%dtextp as ?c1 count (*) as ?c2 ', this_s), pre);
       http (sprintf (' group by ?s%dtextp order by desc 2', this_s), post);
     }
+
   if ('classes' = mode)
     {
       if (length (fct_inf_clause (tree)) > 0)
@@ -708,7 +716,7 @@ fct_view (in tree any, in this_s int, in txt any, in pre any, in post any)
       http (sprintf (' ?s%d a ?s%dc .', this_s, this_s), txt);
       http (sprintf (' group by ?s%dc order by desc 2', this_s), post);
     }
-  if ('text' = mode)
+  if ('text' = mode or ('text-d' = mode and plain = 1))
     {
       declare exp any;
 
@@ -831,25 +839,6 @@ fct_cond_range (in tree any, in this_s int, in txt any)
 }
 ;
 
-create procedure
-fct_text_1 (in tree any,
-	    in this_s int,
-	    inout max_s int,
-	    in txt any,
-	    in pre any,
-	    in post any)
-{
-  declare c any;
-  declare i, len int;
-
-  c := xpath_eval ('./node()', tree, 0);
-
-  for (i := 0; i < length (c); i := i + 1)
-    {
-      fct_text (c[i], this_s, max_s, txt, pre, post);
-    }
-}
-;
 
 create procedure 
 fct_curie_iri (in curie varchar)
@@ -885,12 +874,34 @@ fct_curie (in curie varchar)
 ;
 
 create procedure
+fct_text_1 (in tree any,
+	    in this_s int,
+	    inout max_s int,
+	    in txt any,
+	    in pre any,
+	    in post any,
+            in plain integer := 0)
+{
+  declare c any;
+  declare i, len int;
+
+  c := xpath_eval ('./node()', tree, 0);
+
+  for (i := 0; i < length (c); i := i + 1)
+    {
+      fct_text (c[i], this_s, max_s, txt, pre, post, plain);
+    }
+}
+;
+
+create procedure
 fct_text (in tree any,
 	  in this_s int,
 	  inout max_s int,
 	  in txt any,
 	  in pre any,
-	  in post any)
+	  in post any,
+	  in plain integer := 0)
 {
   declare n varchar;
 
@@ -922,7 +933,7 @@ fct_text (in tree any,
   if ('query' = n)
     {
       max_s := 1;
-      fct_text_1 (tree, 1, max_s, txt, pre, post);
+      fct_text_1 (tree, 1, max_s, txt, pre, post, plain);
       return;
     }
 
@@ -962,13 +973,13 @@ fct_text (in tree any,
 	  http (sprintf (' filter (!bif:exists ((select (1) where { ?s%d <%s> ?v%d } ))) .', this_s, piri, new_s), txt);
 	  max_s := max_s - 1;
 	  new_s := max_s;
-	  fct_text_1 (tree, new_s, max_s, txt, pre, post);
+	  fct_text_1 (tree, new_s, max_s, txt, pre, post, plain);
 	  return;
 	}
       else	
 	{
 	  http (sprintf (' ?s%d <%s> ?s%d .', this_s, piri, new_s), txt);
-	  fct_text_1 (tree, new_s, max_s, txt, pre, post);
+	  fct_text_1 (tree, new_s, max_s, txt, pre, post, plain);
 	}
     }
 
@@ -978,7 +989,7 @@ fct_text (in tree any,
       max_s := max_s + 1;
       new_s := max_s;
       http (sprintf (' ?s%d <%s> ?s%d .', new_s, fct_curie (cast (xpath_eval ('./@iri', tree, 1) as varchar)), this_s), txt);
-      fct_text_1 (tree, new_s, max_s, txt, pre, post);
+      fct_text_1 (tree, new_s, max_s, txt, pre, post, plain);
     }
 
   if ('value' = n)
@@ -993,13 +1004,13 @@ fct_text (in tree any,
 
   if ('view' = n)
     {
-      fct_view (tree, this_s, txt, pre, post);
+      fct_view (tree, this_s, txt, pre, post, plain);
     }
 }
 ;
 
 create procedure
-fct_query (in tree any)
+fct_query (in tree any, in plain integer := 0)
 {
   declare s, add_graph int;
   declare txt, pre, post any;
@@ -1014,7 +1025,7 @@ fct_query (in tree any)
   if (xpath_eval ('//view[@type="graphs"]', tree) is not null)
     add_graph := 1;
 
-  fct_text (xpath_eval ('//query', tree), 0, s, txt, pre, post);
+  fct_text (xpath_eval ('//query', tree), 0, s, txt, pre, post, plain);
 
   http (' where {', pre);
   if (add_graph) http (' graph ?g { ', pre);

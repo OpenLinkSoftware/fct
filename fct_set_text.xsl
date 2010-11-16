@@ -44,7 +44,7 @@
 </xsl:template>
 
 <xsl:template match="text">
-</xsl:template>
+</xsl:template>	
  
 <xsl:template match="@* | node()">
   <xsl:copy>

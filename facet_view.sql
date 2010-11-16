@@ -553,12 +553,11 @@ cl_exec ('registry_set (''fct_timeout_max'', ''20000'')');
 create procedure
 fct_set_default_qry (inout tree any)
 {
---  dbg_printf ('fct_set_default_qry:');
 
   tree := xslt (registry_get ('_fct_xslt_') || 'fct_set_default.xsl',
                 tree,
 		vector ('pos', 1, 'op', 'class', 'iri', 'http://www.w3.org/2000/01/rdf-schema#Class'));
---  dbg_obj_print (tree);
+
 }
 ;
 
@@ -568,6 +567,7 @@ fct_web (in tree any)
   declare sqls, msg, tp varchar;
   declare start_time int;
   declare reply, md, res, qr, qr2, txt any;
+  declare p_qry varchar;
   declare timeout int;
  
   timeout := connection_get ('timeout');
@@ -586,6 +586,7 @@ fct_web (in tree any)
     }
 
   reply := fct_exec (tree, timeout);
+  p_qry := fct_query (tree, 1); -- get "plain" query text
 
 --  dbg_obj_print (reply);
 
@@ -609,7 +610,7 @@ fct_web (in tree any)
                     reply,
 		    vector ('sid',
 		            connection_get ('sid'),
-     			    'cmd',
+     			    'cmd', 
 			    fct_view_cmd (tp),
 			    'type',
 			    fct_view_type (tp),
@@ -618,13 +619,15 @@ fct_web (in tree any)
 			    'query',
 			    tree,
 			    's_term', 
-			    fct_p_term (),
-			    'p_term', 
 			    fct_s_term (),
+			    'p_term', 
+			    fct_p_term (),
 			    'o_term', 
 			    fct_o_term (),
 			    't_term', 
-			    fct_t_term ()
+			    fct_t_term (),
+                            'p_qry',
+                            p_qry
 			    )),
 	      null, txt);
 
@@ -751,7 +754,6 @@ fct_set_view (in tree     any,
               in offs     int, 
               in loc_prop varchar := null)
 {
---  dbg_printf ('fct_set_view: tp: %s', tp);
 
   declare pos int;
   pos := fct_view_pos (tree);
@@ -835,7 +837,6 @@ fct_open_property  (in tree any,
 
   if (xpath_eval ('//view', tree) is null) 
     {
---      dbg_printf('fct_open_property: No view - setting properties as default');
 
       tree := xslt (registry_get ('_fct_xslt_') || 'fct_set_view.xsl', tree, 
                     vector ('pos', pos, 
