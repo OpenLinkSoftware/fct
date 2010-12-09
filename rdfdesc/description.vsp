@@ -362,26 +362,28 @@ if (_subject <> '') {
 ?>
       </table>
       <div id="nav">
-	  <form action="/describe/?url=<?U gr ?>" method="post">
+	  <form action="/describe/" method="get">
+	      <input type="hidden" name="url" value="<?V gr ?>" />
+	      <input type="hidden" name="p" value="<?V page + 1 ?>"/>
 	      <?vsp if (sid is not null) { ?>
 	      <input type="hidden" name="sid" value="<?V sid ?>"/>
 	      <?vsp } ?>
 	      <input type="hidden" name="lp" value="<?V _last ?>"/>
 	      <?vsp if (topof <> '' and _last > 0) {  if (1 or page > 0) { ?>   
-  	      <input type="submit" name="first" value="&#9666;&#9666; First" <?vsp if (page <= 0) { http ('disabled="true"'); } ?> />
+	      <button type="submit" value="" name="first" <?vsp if (page <= 0) { http ('disabled="true"'); } ?>>&#9666;&#9666; First</button>
 	      &nbsp;
 	      <input type="hidden" name="op" value="<?V page - 1 ?>"/>
-	      <input type="submit" name="prev" value="&#9666; Prev" <?vsp if (page <= 0) { http ('disabled="true"'); } ?> />
+	      <button type="submit" value="" name="prev" <?vsp if (page <= 0) { http ('disabled="true"'); } ?>>&#9666; Prev</button>
 	      &nbsp;&nbsp;&nbsp;
 	<?vsp } if (1 or not dis_next) { ?>   
-	      <input type="hidden" name="p" value="<?V page + 1 ?>"/>
-	      <input type="submit" name="next" value="Next &#9656;" <?vsp if (dis_next) { http ('disabled="true"'); } ?> />
+	      <button type="submit" value="" name="next" <?vsp if (dis_next) { http ('disabled="true"'); } ?>>Next &#9656;</button>
 	       &nbsp;
-	       <input type="submit" name="last" value="Last &#9656;&#9656;" <?vsp if (dis_next) { http ('disabled="true"'); } ?> />
+	      <button type="submit" value="" name="last" <?vsp if (dis_next) { http ('disabled="true"'); } ?>>Last &#9656;&#9656;</button>
 	       &nbsp;&nbsp;&nbsp;
 	       Page <?V page + 1 ?> of <?V _last + 1 ?>  &nbsp;&nbsp;&nbsp;
-	       <input type="text" value="<?V page + 1 ?>" size="5" name="gp" /> &nbsp; <input type="submit" name="go" value="Go"/>
-	<?vsp } } ?>   
+	       <input type="text" value="<?V page + 1 ?>" size="5" name="gp" /> &nbsp; 
+	       <button type="submit" value="" name="go">Go</button>
+	<?vsp } } ?>
 	</form>
       </div>
     </div> <!--  #MD -->
