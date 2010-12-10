@@ -39,7 +39,7 @@
   declare vis, printed, _skip, _last int;
   declare all_lang any;
   declare curr_pred any;
-  declare dt1, dt2, count_str varchar;
+  declare dt1, dt2, count_str, tbinf varchar;
 
   n_per_page := 100;
   dis_next := 0;
@@ -64,6 +64,12 @@
 
   b3s_parse_inf (sid, params);
   inf := b3s_render_inf_clause ();
+  tbinf := connection_get ('inf');
+  if (tbinf is not null)
+    tbinf := sprintf ('TABLE OPTION (WITH \'%s\')', tbinf);
+  else
+    tbinf := '';
+  
 
   ses_parms := b3s_render_ses_params ();
 
@@ -278,7 +284,12 @@
      href="/fct/facet.vsp?cmd=new_with_class&iri=<?/ _ciri ?>">Start faceted browsing from this Type</a>
 <?vsp
   } 
+  declare qrimg any;
+  qrimg := fct_make_qr_code (case when page_resource_uri like 'nodeID://%' then b3s_http_url (page_resource_uri) else page_resource_uri end);
+  if (qrimg is not null) {
 ?>
+	  <img id="qrcode" src="data:image/jpg;base64,<?V qrimg ?>"/>
+<?vsp } ?>
       </div>
     </div>
 <?vsp 
@@ -307,8 +318,15 @@ if (_subject <> '') {
       all_lang := vector ('*', 1.0);
       topof := sprintf (' TOP %d, %d  ', n_per_page * page, n_per_page);
       _skip := n_per_page * page;
-      
+
+      if (length (_F) or 1 = sys_stat ('cl_run_local_only'))
+      { 
       dt1 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT LONG VARCHAR, 0 as FLAG int from (sparql %s define output:valmode "LONG" select distinct ?p ?o %s where { <%S> ?p ?o }  order by 1) sp1', inf, _F, _S);
+      }
+      else
+      {
+      dt1 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT LONG VARCHAR, 0 as FLAG int from (SELECT DISTINCT p, o FROM DB.DBA.RDF_QUAD %s where s = __i2idn (\'%s\' , 1) ORDER BY 1 ASC OPTION (QUIETCAST)) sp1', tbinf, _S);
+      }
       dt2 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT LONG VARCHAR, 1 as FLAG int from (sparql %s define output:valmode "LONG" select distinct ?p ?o %s where { ?o ?p <%S> } order by 1) sp2', inf, _F, _S);
 
       --topof := '';
@@ -316,7 +334,14 @@ if (_subject <> '') {
       --dbg_printf ('%s', qry_str);
       if (_last = 0)
         { 
-	  dt1 := sprintf ('select count(*) as cnt from (sparql %s define output:valmode "LONG" select distinct ?p ?o %s where { <%S> ?p ?o }  order by 1) sp1', inf, _F, _S);
+	  if (length (_F) or 1 = sys_stat ('cl_run_local_only'))
+            {
+	      dt1 := sprintf ('select count(*) as cnt from (sparql %s define output:valmode "LONG" select distinct ?p ?o %s where { <%S> ?p ?o }  order by 1) sp1', inf, _F, _S);
+	    }
+          else
+	    {
+              dt1 := sprintf ('select count(*) as cnt from (SELECT DISTINCT p, o FROM DB.DBA.RDF_QUAD %s where s = __i2idn (\'%s\' , 1) ORDER BY 1 ASC OPTION (QUIETCAST)) sp1', tbinf, _S);
+	    }
 	  dt2 := sprintf ('select count(*) as cnt from (sparql %s define output:valmode "LONG" select distinct ?p ?o %s where { ?o ?p <%S> } order by 1) sp2', inf, _F, _S);
 	  count_str := sprintf ('select sum (cnt) from (%s UNION ALL %s) un0', dt1, dt2);
 	  --dbg_printf ('%s', count_str);
