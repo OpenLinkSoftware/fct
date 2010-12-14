@@ -784,3 +784,16 @@ create procedure fct_make_qr_code (in data_to_qrcode any, in src_width int := 12
   return mixed_content;
 }
 ;
+
+create procedure fct_make_curie (in url varchar, in lines any)
+{
+  declare curie, chost, dhost varchar;
+  if (__proc_exists ('WS.CURI.curi_make_curi') is null)
+    return url;
+  curie := WS.CURI.curi_make_curi (url);
+  dhost := registry_get ('URIQADefaultHost');
+  chost := http_request_header(lines, 'Host', null, dhost);
+  return sprintf ('http://%s/c/%s', chost, curie);
+}
+;
+
