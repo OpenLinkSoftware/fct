@@ -218,12 +218,14 @@ function init(){
 <script type="text/javascript">
   if ($('pivot_a_ctr')) {
 	  var pivot_a = OAT.Dom.create('a',{}, 'pivot_a');
-      pivot_a.href='/pivot_collections/pivot.vsp?sid=<xsl:value-of select="$sid"/>&amp;limit=100&amp;q=<xsl:value-of select="urlify (normalize-space(/facets/sparql))"/>'
+      pivot_a.href='/pivot_collections/pivot.vsp?sid=<xsl:value-of select="$sid"/>&amp;limit=75&amp;qrcodes=0&amp;q=<xsl:value-of select="urlify (normalize-space(/facets/sparql))"/>'
 	  pivot_a.innerHTML = 'Make Pivot collection';
       pivot_a.id = 'pivot_a_mpc';
       var pivot_pg = OAT.Dom.create('span', {}, 'pivot_pg');
-      pivot_pg.innerHTML = '&nbsp;&nbsp;(&nbsp;<a  href="#" title="Sets the maximum number of entities displayed in a PivotViewer page. Entities on other pages are accessible via Related Collections links. A value of 0 disables paging, displaying all entities in a single PivotViewer page. Range: 0..1000">Page size</a>&nbsp;<input type="text" onblur="fct_set_pivot_page_size()" id="pivot_pg_size" size="4" maxlength="4" value="100" />&nbsp;&nbsp;)';
-      OAT.Dom.append (['pivot_a_ctr',pivot_a,pivot_pg]);
+      pivot_pg.innerHTML = '&nbsp;&nbsp;(&nbsp;<a  href="#" title="Sets the maximum number of entities displayed in a PivotViewer page. Entities on other pages are accessible via Related Collections links. A value of 0 disables paging, displaying all entities in a single PivotViewer page. Range: 0..1000">Page size</a>&nbsp;<input type="text" onblur="fct_set_pivot_page_size()" id="pivot_pg_size" size="4" maxlength="4" value="75" />&nbsp;&nbsp;)';
+	  var pivot_opts = OAT.Dom.create('span', {}, 'pivot_opts');
+	  pivot_opts.innerHTML = '&nbsp;&nbsp;<a href="#" title="Include a QRcode adjacent to each item\'s image">with QRcodes</a><input type="checkbox" onclick="fct_set_pivot_qrcode_opt()" id="pivot_qrcode" />';
+      OAT.Dom.append (['pivot_a_ctr',pivot_a,pivot_pg,pivot_opts]);
   }
 </script>
 </xsl:if>

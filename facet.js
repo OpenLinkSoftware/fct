@@ -391,3 +391,12 @@ function fct_set_pivot_page_size()
   href = href.replace(/limit=\d+/, 'limit='+pg_size);
   a.setAttribute("href", href);
 }
+
+function fct_set_pivot_qrcode_opt()
+{
+  var qrcode_flag = $('pivot_qrcode').checked ? 1 : 0;
+  var a = $('pivot_a_mpc');
+  var href = a.href;
+  href = href.replace(/qrcodes=\d+/, 'qrcodes='+qrcode_flag);
+  a.setAttribute("href", href);
+}
