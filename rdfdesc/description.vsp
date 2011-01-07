@@ -420,14 +420,14 @@ if (_subject <> '') {
         Explore alternative Linked Data Views &amp; Meshups using:
         <a href="http://linkeddata.uriburner.com/ode/?uri=<?vsp http_url (page_resource_uri); ?>">OpenLink Data Explorer</a> 
         &nbsp; &nbsp; Raw Data in:
-        <a href="<?=rdf_link || sprintf ('&output=%U', 'text/rdf+n3') ?>">N3</a> |
-        <a href="<?=rdf_link || sprintf ('&output=%U', 'text/plain') ?>">NTriples</a> |
-        <a href="<?=rdf_link || sprintf ('&output=%U', 'application/rdf+xml') ?>">RDF/XML</a> |
-        <a href="<?=rdf_link || sprintf ('&output=%U', 'application/rdf+json')?>">RDF/JSON</a> |
-        <a href="<?=rdf_link || sprintf ('&output=%U', 'application/atom+xml')?>">OData/Atom</a> |
-        <a href="<?=rdf_link || sprintf ('&output=%U', 'application/odata+json')?>">OData/JSON</a> |
         <a href="<?=rdf_link || sprintf ('&output=%U', 'text/cxml')?>">CXML</a> |
-        <a href="<?=rdf_link || sprintf ('&output=%U', 'text/csv')?>">CSV</a>
+        <a href="<?=rdf_link || sprintf ('&output=%U', 'text/csv')?>">CSV</a> | RDF (
+        <a href="<?=rdf_link || sprintf ('&output=%U', 'text/plain') ?>">N-Triples</a>
+        <a href="<?=rdf_link || sprintf ('&output=%U', 'text/rdf+n3') ?>">N3/Turtle</a>
+        <a href="<?=rdf_link || sprintf ('&output=%U', 'application/rdf+json')?>">JSON</a> 
+        <a href="<?=rdf_link || sprintf ('&output=%U', 'application/rdf+xml') ?>">XML</a> ) | OData (
+        <a href="<?=rdf_link || sprintf ('&output=%U', 'application/atom+xml')?>">Atom</a> 
+        <a href="<?=rdf_link || sprintf ('&output=%U', 'application/odata+json')?>">JSON</a> )
         &nbsp; &nbsp;<a href="/fct/facet_doc.html">About</a>&nbsp; &nbsp;
       </div> <!-- #ft_t -->
       <div id="ft_b">
