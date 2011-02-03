@@ -216,7 +216,7 @@ b3s_render_inf_opts ()
     {
       if (RS_NAME = inf) 
         {
-          http (sprintf ('<option value="%s" selected="true">%s</option>', RS_NAME, RS_NAME));
+          http (sprintf ('<option value="%s" selected="selected">%s</option>', RS_NAME, RS_NAME));
           f := 1;
         }
       else 
@@ -224,7 +224,7 @@ b3s_render_inf_opts ()
     }
 
   if (f = 0)
-    http ('<option value="**none**" selected="true">None</option>');
+    http ('<option value="**none**" selected="selected">None</option>');
   else 
     http ('<option value="**none**">None</option>');
 }
@@ -751,7 +751,7 @@ create procedure fct_links_mup (in subj any, in desc_link any)
   desc_link := sprintf ('http://%{WSHost}s%s', desc_link);
   links := '';
   links := links || repeat (' ', 5) ||
-  sprintf ('<link href="%V&amp;output=application%%2Frdf%%2Bxml" rel="alternate" type="application/rdf+xml"; title="Structured Descriptor Document (RDF/XML format)" />\n', desc_link);
+  sprintf ('<link href="%V&amp;output=application%%2Frdf%%2Bxml" rel="alternate" type="application/rdf+xml"  title="Structured Descriptor Document (RDF/XML format)" />\n', desc_link);
   links := links || repeat (' ', 5) ||
   sprintf ('<link href="%V&amp;output=text%%2Fn3" rel="alternate" type="text/n3" title="Structured Descriptor Document (N3/Turtle format)" />\n', desc_link);
   links := links || repeat (' ', 5) ||

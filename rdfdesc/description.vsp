@@ -1,5 +1,5 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN" "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" version="XHTML+RDFa 1.0">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" version="XHTML+RDFa 1.0">
 <?vsp
 --
 --
@@ -40,6 +40,7 @@
   declare all_lang any;
   declare curr_pred any;
   declare dt1, dt2, count_str, tbinf, ua varchar;
+
 
   n_per_page := 100;
   dis_next := 0;
@@ -289,7 +290,7 @@
   qrimg := fct_make_qr_code (fct_make_curie ('http://' || host || b3s_http_url (page_resource_uri), lines));
   if (qrimg is not null and strcasestr (ua, 'Mobile') is null) {
 ?>
-	  <img id="qrcode" src="data:image/jpg;base64,<?V qrimg ?>"/>
+	  <img id="qrcode" alt="QRcode image" src="data:image/jpg;base64,<?V qrimg ?>"/>
 <?vsp } ?>
       </div>
     </div>
@@ -431,12 +432,12 @@ if (_subject <> '') {
         &nbsp; &nbsp;<a href="/fct/facet_doc.html">About</a>&nbsp; &nbsp;
       </div> <!-- #ft_t -->
       <div id="ft_b">
-        <a href="http://linkeddata.org/"><img alt="This material is Open Knowledge" src="/fct/images/LoDLogo.gif" border="0"></a> &nbsp;
-        <a href="http://dbpedia.org/sparql"><img alt="W3C Semantic Web Technology" src="/fct/images/sw-sparql-blue.png" border="0"></a>
-        <a href="<?=rdf_link?>" title="RDF data"><img src="/fct/images/sw-rdf-blue.png" alt="[RDF Data]"></a>
-        <a href="http://www.opendefinition.org/"><img alt="This material is Open Knowledge" src="/fct/images/od_80x15_red_green.png" border="0"></a>
+        <a href="http://linkeddata.org/"><img alt="This material is Open Knowledge" src="/fct/images/LoDLogo.gif" border="0"/></a> &nbsp;
+        <a href="http://dbpedia.org/sparql"><img alt="W3C Semantic Web Technology" src="/fct/images/sw-sparql-blue.png" border="0"/></a>
+        <a href="<?=rdf_link?>" title="RDF data"><img src="/fct/images/sw-rdf-blue.png" alt="[RDF Data]"/></a>
+        <a href="http://www.opendefinition.org/"><img alt="This material is Open Knowledge" src="/fct/images/od_80x15_red_green.png" border="0"/></a>
 	<a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" 
-	    src="/fct/images/creativecommons.png" /></a>
+	    src="/fct/images/creativecommons.png"/></a>
 	<span about=""
 	resource="http://www.w3.org/TR/rdfa-syntax"
 	rel="dc:conformsTo" xmlns:dc="http://purl.org/dc/terms/">
