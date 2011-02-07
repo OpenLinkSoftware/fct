@@ -314,9 +314,9 @@ b3s_render_ses_params ()
   s := connection_get ('sas');
   sid := connection_get ('sid');
 
-  if (i is not null) i := '&inf=' || i;
-  if (s is not null) i := i || '&sas=' || s;
-  if (sid is not null) i := i || '&sid=' || sid;
+  if (i is not null) i := '&amp;inf=' || sprintf ('%V', i);
+  if (s is not null) i := i || '&amp;sas=' || sprintf ('%V', s);
+  if (sid is not null) i := i || '&amp;sid=' || sprintf ('%V', sid);
 
   if (i is not null) return i;
   else return '';
@@ -526,7 +526,7 @@ b3s_http_url (in url varchar, in sid varchar := null, in _from varchar := null)
   if (length (_from))
     i := sprintf ('%s&graph=%U', i, _from);
   
-  return sprintf ('/describe/?url=%U%V', url, i);
+  return sprintf ('/describe/?url=%U%s', url, i);
 };
 
 create procedure 
