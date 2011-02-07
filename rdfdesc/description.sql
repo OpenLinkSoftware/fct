@@ -612,7 +612,7 @@ again:
        if (http_mime_type (_url) like 'image/%')
 	 http (sprintf ('<a class="uri" %s href="%s"><img src="%s" height="160" style="border-width:0" alt="External Image" /></a>', rdfa, b3s_http_url (_url, sid, _from), _url));
        else
-         http (sprintf ('<a class="uri" %s href="%s">%s</a>', rdfa, b3s_http_url (_url, sid, _from), b3s_uri_curie(_url)));
+         http (sprintf ('<a class="uri" %s href="%s">%V</a>', rdfa, b3s_http_url (_url, sid, _from), b3s_uri_curie(_url)));
        --if (registry_get ('fct_sponge') = '1' and _url like 'http://%' or _url like 'https://%')
        --	 http (sprintf ('&nbsp;<a class="uri" href="%s&sp=1"><img src="/fct/images/goout.gif" title="Sponge" border="0"/></a>', 
        --	       b3s_http_url (_url, sid)));
