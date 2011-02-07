@@ -526,7 +526,7 @@ b3s_http_url (in url varchar, in sid varchar := null, in _from varchar := null)
   if (length (_from))
     i := sprintf ('%s&graph=%U', i, _from);
   
-  return sprintf ('/describe/?url=%U%s', url, i);
+  return sprintf ('/describe/?url=%U%V', url, i);
 };
 
 create procedure 
@@ -610,7 +610,7 @@ again:
 
        rdfa := b3s_rel_print (prop, rel, 0);
        if (http_mime_type (_url) like 'image/%')
-	 http (sprintf ('<a class="uri" %s href="%s"><img src="%s" height="160" border="0"/></a>', rdfa, b3s_http_url (_url, sid, _from), _url));
+	 http (sprintf ('<a class="uri" %s href="%s"><img src="%s" height="160" style="border-width:0" alt="External Image" /></a>', rdfa, b3s_http_url (_url, sid, _from), _url));
        else
          http (sprintf ('<a class="uri" %s href="%s">%s</a>', rdfa, b3s_http_url (_url, sid, _from), b3s_uri_curie(_url)));
        --if (registry_get ('fct_sponge') = '1' and _url like 'http://%' or _url like 'https://%')
