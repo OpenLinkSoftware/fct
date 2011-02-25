@@ -373,7 +373,7 @@ if (_subject <> '') {
 	       b3s_http_print_l (PRED, odd_position, flag, sid);
 	       curr_pred := pred;
 	     }
-           vis := b3s_http_print_r (OBJECT, sid, PRED, true_label, 1, all_langs, _from);
+           vis := b3s_http_print_r (OBJECT, sid, PRED, langs, 1, all_langs, _from);
 	   nxt1:;
 	   inx := inx + 1;
 	}
