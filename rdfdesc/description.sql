@@ -314,9 +314,9 @@ b3s_render_ses_params ()
   s := connection_get ('sas');
   sid := connection_get ('sid');
 
-  if (i is not null) i := '&amp;inf=' || sprintf ('%V', i);
-  if (s is not null) i := i || '&amp;sas=' || sprintf ('%V', s);
-  if (sid is not null) i := i || '&amp;sid=' || sprintf ('%V', sid);
+  if (i is not null) i := '&inf=' || sprintf ('%V', i);
+  if (s is not null) i := i || '&sas=' || sprintf ('%V', s);
+  if (sid is not null) i := i || '&sid=' || sprintf ('%V', sid);
 
   if (i is not null) return i;
   else return '';
