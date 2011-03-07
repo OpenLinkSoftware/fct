@@ -644,7 +644,7 @@ again:
 	   lbl := '';
 	   if (registry_get ('fct_desc_value_labels') = '1')
 	     lbl := b3s_label (_url, langs);
-	   if (lbl = 0 or length (lbl) = 0)
+	   if ((not isstring(lbl)) or length (lbl) = 0)
 	     lbl := b3s_uri_curie(_url);
 	   http (sprintf ('<a class="uri" %s href="%s">%V</a>', rdfa, b3s_http_url (_url, sid, _from), lbl));
 	 }
