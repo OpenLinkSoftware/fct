@@ -579,6 +579,8 @@ create procedure b3s_label (in _S any, in langs any)
 	    }
 	}
     }
+  if (__tag (best_str) = 246)
+    best_str := __ro2sq (best_str);
   return best_str;
 }
 ;
