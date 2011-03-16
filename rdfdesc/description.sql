@@ -560,10 +560,13 @@ create procedure b3s_label (in _S any, in langs any)
 {
   declare best_str, meta, data any;
   declare best_q, q float;
-  declare lang varchar;
+  declare lang, stat, msg varchar;
 
+  stat := '00000';
   exec (sprintf ('sparql define input:inference "virtrdf-label" '||
-  'select ?o (lang(?o)) where { <%S> virtrdf:label ?o }', _S), null, null, vector (), 0, meta, data);
+  'select ?o (lang(?o)) where { <%S> virtrdf:label ?o }', _S), stat, msg, vector (), 0, meta, data);
+  if (stat <> '00000')
+    return '';
   best_str := '';
   best_q := 0;
   if (length (data))
@@ -644,11 +647,15 @@ again:
 	 {
 	   declare lbl any;
 	   lbl := '';
-	   if (registry_get ('fct_desc_value_labels') = '1')
+	   if (registry_get ('fct_desc_value_labels') = '1' and (__tag (_object) = 243 or (isstring (_object) and __box_flags (_object) = 1)))
 	     lbl := b3s_label (_url, langs);
 	   if ((not isstring(lbl)) or length (lbl) = 0)
 	     lbl := b3s_uri_curie(_url);
-	   http (sprintf ('<a class="uri" %s href="%s">%V</a>', rdfa, b3s_http_url (_url, sid, _from), lbl));
+	   -- XXX: must encode as wide label to print correctly  
+	   --http (sprintf ('<a class="uri" %s href="%s">%V</a>', rdfa, b3s_http_url (_url, sid, _from), lbl));
+	   http (sprintf ('<a class="uri" %s href="%s">', rdfa, b3s_http_url (_url, sid, _from)));
+	   http_value (charset_recode (lbl, 'UTF-8', '_WIDE_'));
+	   http (sprintf ('</a>'));
 	 }
        --if (registry_get ('fct_sponge') = '1' and _url like 'http://%' or _url like 'https://%')
        --	 http (sprintf ('&nbsp;<a class="uri" href="%s&sp=1"><img src="/fct/images/goout.gif" title="Sponge" border="0"/></a>', 
