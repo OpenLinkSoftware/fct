@@ -286,19 +286,19 @@ function init(){
     <xsl:choose>
       <xsl:when test="$view-type = 'properties'">
 	<div class="dbg"><xsl:value-of select="$view-type"/></div>
-	<tr><th><xsl:value-of select="$p_term"/></th><th>Label</th><th>Count</th></tr>
+	<tr><th><xsl:value-of select="$p_term"/></th><!--th>Label</th--><th>Count</th></tr>
       </xsl:when>
       <xsl:when test="$view-type = 'list-count'">
 	<div class="dbg"><xsl:value-of select="$view-type"/></div>
-	<tr><th><xsl:value-of select="$s_term"/></th><th>Title</th><th>Count</th></tr>
+	<tr><th><xsl:value-of select="$s_term"/></th><!--th>Title</th--><th>Count</th></tr>
       </xsl:when>
       <xsl:when test="$view-type = 'text-properties'">
 	<div class="dbg"><xsl:value-of select="$view-type"/></div>
-	<tr><th><xsl:value-of select="$p_term"/></th><th>Label</th><th>Count</th></tr>
+	<tr><th><xsl:value-of select="$p_term"/></th><!--th>Label</th--><th>Count</th></tr>
       </xsl:when>
       <xsl:when test="$view-type = 'properties-in'">
 	<div class="dbg"><xsl:value-of select="$view-type"/></div>
-	<tr><th><xsl:value-of select="$p_term"/></th><th>Label</th><th>Count</th></tr>
+	<tr><th><xsl:value-of select="$p_term"/></th><!--th>Label</th--><th>Count</th></tr>
       </xsl:when>
       <xsl:when test="$view-type = 'list'">
 	<div class="dbg"><xsl:value-of select="$view-type"/></div>
@@ -306,7 +306,7 @@ function init(){
       </xsl:when>
       <xsl:when test="$view-type = 'classes'">
 	<div class="dbg"><xsl:value-of select="$view-type"/></div>
-	<tr><th><xsl:value-of select="$t_term"/></th><th>Label</th><th>Count</th></tr>
+	<tr><th><xsl:value-of select="$t_term"/></th><!--th>Label</th--><th>Count</th></tr>
       </xsl:when>
       <xsl:when test="$view-type = 'text' or $view-type = 'text-d'">
 	<div class="dbg"><xsl:value-of select="$view-type"/></div>
@@ -356,6 +356,9 @@ function init(){
 		  <xsl:value-of select="column[1]"/>
 		</xsl:attribute>
 		<xsl:choose>
+		  <xsl:when test="'' != string (column[2])">
+		      <xsl:value-of select="column[2]"/>
+		  </xsl:when>
 		  <xsl:when test="'' != column[1]/@shortform">
 		    <xsl:value-of select="column[1]/@shortform"/>
 		  </xsl:when>
@@ -365,14 +368,16 @@ function init(){
 		</xsl:choose>
 	      </a>
 	    </td>
-	    <td>
+	    <!--td>
 	      <xsl:choose>
-		<xsl:when test="'' != ./@shortform"><xsl:value-of select="./@shortform"/></xsl:when>
+		  <xsl:when test="'' != ./@shortform">
+		      <xsl:value-of select="./@shortform"/>
+		  </xsl:when>
 		<xsl:otherwise>
 		  <xsl:value-of select="column[2]"/>
 		</xsl:otherwise>
 	      </xsl:choose>
-	    </td>
+	    </td-->
 	    <td>
 	      <xsl:apply-templates select="column[3]"/>
 	    </td>
