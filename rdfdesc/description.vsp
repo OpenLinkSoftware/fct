@@ -393,6 +393,12 @@ if (_subject <> '') {
 	  <form action="/describe/" method="get">
 	  <div>
 	      <input type="hidden" name="url" value="<?V gr ?>" />
+	      <?vsp if (connection_get ('inf') is not null) { ?>
+	      <input type="hidden" name="inf" value="<?V connection_get ('inf') ?>" />
+	      <?vsp } ?>
+	      <?vsp if (connection_get ('sas') is not null) { ?>
+	      <input type="hidden" name="sas" value="<?V connection_get ('sas') ?>" />
+	      <?vsp } ?>
 	      <input type="hidden" name="p" value="<?V page + 1 ?>"/>
 	      <?vsp if (sid is not null) { ?>
 	      <input type="hidden" name="sid" value="<?V sid ?>"/>
