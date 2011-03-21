@@ -853,3 +853,74 @@ create procedure fct_make_curie (in url varchar, in lines any)
 }
 ;
 
+
+create procedure DB.DBA.SPARQL_DESC_DICT_LOD_PHYSICAL (in subj_dict any, in consts any, in good_graphs any, in bad_graphs any, in storage_name any, in options any)
+{
+  declare all_subj_descs, phys_subjects, sorted_good_graphs, sorted_bad_graphs, g_dict, res any;
+  declare uid, graphs_listed, g_ctr, good_g_count, bad_g_count, s_ctr, all_s_count, phys_s_count integer;
+  declare gs_app_callback, gs_app_uid varchar;
+
+  if (isinteger (consts))
+    goto normal;
+
+  uid := get_keyword ('uid', options, http_nobody_uid());
+  gs_app_callback := get_keyword ('gs-app-callback', options);
+  if (gs_app_callback is not null)
+    gs_app_uid := get_keyword ('gs-app-uid', options);
+
+  phys_subjects := dict_list_keys (subj_dict, 0);
+  phys_subjects := vector_concat (phys_subjects, consts);
+  phys_s_count := length (phys_subjects);
+  if (__tag of integer = __tag (good_graphs))
+    {
+      g_dict := dict_new ();
+      vectorbld_init (sorted_bad_graphs);
+      foreach (any g in bad_graphs) do
+	{
+	  if (isiri_id (g) and g < min_bnode_iri_id ())
+	    vectorbld_acc (sorted_bad_graphs, g);
+	}
+      vectorbld_final (sorted_bad_graphs);
+      for (s_ctr := phys_s_count - 1; s_ctr >= 0; s_ctr := s_ctr - 1)
+	{
+	  declare subj, graph any;
+	  subj := phys_subjects [s_ctr];
+	  graph := coalesce ((select top 1 G as g1 from DB.DBA.RDF_QUAD where O = subj and 0 = position (G, sorted_bad_graphs) and
+	    __rgs_ack_cbk (G, uid, 1) and
+	    (gs_app_callback is null or bit_and (1, call (gs_app_callback) (G, gs_app_uid))) ) );
+	  if (graph is not null)
+	    dict_put (g_dict, graph, 0);
+	}
+      sorted_good_graphs := dict_list_keys (g_dict, 0);
+      if (0 = length (sorted_good_graphs))
+	{
+	  g_dict := dict_new ();
+	  for (s_ctr := phys_s_count - 1; s_ctr >= 0; s_ctr := s_ctr - 1)
+	    {
+	      declare subj, graph any;
+	      subj := phys_subjects [s_ctr];
+	      graph := coalesce ((select top 1 G as g1 from DB.DBA.RDF_QUAD where S = subj and 0 = position (G, sorted_bad_graphs) and
+		__rgs_ack_cbk (G, uid, 1) and
+		(gs_app_callback is null or bit_and (1, call (gs_app_callback) (G, gs_app_uid))) ) );
+	      if (graph is not null)
+		dict_put (g_dict, graph, 0);
+	    }
+	  sorted_good_graphs := dict_list_keys (g_dict, 1);
+	}
+      if (0 < length (sorted_good_graphs))
+	good_graphs := sorted_good_graphs;
+    }
+  normal:
+  return DB.DBA.SPARQL_DESC_DICT (subj_dict, consts, good_graphs, bad_graphs, storage_name, options);
+}
+;
+
+create procedure DB.DBA.SPARQL_DESC_DICT_LOD (in subj_dict any, in consts any, in good_graphs any, in bad_graphs any, in storage_name any, in options any)
+{
+  return DB.DBA.SPARQL_DESC_DICT (subj_dict, consts, good_graphs, bad_graphs, storage_name, options);
+}
+;
+
+grant execute on DB.DBA.SPARQL_DESC_DICT_LOD_PHYSICAL to "SPARQL_SELECT";
+grant execute on DB.DBA.SPARQL_DESC_DICT_LOD to "SPARQL_SELECT";
+

@@ -159,7 +159,7 @@
 
   _subject := b3s_label_get (data, langs);
 
-  rdf_link := sprintf ('/sparql?query=%U', sprintf ('%s DESCRIBE <%s>', b3s_render_inf_clause(), _S)); 
+  rdf_link := sprintf ('/sparql?query=%U', sprintf ('define sql:describe-mode "LOD" %s DESCRIBE <%s>', b3s_render_inf_clause(), _S)); 
 
   declare __res_desc, qs, qv, best_variant, accept varchar;
   declare best_q, curr float;
