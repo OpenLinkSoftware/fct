@@ -68,7 +68,7 @@ create procedure input_get (in num varchar)
   	'Search for',
 	'Search for',
 	'Search for',
-	'Interest',
+	'Name',
 	'Search for',
 	'Person URI',
 	'Property',
