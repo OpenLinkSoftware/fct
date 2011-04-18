@@ -40,7 +40,7 @@
   declare vis, printed, _skip, _last int;
   declare all_lang any;
   declare curr_pred any;
-  declare dt1, dt2, count_str, tbinf, ua varchar;
+  declare dt1, dt2, count_str, tbinf, tbsas, ua varchar;
 
 
   n_per_page := 100;
@@ -67,10 +67,16 @@
   b3s_parse_inf (sid, params);
   inf := b3s_render_inf_clause ();
   tbinf := connection_get ('inf');
+  tbsas := connection_get ('sas');
   if (tbinf is not null)
     tbinf := sprintf ('TABLE OPTION (WITH \'%s\')', tbinf);
   else
     tbinf := '';
+  
+  if (tbsas is not null)
+    tbsas := '';
+  else
+    tbsas := '';
   
 
   ses_parms := b3s_render_ses_params ();
@@ -328,7 +334,7 @@ if (_subject <> '') {
       }
       else
       {
-      dt1 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT LONG VARCHAR, 0 as FLAG int from (SELECT DISTINCT p, o FROM DB.DBA.RDF_QUAD %s where s = __i2idn (\'%s\' , 1) ORDER BY 1 ASC OPTION (QUIETCAST)) sp1', tbinf, _S);
+      dt1 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT LONG VARCHAR, 0 as FLAG int from (SELECT DISTINCT p, o FROM DB.DBA.RDF_QUAD %s where s = __i2idn (\'%s\' , 1) ORDER BY 1 ASC OPTION (QUIETCAST %s)) sp1', tbinf, _S, tbsas);
       }
       dt2 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT LONG VARCHAR, 1 as FLAG int from (sparql %s define output:valmode "LONG" select distinct ?p ?o %s where { ?o ?p <%S> } order by 1) sp2', inf, _F, _S);
 
@@ -343,7 +349,7 @@ if (_subject <> '') {
 	    }
           else
 	    {
-              dt1 := sprintf ('select count(*) as cnt from (SELECT DISTINCT p, o FROM DB.DBA.RDF_QUAD %s where s = __i2idn (\'%s\' , 1) ORDER BY 1 ASC OPTION (QUIETCAST)) sp1', tbinf, _S);
+              dt1 := sprintf ('select count(*) as cnt from (SELECT DISTINCT p, o FROM DB.DBA.RDF_QUAD %s where s = __i2idn (\'%s\' , 1) ORDER BY 1 ASC OPTION (QUIETCAST %s)) sp1', tbinf, _S, tbsas);
 	    }
 	  dt2 := sprintf ('select count(*) as cnt from (sparql %s define output:valmode "LONG" select distinct ?p ?o %s where { ?o ?p <%S> } order by 1) sp2', inf, _F, _S);
 	  count_str := sprintf ('select sum (cnt) from (%s UNION ALL %s) un0', dt1, dt2);
@@ -385,6 +391,7 @@ if (_subject <> '') {
 
       if  (odd_position = 0)
 	 {
+	    http_request_status ('HTTP/1.1 404 Not found');
 	    http ('<tr><td colspan="2"><p>No further information is available.</p></td></tr>');
 	 }
 ?>
