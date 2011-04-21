@@ -236,6 +236,10 @@
   fct_links_hdr (_S, rdf_link);
   if (not length (label))
     label := b3s_trunc_uri (page_resource_uri);
+  declare desc_resource_uri varchar;
+  declare desc_qr varchar;
+  desc_qr := sprintf ('DESCRIBE <%s>', page_resource_uri);
+  desc_resource_uri := sprintf ('http://%{WSHost}s/sparql?query=%U&format=cxml', desc_qr);
   --http_flush (1);
 ?>
 <head>
@@ -463,8 +467,21 @@ if (_subject <> '') {
   </div><!-- FT_share -->
 <?vsp } ?>
       <div id="ft_t">
-        Explore alternative Linked Data Views &amp; Meshups using:
-        <a href="http://linkeddata.uriburner.com/ode/?uri=<?vsp http_url (page_resource_uri); ?>">OpenLink Data Explorer</a> 
+        Alternative Linked Data Views:
+	<?vsp if (VAD_CHECK_VERSION ('PivotViewer') is not null) { ?>	
+	<a href="/PivotViewer/?url=<?vsp http_url (desc_resource_uri); ?>">PivotViewer</a> 
+	|
+	<?vsp } ?>
+	<?vsp if (VAD_CHECK_VERSION ('rdf_mappers') is not null) { ?>	
+	<a href="<?vsp http (rdfdesc_http_url (page_resource_uri)); ?>">Sponger</a> 
+	|
+	<?vsp } ?>
+	<?vsp if (VAD_CHECK_VERSION ('iSPARQL') is not null) { ?>	
+	<a href="/isparql/view/?query=<?vsp http_url (desc_qr); ?>&amp;resultview=triples">iSPARQL</a> 
+	|
+	<?vsp } ?>
+	<a href="http://linkeddata.uriburner.com/ode/?uri=<?vsp http_url (page_resource_uri); ?>">ODE</a> 
+	
         &nbsp; &nbsp; Raw Data in:
         <a href="<?=rdf_link || sprintf ('&output=%U', 'text/cxml')?>">CXML</a> |
         <a href="<?=rdf_link || sprintf ('&output=%U', 'text/csv')?>">CSV</a> | RDF (
