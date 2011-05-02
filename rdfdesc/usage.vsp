@@ -198,7 +198,10 @@
 	    if (tp = 3) -- Expanded sas
 	      {
 	         qr := sprintf ('sparql select ?syn (sql:rnk_scale (<LONG::IRI_RANK> (?syn))) where {{ select ?s ?syn  where {{?syn owl:sameAs ?s } union {?s owl:sameAs ?syn}}} option (transitive, t_distinct, t_min (0), T_in (?s), t_out (?syn)) . filter (!isliteral (?syn) && ?s = <%S> ) } order by desc 2 limit 20', _S);
-                 http (sprintf ('<tr><th>%s</th><th>Rank</th></tr>\n', fct_s_term ()));
+		 http (sprintf ('<tr><th>%s</th><th>Rank</th></tr>\n', 
+		'Identifier (URI)'
+		--fct_s_term ()
+		));
 	      }
 	    if (tp = 4) -- Expanded ifp
 	      {
