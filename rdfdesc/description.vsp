@@ -238,7 +238,7 @@
     label := b3s_trunc_uri (page_resource_uri);
   declare desc_resource_uri varchar;
   declare desc_qr varchar;
-  desc_qr := sprintf ('DESCRIBE <%s>', page_resource_uri);
+  desc_qr := sprintf ('define sql:describe-mode "CBD" DESCRIBE <%s>', page_resource_uri);
   desc_resource_uri := sprintf ('http://%{WSHost}s/sparql?query=%U&format=cxml', desc_qr);
   --http_flush (1);
 ?>
@@ -469,18 +469,18 @@ if (_subject <> '') {
       <div id="ft_t">
         Alternative Linked Data Views:
 	<?vsp if (VAD_CHECK_VERSION ('PivotViewer') is not null) { ?>	
-	<a href="/PivotViewer/?url=<?vsp http_url (desc_resource_uri); ?>">PivotViewer</a> 
+	<a href="/PivotViewer/?url=<?vsp http_url (desc_resource_uri); ?>" title="PivotViewer page for exploring results and generating new queries" target="_blank">PivotViewer</a> 
 	|
 	<?vsp } ?>
 	<?vsp if (VAD_CHECK_VERSION ('rdf_mappers') is not null) { ?>	
-	<a href="<?vsp http (rdfdesc_http_url (page_resource_uri)); ?>">Sponger</a> 
+	<a href="<?vsp http (rdfdesc_http_url (page_resource_uri)); ?>" target="_blank">Sponger</a> 
 	|
 	<?vsp } ?>
 	<?vsp if (VAD_CHECK_VERSION ('iSPARQL') is not null) { ?>	
-	<a href="/isparql/view/?query=<?vsp http_url (desc_qr); ?>&amp;resultview=triples">iSPARQL</a> 
+	<a href="/isparql/view/?query=<?vsp http_url (desc_qr); ?>&amp;resultview=browser" title="Interactive Query By Example oriented SPARQL UI" target="_blank">iSPARQL</a> 
 	|
 	<?vsp } ?>
-	<a href="http://linkeddata.uriburner.com/ode/?uri=<?vsp http_url (page_resource_uri); ?>">ODE</a> 
+	<a href="http://linkeddata.uriburner.com/ode/?uri=<?vsp http_url (page_resource_uri); ?>" title="Basic navigation and exploration" target="_blank">ODE</a> 
 	
         &nbsp; &nbsp; Raw Data in:
         <a href="<?=rdf_link || sprintf ('&output=%U', 'text/cxml')?>">CXML</a> |
