@@ -655,7 +655,7 @@ again:
 	 {
 	   declare lbl any;
 	   lbl := '';
-	   if (registry_get ('fct_desc_value_labels') = '1' and (__tag (_object) = 243 or (isstring (_object) and __box_flags (_object) = 1)))
+	   if ((registry_get ('fct_desc_value_labels') = '1' or registry_get ('fct_desc_value_labels') = 0) and (__tag (_object) = 243 or (isstring (_object) and __box_flags (_object) = 1)))
 	     lbl := b3s_label (_url, langs);
 	   if ((not isstring(lbl)) or length (lbl) = 0)
 	     lbl := b3s_uri_curie(_url);
