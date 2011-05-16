@@ -125,7 +125,7 @@
 <!-- header -->
 <head>
     <base href="http://<?V host ?>/fct/rdfdesc/" />
-    <title>Usage Statistics about: <?vsp http (sprintf ('%s', label)); ?></title>
+    <title>Metadata about: <?vsp http (sprintf ('%s', label)); ?></title>
     <link rel="alternate" type="application/rdf+xml" href="<?=rdf_link?>" title="RDF" />
     <link rel="stylesheet" type="text/css" href="styles/default.css" charset="utf-8" />
     <link rel="stylesheet" type="text/css" href="styles/highlighter.css" charset="utf-8" />
@@ -144,7 +144,7 @@
       <?vsp } ?>      
       <li id="mnu_descr"><a href="/describe/?uri=<?U page_resource_uri ?><?V ses_parms ?>">Description</a></li>
       <li id="mnu_usage" class="sel">
-        <a href="#" class="sel">Usage Statistics</a>
+        <a href="#" class="sel">Metadata</a>
       </li>
       <li id="mnu_settings"><a href="settings.vsp?g=<?U page_resource_uri ?><?V ses_parms ?>">Settings</a></li>
     </ul>

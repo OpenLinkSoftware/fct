@@ -266,7 +266,7 @@
       <?vsp } ?>
       <li id="mnu_descr" class="sel"><a href="/describe/?uri=<?V _S ?><?V ses_parms ?>" class="sel">Description</a></li>
       <li id="mnu_usage">
-        <a href="usage.vsp?g=<?U _S ?><?V ses_parms ?>">Usage Statistics</a>
+        <a href="usage.vsp?g=<?U _S ?><?V ses_parms ?>">Metadata</a>
       </li>
       <li id="mnu_settings"><a href="settings.vsp?g=<?U _S ?><?V ses_parms ?>">Settings</a>
         <div id="settings_popup" style="display: none">
