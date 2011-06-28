@@ -45,7 +45,7 @@
   declare vis, printed, _skip, _last int;
   declare all_lang any;
   declare curr_pred any;
-  declare dt1, dt2, count_str, tbinf, tbsas, ua varchar;
+  declare dt1, dt2, count_str, tbinf, tbsas, ua, doc varchar;
 
 
   n_per_page := 100;
@@ -140,6 +140,10 @@
   if (arr[0] = '' and arr[1] = '' and arr[2] <> '')
     gr := 'http://' || gr;
 
+  arr := rfc1808_parse_uri (gr);
+  arr [5] := '';
+  doc := vspx_uri_compose (arr);
+  
   page_resource_uri := gr;
   page_resource_uri := replace (page_resource_uri, '%23', '#');
   page_resource_uri := replace (page_resource_uri, ' ', '%20');
@@ -151,14 +155,14 @@
 
   if (get_keyword ('sp', params) = '1' and 0 = length (_F))
     {
-      DB.DBA.EXEC_AS (sprintf ('sparql define input:storage "" define get:soft "soft" SELECT * from <%S> where { ?x ?y ?z . }', gr), 'SPARQL');
+      DB.DBA.EXEC_AS (sprintf ('sparql define input:storage "" define get:soft "soft" SELECT * from <%S> where { ?x ?y ?z . }', doc), 'SPARQL');
       DB.DBA.VT_INC_INDEX_DB_DBA_RDF_OBJ ();
     }
   else if (get_keyword ('sr', params) is not null and 0 = length (_F))
     {
       declare refr varchar;
       refr := atoi (get_keyword ('sr', params, '0'));		
-      DB.DBA.EXEC_AS (sprintf ('sparql define input:storage "" define get:refresh "%d" define get:soft "soft" SELECT * from <%S> where { ?x ?y ?z . }', refr, gr), 'SPARQL');
+      DB.DBA.EXEC_AS (sprintf ('sparql define input:storage "" define get:refresh "%d" define get:soft "soft" SELECT * from <%S> where { ?x ?y ?z . }', refr, doc), 'SPARQL');
       DB.DBA.VT_INC_INDEX_DB_DBA_RDF_OBJ ();
     }
 
