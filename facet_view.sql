@@ -561,6 +561,108 @@ fct_set_default_qry (inout tree any)
 }
 ;
 
+create procedure fct_print_space_1 (inout ses any, in n int)
+{
+  for (declare i int, i := 0; i < n;  i := i + 1)
+    http (' ', ses);
+}
+;
+
+create procedure fct_pretty_sparql_1 (inout arr any, inout inx int, in len int, inout ses any, in lev int := 0)
+{
+  declare nbsp, was_open, was_close, num_open int;
+  nbsp := 0;
+  was_open := 0;
+  was_close := 0;
+  num_open := 0;
+  for (;inx < len; inx := inx + 1)
+    {
+      declare elm varchar;
+      elm := arr[inx];
+      if (elm = 'sparql')
+        goto skipit;
+
+      if (elm = '(')
+	num_open := num_open + 1;
+      if (elm = ')')
+	num_open := num_open - 1;
+
+      if (num_open = 0)
+        {
+	  if (elm = '{')
+	    {
+	      nbsp := nbsp + 2;
+	      http ('\n', ses);
+	      fct_print_space_1 (ses, nbsp);
+	      was_open := 1;
+	      was_close := 0;
+	    }
+	  else if (was_open = 1)
+	    {
+	      was_open := 0;
+	      was_close := 0;
+	      http ('\n', ses);
+	      fct_print_space_1 (ses, nbsp + 2);
+	    }
+	  else if (elm = '}')
+	    {
+	      if (not was_close)
+		{
+		  http ('\n', ses);
+		  fct_print_space_1 (ses, nbsp);
+		}
+	    }
+	  else
+	    was_close := 0;
+	}
+
+
+      http (elm, ses);
+
+      if (num_open = 0)
+        {
+	  if (elm = '}')
+	    {
+	      was_close := 1;
+	      nbsp := nbsp - 2;
+	      http ('\n', ses);
+	      fct_print_space_1 (ses, nbsp);
+	    }
+	  else if (elm = '.')
+	    {
+	      http ('\n', ses);
+	      fct_print_space_1 (ses, nbsp + 1);
+	    }
+	}
+
+      if (elm = 'sparql')
+	http ('\n');
+      http (' ', ses);
+      skipit:;
+    }
+}
+;
+
+create procedure fct_pretty_sparql (in q varchar, in lev int := 0)
+{
+  declare ses, arr any;
+  declare inx int;
+  ses := string_output ();
+  --q := sprintf ('%V', q);
+  q := replace (q, '\n', ' ');
+  q := replace (q, '}', ' } ');
+  q := replace (q, '{', ' { ');
+  q := replace (q, ')', ' ) ');
+  q := replace (q, '(', ' ( ');
+  q := regexp_replace (q, '\\s\\s+', ' ', 1, null);
+  arr := split_and_decode (q, 0, '\0\0 ');
+  inx := 0;
+  fct_pretty_sparql_1 (arr, inx, length (arr), ses, lev);
+  return string_output_string (ses);
+}
+;
+
+
 create procedure
 fct_web (in tree any)
 {
@@ -587,6 +689,7 @@ fct_web (in tree any)
 
   reply := fct_exec (tree, timeout);
   p_qry := fct_query (tree, 1); -- get "plain" query text
+  p_qry := fct_pretty_sparql (p_qry);
 
 --  dbg_obj_print (reply);
 

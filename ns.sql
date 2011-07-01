@@ -61,8 +61,8 @@ foaf:mbox_sha1sum a owl:InverseFunctionalProperty .
 foaf:mbox_sha1sum rdfs:subPropertyOf lod:ifp_like .
 foaf:mbox a owl:InverseFunctionalProperty .
 foaf:mbox rdfs:subPropertyOf lod:ifp_like .
-rdfs:label a owl:InverseFunctionalProperty .
-rdfs:label rdfs:subPropertyOf lod:ifp_like .
+# rdfs:label a owl:InverseFunctionalProperty .
+# rdfs:label rdfs:subPropertyOf lod:ifp_like .
 <http://linkedopencommerce.com/schemas/icecat/v1/hasProductId> a owl:InverseFunctionalProperty .
 <http://linkedopencommerce.com/schemas/icecat/v1/hasProductId> rdfs:subPropertyOf lod:ifp_like .
 
