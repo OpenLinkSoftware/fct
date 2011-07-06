@@ -44,7 +44,9 @@ ttlp ('
 rdfs:label rdfs:subPropertyOf b3s:label .
 dc:title rdfs:subPropertyOf b3s:label .
 foaf:name rdfs:subPropertyOf b3s:label .
-foaf:nick rdfs:subPropertyOf b3s:label .', 'xx', 'b3sonto');
+foaf:nick rdfs:subPropertyOf b3s:label .
+<http://purl.uniprot.org/core/scientificName> rdfs:subPropertyOf b3s:label .
+', 'xx', 'b3sonto');
 
 
 
