@@ -307,8 +307,8 @@
 <?vsp 
   declare _ciri varchar;
 
-  if (c_iri = 'http://www.w3.org/2000/01/rdf-schema#Class') {
-    _ciri := gr;
+  if (c_iri = 'http://www.w3.org/2000/01/rdf-schema#Class' or c_iri = 'http://www.w3.org/2002/07/owl#Class') {
+    _ciri := page_resource_uri;
   }
   else {
     _ciri := c_iri;
