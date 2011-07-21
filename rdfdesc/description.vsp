@@ -174,12 +174,14 @@
   http_header ('Cache-Control: no-cache, must-revalidate\r\nPragma: no-cache\r\n');
   label := ''; _subject := '';
 
-  qry_str := sprintf ('sparql define input:inference "facets" select ?o (lang(?o)) %s where { <%S> virtrdf:label ?o }', _F, _S);
-  b3s_dbg_out (dbg_out, 'qry: ' || qry_str);
-
+  --qry_str := sprintf ('sparql define input:inference "facets" select ?o (lang(?o)) %s where { <%S> virtrdf:label ?o }', _F, _S);
+  --b3s_dbg_out (dbg_out, 'qry: ' || qry_str);
   --dbg_obj_print (qry_str);
+  --exec (qry_str, null, null, vector (), 0, meta, data);
 
-  exec (qry_str, null, null, vector (), 0, meta, data);
+  exec ('select __ro2sq (O), DB.DBA.RDF_LANGUAGE_OF_OBJ (o) , b3s_lbl_order (P) from RDF_QUAD table option (with ''facets'') 
+	where S = __i2id (?) and P = __i2id (''http://www.openlinksw.com/schemas/virtrdf#label'', 0) order by 3', 
+	null, null, vector (_S), 0, meta, data);
 
   label := b3s_label_get (data, langs);
   true_label := label;
