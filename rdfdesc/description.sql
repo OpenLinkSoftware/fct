@@ -693,6 +693,7 @@ again:
    else if (__tag (_object) = 182)
      {
        http (sprintf ('<span %s>', rdfa));
+       _object := regexp_replace (_object, ' (http://[^ ]+) ', ' <a href="\\1">\\1</a> ', 1, null);
        http (_object);
        http ('</span>');
        lang := '';
