@@ -365,6 +365,8 @@ OAT.Autocomplete = function (_input, _value_input, _button, _form, optObj) {
 function fct_sel_neg (cb)
 {
   var a = $('a_' + cb.value);
+  if (0 == a.href.length)
+    return;
   if (cb.checked == true)
     {
       var pos = a.href.lastIndexOf ('&exclude=yes');
