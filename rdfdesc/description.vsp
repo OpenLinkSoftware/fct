@@ -411,7 +411,7 @@ if (_subject <> '') {
 	   if (curr_pred <> pred)
 	     {
                if (curr_pred <> '') http ('</ul></td></tr>');
-	       b3s_http_print_l (PRED, odd_position, flag, sid);
+	       b3s_http_print_l (PRED, odd_position, flag, sid, langs);
 	       curr_pred := pred;
 	     }
            vis := b3s_http_print_r (OBJECT, sid, PRED, langs, 1, all_langs, _from);

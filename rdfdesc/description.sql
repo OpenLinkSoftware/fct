@@ -538,12 +538,14 @@ b3s_http_url (in url varchar, in sid varchar := null, in _from varchar := null)
 };
 
 create procedure 
-b3s_http_print_l (in p_text any, inout odd_position int, in r int := 0, in sid varchar := null)
+b3s_http_print_l (in p_text any, inout odd_position int, in r int := 0, in sid varchar := null, in langs any := null)
 {
    declare short_p, p_prefix, int_redirect, url any;
 
    odd_position := odd_position + 1;
-   p_prefix := b3s_prop_label (p_text);
+   p_prefix := b3s_label (p_text, langs);
+   if (not length (p_prefix))
+     p_prefix := b3s_uri_curie (p_text);
    url := b3s_http_url (p_text, sid);
 
    if (not length (p_text))
