@@ -400,8 +400,13 @@ create procedure b3s_label_get (inout data any, in langs any)
 	    }
 	 }
      }
-   if (__tag of rdf_box = __tag (label))
-     label := rdf_box_data (label);
+   if (not isstring (label))
+     {
+       if (__tag of rdf_box = __tag (label)  and rdf_box_is_complete (label))
+	 label := rdf_box_data (label);
+       else  
+	 label := __rdf_strsqlval (label);
+     }
    if (not isstring (label))
      label := cast (label as varchar);
    --label := regexp_replace (label, '<[^>]+>', '', 1, null);  

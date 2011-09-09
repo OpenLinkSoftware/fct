@@ -236,6 +236,46 @@ FCT_LABEL_DP_L (in x any, in g_id iri_id_8, in ctx varchar, in lng varchar)
 }
 ;
 
+
+create procedure
+FCT_LABEL_NP (in x any, in g_id iri_id_8, in ctx varchar, in lng varchar := 'en')
+{
+  declare best_str any;
+  declare best_l, l int;
+  declare label_iri iri_id_8;
+  declare q, best_q, str_lang, lang_id any;
+
+  if (not isiri_id (x))
+    return null;
+  rdf_check_init ();
+  label_iri := iri_id_from_num (atoi (registry_get ('fct_label_iri')));
+  best_str := '';
+  best_l := 0;
+  best_q := 0;
+  for select __ro2sq (o) as o
+        from rdf_quad table option (index rdf_quad)
+        where s = x and p in (rdf_super_sub_list (ctx, label_iri, 3)) do
+    {
+      lang_id := rdf_box_lang (o);
+      if (lang_id > 257)
+	str_lang := (select RL_ID from RDF_LANGUAGE where RL_TWOBYTE = lang_id);
+      else
+        str_lang := 'en';	
+      q := cmp_get_lang_by_q (lng, str_lang);
+      if (is_rdf_box (o) or isstring (o))
+	{
+	  if (q > best_q)
+	    {
+	      best_str := o;
+	      best_q := q;
+	    }
+	}
+    }
+  return best_str;
+}
+;
+
+
 create procedure
 FCT_LABEL_S (in x any, in g_id iri_id_8, in ctx varchar, in lng varchar)
 {
@@ -522,7 +562,7 @@ fct_xml_wrap (in tree any, in txt any)
                                                                              fct_short_form(__ro2sq("c1")) as "shortform"),
                                                               __ro2sq ("c1")),
                                                   xmlelement ("column",
-                                                              fct_label ("c1", 0, ''facets'' )),
+                                                              fct_label_np ("c1", 0, ''facets'' )),
                                                   xmlelement ("column",
                                                               fct_bold_tags("c2")))))
              from (sparql define output:valmode "LONG" ', view_type), ntxt);
@@ -545,7 +585,7 @@ fct_xml_wrap (in tree any, in txt any)
                                                                          fct_short_form(__ro2sq("c1")) as "shortform"),
                                                           __ro2sq ("c1")),
                                               xmlelement ("column",
-                                                          fct_label ("c1", 0, ''facets'' )))))
+                                                          fct_label_np ("c1", 0, ''facets'' )))))
               from (sparql define output:valmode "LONG" ', view_type), ntxt);
         }
       else
@@ -558,7 +598,7 @@ fct_xml_wrap (in tree any, in txt any)
                                                                              fct_short_form(__ro2sq("c1")) as "shortform"),
                                                               __ro2sq ("c1")),
                                                   xmlelement ("column",
-                                                              fct_label ("c1", 0, ''facets'' )),
+                                                              fct_label_np ("c1", 0, ''facets'' )),
                                                   xmlelement ("column",
                                                               fct_bold_tags("c2")))))
              from (sparql define output:valmode "LONG" ', view_type), ntxt);
@@ -574,7 +614,7 @@ fct_xml_wrap (in tree any, in txt any)
 							       fct_short_form(__ro2sq("c1")) as "shortform",
                                                                fct_sparql_ser ("c1") as "sparql_ser"),
 							       __ro2sq ("c1")),
-				xmlelement ("column", fct_label ("c1", 0, ''facets'' )))))
+				xmlelement ("column", fct_label_np ("c1", 0, ''facets'' )))))
 	     from (sparql define output:valmode "LONG"', view_type), ntxt);
   if (n_cols = 3)
     http ('select xmlelement ("result", xmlattributes ('''' as "type"),
@@ -585,7 +625,7 @@ fct_xml_wrap (in tree any, in txt any)
                                                                              fct_short_form(__ro2sq("c1")) as "shortform"),
                                                               __ro2sq ("c1")),
                                                   xmlelement ("column",
-                                                              fct_label ("c1", 0, ''facets'' )),
+                                                              fct_label_np ("c1", 0, ''facets'' )),
                                                   xmlelement ("column", __ro2sq ("c2")),
                                                   xmlelement ("column", __ro2sq ("c3"))
 						  	)))
@@ -802,7 +842,7 @@ fct_literal (in tree any)
 create procedure
 fct_cond (in tree any, in this_s int, in txt any)
 {
-  declare lit, op varchar;
+  declare lit, op any;
 
   lit := fct_literal (tree);
 
