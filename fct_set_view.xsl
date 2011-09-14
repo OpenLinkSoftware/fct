@@ -148,7 +148,6 @@
                lo="{$lo}">
         </value-range>
       </xsl:if>
-
     </xsl:copy>
   </xsl:if>
 

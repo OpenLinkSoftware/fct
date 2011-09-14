@@ -139,7 +139,7 @@ fct_long_uri (in x any)
 cl_exec ('registry_set (''fct_label_iri'', ?)',
          vector (cast (iri_id_num (__i2id ('http://www.openlinksw.com/schemas/virtrdf#label')) as varchar)));
 
-cl_exec ('registry_set (''fct_timeout_min'',''2000'')');
+cl_exec ('registry_set (''fct_timeout_min'',''8000'')');
 cl_exec ('registry_set (''fct_timeout_max'',''40000'')');
 
 create procedure
@@ -154,7 +154,9 @@ FCT_LABEL (in x any, in g_id iri_id_8, in ctx varchar)
   label_iri := iri_id_from_num (atoi (registry_get ('fct_label_iri')));
   best_str := null;
   best_l := 0;
-  for select o, p from rdf_quad table option (index primary key) where s = x and p in (rdf_super_sub_list (ctx, label_iri, 3)) do
+  for select o, p 
+    from rdf_quad table option (index primary key) 
+    where s = x and p in (rdf_super_sub_list (ctx, label_iri, 3)) do
     {
       if (is_rdf_box (o) or isstring (o))
 	{
@@ -164,8 +166,8 @@ FCT_LABEL (in x any, in g_id iri_id_8, in ctx varchar)
 	    l := length (o);
 	  if (l > best_l)
 	    {
-	    best_str := o;
-	    best_l := l;
+	      best_str := o;
+	      best_l := l;
 	    }
 	}
     }
@@ -780,7 +782,7 @@ fct_view (in tree any, in this_s int, in txt any, in pre any, in post any, in pl
       exp := charset_recode (xpath_eval ('string (//text)', tree), '_WIDE_', 'UTF-8');
 
       http (sprintf ('select 
-		  	(<sql:s_sum_page> (<sql:vector_agg> (<bif:vector> (?c1, ?sm)), <bif:vector> (%s)))  as ?res where { { 
+		  	(<sql:s_sum_page> (<sql:vector_agg> (<bif:vector> (?c1, ?sm)), <bif:vector> (%s))) as ?res where { { 
       select (<SHORT_OR_LONG::>(?s%d)) as ?c1,  (<sql:S_SUM> ( <SHORT_OR_LONG::IRI_RANK> (?s%d), <SHORT_OR_LONG::>(?s%dtextp), <SHORT_OR_LONG::>(?o%d), ?sc ) ) as ?sm ', element_split (exp), this_s, this_s, this_s, this_s), pre);
 
       http (sprintf ('order by desc (<sql:sum_rank> ((<sql:S_SUM> ( <SHORT_OR_LONG::IRI_RANK> (?s%d), <SHORT_OR_LONG::>(?s%dtextp), <SHORT_OR_LONG::>(?o%d), ?sc ) ) ) )', this_s, this_s, this_s), post);	    
@@ -876,10 +878,12 @@ fct_cond_range (in tree any, in this_s int, in txt any)
   {
     http(sprintf (' filter (?s%d <= %s) .', this_s, hi), txt);
   }
-  else return;
+
+--  dbg_printf ('fct_cond_range: got lo: %s, hi: %s', lo, hi);
+
+  return;
 }
 ;
-
 
 create procedure 
 fct_curie_iri (in curie varchar)
@@ -987,6 +991,8 @@ fct_text (in tree any,
       v := cast (xpath_eval ('//view/@type', tree) as varchar);
       prop := cast (xpath_eval ('./@property', tree, 1) as varchar);
 
+--      dbg_printf ('prop: %s', coalesce(prop, 'NULL'));
+
       if ('text' = v or 'text-d' = v)
         sc_opt := ' option (score ?sc) ';
       else
@@ -1064,7 +1070,7 @@ create procedure
 fct_query (in tree any, in plain integer := 0)
 {
   declare s, add_graph int;
-  declare txt, pre, post any;
+	  declare txt, pre, post any;
 
   txt := string_output ();
   pre := string_output ();
@@ -1126,12 +1132,6 @@ fct_test (in str varchar, in timeout int := 0)
 }
 ;
 
-create procedure _min (in n1 int, in n2 int) {
-  if (n1 < n2) return n1;
-  else return n2;
-}
-;
-
 create procedure
 fct_exec (in tree any, 
           in timeout int)
@@ -1142,7 +1142,7 @@ fct_exec (in tree any,
   declare tmp any;
   declare offs, lim int;
 
-  set result_timeout = _min (timeout, atoi (registry_get ('fct_timeout_max')));
+  set result_timeout = __min (timeout, atoi (registry_get ('fct_timeout_max')));
 
   offs := xpath_eval ('//view/@offset', tree);
   lim := xpath_eval ('//view/@limit', tree);
@@ -1187,7 +1187,7 @@ fct_exec (in tree any,
       qr := fct_query (xpath_eval ('//query', tree, 1));
       qr2 := fct_xml_wrap (tree, qr);
       sqls := '00000';
-      set result_timeout = _min (timeout, atoi (registry_get ('fct_timeout_max')));
+      set result_timeout = __min (timeout, atoi (registry_get ('fct_timeout_max')));
       exec (qr2, sqls, msg, vector (), 0, md, res);
       n_rows := row_count ();
       act := db_activity ();
@@ -1208,7 +1208,7 @@ fct_exec (in tree any,
   res := xmlelement ("facets", xmlelement ("sparql", query), 
                                xmlelement ("time", msec_time () - start_time),
 		               xmlelement ("complete", case when sqls = 'S1TAT' then 'no' else 'yes' end),
-		               xmlelement ("timeout", _min (timeout * 2, atoi (registry_get ('fct_timeout_max')))),
+		               xmlelement ("timeout", __min (timeout * 2, atoi (registry_get ('fct_timeout_max')))),
 		               xmlelement ("db-activity", act),
 		               xmlelement ("processed", n_rows), 
                                xmlelement ("view", xmlattributes (offs as "offset", lim as "limit")),
