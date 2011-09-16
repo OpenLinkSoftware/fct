@@ -446,7 +446,9 @@ function init(){
     <input type="hidden" name="sid"><xsl:attribute name="value"><xsl:value-of select="$sid"/></xsl:attribute></input>
     <input type="hidden" name="hi" id="out_hi"/>
     <input type="hidden" name="lo" id="out_lo"/>
+    <input type="hidden" name="lang" id="out_lang"/>
     <input type="hidden" name="datatype" id="out_dtp"/>
+    <input type="hidden" name="iri" id="out_iri"/>
     Add condition: 
     <select id="cond_type" name="cmd">
       <option value="cond_none">None</option>

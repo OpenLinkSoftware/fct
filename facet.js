@@ -260,8 +260,13 @@ function prop_val_dt_sel_init () {
 	    out_hi = '';
 	}
 
-	$('out_hi').value = out_hi;
-	$('out_lo').value = out_lo;
+	if (ct != "select_value") {
+	    $("out_iri").value = '';
+	    $("out_dtp").value = '';
+	    $('out_hi').value = out_hi;
+	    $('out_lo').value = out_lo;
+	}
+
 	$('valrange_form').submit();
     });
 
@@ -271,6 +276,7 @@ function prop_val_dt_sel_init () {
 function handle_val_anchor_click (e) {
     var val = e.target.href.split('?')[1].match(/&iri=(.*)/)[1].split('&')[0];
     var dtp = e.target.href.split('?')[1].match(/&datatype=(.*)/)[1].split('&')[0];
+    var lang = e.target.href.split('?')[1].match(/&lang=(.*)/)[1].split('&')[0];
 
     switch($('cond_type').value) {
     case "cond_none":
@@ -296,6 +302,8 @@ function handle_val_anchor_click (e) {
 	break;
     }
     $('out_dtp').value = dtp;
+    $('out_iri').value = val;
+    $('out_lang').value = lang;
 }
 
 function prop_val_anchors_init () {
