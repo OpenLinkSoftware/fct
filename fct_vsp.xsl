@@ -336,6 +336,7 @@ function init(){
 		<!--xsl:message terminate="no"><xsl:value-of select="$query/query/class/@iri"/><xsl:value-of select="column[1]"/></xsl:message-->  
 	        <xsl:variable name="current_iri" select="column[1]"/> 
 	        <xsl:if test="not $query/query/class[@iri = $current_iri]" > 
+                  <xsl:attribute name="class">sel_val</xsl:attribute>
 		  <xsl:attribute name="href">/fct/facet.vsp?cmd=<xsl:value-of select="$command"/>&amp;iri=<xsl:choose>
                     <xsl:when test="column[1]/@sparql_ser != ''">
                       <xsl:value-of select="urlify(column[1]/@sparql_ser)"/>
@@ -445,14 +446,20 @@ function init(){
     <input type="hidden" name="sid"><xsl:attribute name="value"><xsl:value-of select="$sid"/></xsl:attribute></input>
     <input type="hidden" name="hi" id="out_hi"/>
     <input type="hidden" name="lo" id="out_lo"/>
-    Add filter: 
+    <input type="hidden" name="datatype" id="out_dtp"/>
+    Add condition: 
     <select id="cond_type" name="cmd">
+      <option value="cond_none">None</option>
+      <option value="select_value">==</option>
       <option value="cond_gt">&gt;=</option> 
       <option value="cond_lt">&lt;=</option>
       <option value="cond_range">between</option>
     </select>
-    <input id="cond_lo" type="text"/><span id="cond_hi_ctr"> and <input id="cond_hi" type="text"/></span> <select id="cond_dt"></select>
-    <input type="button" id="set_val_range" value="Set Condition"/>
+    <span id="cond_inp_ctr" style="display:none">
+      <input id="cond_lo" type="text"/>
+      <span id="cond_hi_ctr"> and <input id="cond_hi" type="text"/></span> <select id="cond_dt"></select>
+      <input type="button" id="set_val_range" value="Set Condition"/>
+    </span>
   </form>                
 </xsl:if>
 

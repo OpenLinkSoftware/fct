@@ -240,6 +240,7 @@ function prop_val_dt_sel_init () {
 
     OAT.Event.attach ('set_val_range','click', function (e) {
 	var ct = $v('cond_type');
+
 	var v_l = $v('cond_lo');
 	var v_h = $v('cond_hi');
 
@@ -265,6 +266,44 @@ function prop_val_dt_sel_init () {
     });
 
     OAT.Dom.show ('valrange_form');
+}
+
+function handle_val_anchor_click (e) {
+    var val = e.target.href.split('?')[1].match(/&iri=(.*)/)[1].split('&')[0];
+    var dtp = e.target.href.split('?')[1].match(/&datatype=(.*)/)[1].split('&')[0];
+
+    switch($('cond_type').value) {
+    case "cond_none":
+	return;
+    case "select_value":
+	OAT.Event.prevent(e);
+	$('cond_lo').value = val;
+	break;
+    case "cond_lt":
+        OAT.Event.prevent(e);
+	$('cond_lo').value = val;
+	break;
+    case "cond_gt":
+        OAT.Event.prevent(e);
+	$('cond_lo').value = val;
+	break;
+    case "cond_range":
+        OAT.Event.prevent(e);
+	if ($v('cond_lo') != '')
+	    $('cond_hi').value = val;
+	else 
+	    $('cond_lo').value = val;
+	break;
+    }
+    $('out_dtp').value = dtp;
+}
+
+function prop_val_anchors_init () {
+    var val_a = $$('sel_val','result_t');
+
+    for (var i=0;i<val_a.length;i++) {
+	OAT.Event.attach (val_a[i],'click', handle_val_anchor_click);
+    }
 }
 
 function init()
@@ -314,12 +353,32 @@ function init()
 
     if ($$('list', 'result_t').length > 0) {
 	prop_val_dt_sel_init();
+	prop_val_anchors_init();
+
 	OAT.Dom.hide('cond_hi_ctr');
+
 	OAT.Event.attach('cond_type', 'change', function (e) {
-	    if (this.selectedIndex != 2)
-		OAT.Dom.hide('cond_hi_ctr');
-	    else 
-		OAT.Dom.show('cond_hi_ctr');
+	    switch (this.selectedIndex) {
+	    case 0:
+		OAT.Dom.hide ('cond_inp_ctr');
+		break;
+	    case 1:
+		OAT.Dom.show ('cond_inp_ctr');
+		OAT.Dom.hide ('cond_hi_ctr');
+		break;
+	    case 2:
+		OAT.Dom.show ('cond_inp_ctr');
+		OAT.Dom.hide ('cond_hi_ctr');
+		break;
+	    case 3:
+		OAT.Dom.show ('cond_inp_ctr');
+		OAT.Dom.hide ('cond_hi_ctr');
+		break;
+	    case 4:
+		OAT.Dom.show ('cond_inp_ctr');
+		OAT.Dom.show ('cond_hi_ctr');
+		break;
+	    }
         });
     }
 }

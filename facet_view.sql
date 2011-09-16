@@ -316,7 +316,7 @@ fct_query_info (in tree any,
     }
   if ('value-range' = n)
     {
-      declare hi, lo any;	
+      declare hi, lo any;
       hi := xpath_eval ('./@hi', tree);
       lo := xpath_eval ('./@lo', tree);
 
@@ -376,7 +376,6 @@ fct_top (in tree any, in txt any)
   cno := 0;
 
   fct_query_info (xpath_eval ('/query', tree), 1, max_s, 1, 1, txt, cno);
-
 }
 ;
 
