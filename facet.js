@@ -274,8 +274,8 @@ function prop_val_dt_sel_init () {
 }
 
 function handle_val_anchor_click (e) {
-    var val = e.target.href.split('?')[1].match(/&iri=(.*)/)[1].split('&')[0];
-    var dtp = e.target.href.split('?')[1].match(/&datatype=(.*)/)[1].split('&')[0];
+    var val = decodeURIComponent(e.target.href.split('?')[1].match(/&iri=(.*)/)[1].split('&')[0]);
+    var dtp = decodeURIComponent(e.target.href.split('?')[1].match(/&datatype=(.*)/)[1].split('&')[0]);
     var lang = e.target.href.split('?')[1].match(/&lang=(.*)/)[1].split('&')[0];
 
     switch($('cond_type').value) {
