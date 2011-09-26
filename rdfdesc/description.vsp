@@ -163,8 +163,11 @@
       declare refr varchar;
       if (get_keyword ('sr', params, '') = 'clean')
 	{
-          refr := 0;
-          sparql clear graph ?:doc;
+	  refr := 0;
+	  if (exists (select 1 from SYS_HTTP_SPONGE where HS_ORIGIN_URI = doc))
+	    {
+	      sparql clear graph ?:doc;
+            }
         }
       else  
         refr := atoi (get_keyword ('sr', params, '0'));		
