@@ -161,7 +161,13 @@
   else if (get_keyword ('sr', params) is not null and 0 = length (_F))
     {
       declare refr varchar;
-      refr := atoi (get_keyword ('sr', params, '0'));		
+      if (get_keyword ('sr', params, '') = 'clean')
+	{
+          refr := 0;
+          sparql clear graph ?:doc;
+        }
+      else  
+        refr := atoi (get_keyword ('sr', params, '0'));		
       DB.DBA.EXEC_AS (sprintf ('sparql define input:storage "" define get:refresh "%d" define get:soft "soft" SELECT * from <%S> where { ?x ?y ?z . }', refr, doc), 'SPARQL');
       DB.DBA.VT_INC_INDEX_DB_DBA_RDF_OBJ ();
     }
@@ -300,7 +306,7 @@
   </div> <!-- #HD -->
   <div id="MD">
     <div class="page_resource_info">
-	<h2>About: <a href="<?= case when page_resource_uri like 'nodeID://%' then b3s_http_url (page_resource_uri) else page_resource_uri end ?>"><?vsp http (label); ?></a>&nbsp;&nbsp;&nbsp;<a href="/describe/?url=<?U page_resource_uri ?>&amp;sid=<?V sid ?>&amp;sp=1" title="Click to generate local descriptor data for this entity" id="sp_link" rel="nofollow"><img src="/fct/images/sponge.png" title="Click to generate local descriptor data for this entity" alt="Generate local descriptor data" /></a></h2>
+	<h2>About: <a href="<?= case when page_resource_uri like 'nodeID://%' then b3s_http_url (page_resource_uri) else page_resource_uri end ?>"><?vsp http (label); ?></a>&nbsp;&nbsp;&nbsp;<a href="/describe/?url=<?U page_resource_uri ?>&amp;sid=<?V sid ?>&amp;sr=clean" title="Click to generate local descriptor data for this entity" id="sp_link" rel="nofollow"><img src="/fct/images/sponge.png" title="Click to generate local descriptor data for this entity" alt="Generate local descriptor data" /></a></h2>
       <div class="ds_inf_info"> 
 	    An Entity of Type : <a href="<?V iri_uri ?>"><?V iri_type ?></a>,
 	    within Data Space : <a href="http://<?V host ?>"><?V host ?></a><br/>

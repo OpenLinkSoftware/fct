@@ -834,7 +834,14 @@ fct_literal (in tree any)
   else if (dtp = '' or dtp is null or dtp like '%nteger' or dtp like '%ouble' or dtp like '%loat' or dtp like '%nt')
     lit := cast (tree as varchar);
   else
-    lit := sprintf ('"%s"^^<%s>', cast (tree as varchar), dtp);
+    {
+      declare qname varchar;
+      qname := b3s_uri_curie (dtp);
+      if (qname = dtp) 
+	lit := sprintf ('"%s"^^<%s>', cast (tree as varchar), dtp);
+      else
+	lit := sprintf ('"%s"^^%s', cast (tree as varchar), qname);
+    }
   return lit;
 }
 ;
