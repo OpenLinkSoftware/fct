@@ -36,14 +36,18 @@
 <xsl:param name="cno"/>
 
 
-<xsl:template match = "class | value | value-range">
+<xsl:template match = "class | value | value-range | cond | cond-range">
 
   <xsl:if test="$cno != count (./ancestor::*[name () = 'class' or
 	                                     name () = 'value' or
-                                             name () = 'value-range']) +
+                                             name () = 'value-range' or
+                                             name () = 'cond' or
+                                             name () = 'cond-range']) +
                       count (./preceding::*[name () = 'class' or 
                                             name () = 'value' or
-                                            name () = 'value-range'])">
+                                            name () = 'value-range' or
+                                            name () = 'cond' or
+                                            name () = 'cond-range'])">
     <xsl:copy>
       <xsl:apply-templates select="@* | node()"/>
     </xsl:copy>

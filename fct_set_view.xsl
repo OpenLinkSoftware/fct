@@ -33,8 +33,13 @@
 <xsl:param name="name"/>
 <xsl:param name="timeout"/>
 <xsl:param name="location-prop"/>
+<xsl:param name="dtp"/>
+<xsl:param name="cond_t"/>
 <xsl:param name="lo"/>
 <xsl:param name="hi"/>
+<xsl:param name="neg"/>
+<xsl:param name="lang"/>
+<xsl:param name="val"/>
 
 <xsl:template match = "query | property |property-of">
 
@@ -131,22 +136,38 @@
         <value xml:lang="{$lang}"
 	       datatype="{$datatype}"
                op="{$cmp}">
-          <xsl:value-of select="$iri"/>
+          <xsl:value-of select="$val"/>
         </value>
       </xsl:if>
 
-      <xsl:if test="$op = 'value-range' and
+      <xsl:if test="$op = 'cond-range' and
 	            $pos = count (./ancestor::*[name () = 'query' or
 		                                name () = 'property' or
 			                        name () = 'property-of']) +
                            count (./preceding::*[name () = 'query' or
 			                         name () = 'property' or
 				                 name () = 'property-of'])">
-        <value-range xml:lang="{$lang}"
+        <cond-range xml:lang="{$lang}"
 	       datatype="{$datatype}"
                hi="{$hi}"
-               lo="{$lo}">
-        </value-range>
+               lo="{$lo}"
+               neg="{$neg}">
+        </cond-range>
+      </xsl:if>
+
+      <xsl:if test="$op = 'cond' and
+	            $pos = count (./ancestor::*[name () = 'query' or
+		                                name () = 'property' or
+			                        name () = 'property-of']) +
+                           count (./preceding::*[name () = 'query' or
+			                         name () = 'property' or
+				                 name () = 'property-of'])">
+        <cond cond_t="{$cond_t}"
+              xml:lang="{$lang}"
+	      datatype="{$datatype}"
+              neg="{$neg}">
+          <xsl:value-of select="$val"/>
+        </cond>
       </xsl:if>
     </xsl:copy>
   </xsl:if>

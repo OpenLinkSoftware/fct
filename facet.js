@@ -238,7 +238,7 @@ function prop_val_dt_sel_init () {
 
     $('cond_dt').options[0].selected = true;
 
-    OAT.Event.attach ('set_val_range','click', function (e) {
+    OAT.Event.attach ('set_cond','click', function (e) {
 	var ct = $v('cond_type');
 
 	var v_l = $v('cond_lo');
@@ -246,27 +246,27 @@ function prop_val_dt_sel_init () {
 
 	if (v_l == '') return;
 
-	if (ct == 'cond_range' && (v_h == '' || v_l == '')) return;
+	if ((ct == 'range' || ct == 'neg_range') && (v_h == '' || v_l == '')) return;
 
-	var out_hi = $v('cond_hi');
-	var out_lo = $v('cond_lo');
 
-	if ($('cond_dt').value != '##numeric' && $('cond_dt').value != '##none') {
-	    out_hi = '"' + out_hi + '"^^<' + $v('cond_dt') + '>';
-	    out_lo = '"' + out_lo + '"^^<' + $v('cond_dt') + '>';
+	if ($('cond_dt').value != '##numeric' && $('cond_dt').value != '##none' && ct != 'contains') {
+	    v_h = '"' + v_h + '"^^<' + $v('cond_dt') + '>';
+	    v_l = '"' + v_l + '"^^<' + $v('cond_dt') + '>';
 	}
 
-	if (ct == 'cond_gt' || ct == 'cond_lt') {
-	    out_hi = '';
+	if (ct == 'gt' || ct == 'lt' | ct == 'gte' || ct == 'lte' || ct == 'eq' || ct == 'neq' || ct == 'contains') {
+	    $('out_hi').value = '';
 	}
 
-	if (ct != "select_value") {
-	    $("out_iri").value = '';
-	    $("out_dtp").value = '';
-	    $('out_hi').value = out_hi;
-	    $('out_lo').value = out_lo;
-	}
+        if (ct == 'range' || ct == 'neg_range') {
+          $("out_hi").value = v_h;
+	  $("out_lo").value = v_l;
+        } else 
+          $("out_val").value = v_l;
 
+        $('out_dtp').value = '';
+        $('out_lang').value = '';
+        
 	$('valrange_form').submit();
     });
 
@@ -274,26 +274,33 @@ function prop_val_dt_sel_init () {
 }
 
 function handle_val_anchor_click (e) {
-    var val = decodeURIComponent(e.target.href.split('?')[1].match(/&iri=(.*)/)[1].split('&')[0]);
+    var iri = e.target.href.split('?')[1].match(/&iri=(.*)/);
+    var val = e.target.href.split('?')[1].match(/&val=(.*)/);
+
+    if (val)
+	val = val[1].split('&')[0];
+    else if (iri)
+	val = iri[1].split('&')[0];
+
+    val = decodeURIComponent (val)
+
     var dtp = decodeURIComponent(e.target.href.split('?')[1].match(/&datatype=(.*)/)[1].split('&')[0]);
     var lang = e.target.href.split('?')[1].match(/&lang=(.*)/)[1].split('&')[0];
 
     switch($('cond_type').value) {
     case "cond_none":
 	return;
-    case "select_value":
-	OAT.Event.prevent(e);
-	$('cond_lo').value = val;
-	break;
-    case "cond_lt":
+    case "lt":
+    case "gt":
+    case "lte":
+    case "gte":
+    case "eq":
+    case "neq":
         OAT.Event.prevent(e);
 	$('cond_lo').value = val;
 	break;
-    case "cond_gt":
-        OAT.Event.prevent(e);
-	$('cond_lo').value = val;
-	break;
-    case "cond_range":
+    case "range":
+    case "neg_range":
         OAT.Event.prevent(e);
 	if ($v('cond_lo') != '')
 	    $('cond_hi').value = val;
@@ -302,7 +309,6 @@ function handle_val_anchor_click (e) {
 	break;
     }
     $('out_dtp').value = dtp;
-    $('out_iri').value = val;
     $('out_lang').value = lang;
 }
 
@@ -366,23 +372,22 @@ function init()
 	OAT.Dom.hide('cond_hi_ctr');
 
 	OAT.Event.attach('cond_type', 'change', function (e) {
-	    switch (this.selectedIndex) {
-	    case 0:
+	    switch ($v(this)) {
+	    case "none":
 		OAT.Dom.hide ('cond_inp_ctr');
 		break;
-	    case 1:
+	    case "lt":
+            case "lte":
+            case "gt":
+            case "gte":
+            case "eq":
+            case "neq":
+            case "contains":
 		OAT.Dom.show ('cond_inp_ctr');
 		OAT.Dom.hide ('cond_hi_ctr');
 		break;
-	    case 2:
-		OAT.Dom.show ('cond_inp_ctr');
-		OAT.Dom.hide ('cond_hi_ctr');
-		break;
-	    case 3:
-		OAT.Dom.show ('cond_inp_ctr');
-		OAT.Dom.hide ('cond_hi_ctr');
-		break;
-	    case 4:
+	    case "range":
+            case "neg_range":
 		OAT.Dom.show ('cond_inp_ctr');
 		OAT.Dom.show ('cond_hi_ctr');
 		break;

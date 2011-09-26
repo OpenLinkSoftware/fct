@@ -330,20 +330,17 @@ function init(){
 		  <xsl:attribute name="class">describe</xsl:attribute>Describe</a>
 	      </xsl:if>
 	      <xsl:if test="$view-type = 'properties' or $view-type = 'classes'">
-		  <input type="checkbox" name="cb" value="{position (.)}" checked="true" onclick="javascript:fct_sel_neg (this)"/>
+		<input type="checkbox" name="cb" value="{position (.)}" checked="true" onclick="javascript:fct_sel_neg (this)"/>
 	      </xsl:if>
 	      <a id="a_{position (.)}">
 		<!--xsl:message terminate="no"><xsl:value-of select="$query/query/class/@iri"/><xsl:value-of select="column[1]"/></xsl:message-->  
 	        <xsl:variable name="current_iri" select="column[1]"/> 
 	        <xsl:if test="not $query/query/class[@iri = $current_iri]" > 
                   <xsl:attribute name="class">sel_val</xsl:attribute>
-		  <xsl:attribute name="href">/fct/facet.vsp?cmd=<xsl:value-of select="$command"/>&amp;iri=<xsl:choose>
-                    <xsl:when test="column[1]/@sparql_ser != ''">
-                      <xsl:value-of select="urlify(column[1]/@sparql_ser)"/>
-                    </xsl:when>
-                    <xsl:otherwise>
-                      <xsl:value-of select="urlify (column[1])"/>
-                    </xsl:otherwise>
+		  <xsl:attribute name="href">/fct/facet.vsp?cmd=<xsl:value-of select="$command"/>&amp;<xsl:choose>
+                    <xsl:when test="column[1]/@sparql_ser != ''">iri=<xsl:value-of select="urlify(column[1]/@sparql_ser)"/></xsl:when>
+                    <xsl:when test="'cond' = $command">cond_t=eq&amp;val=<xsl:value-of select="urlify (column[1])"/></xsl:when>
+                    <xsl:otherwise>iri=<xsl:value-of select="urlify (column[1])"/></xsl:otherwise>
                   </xsl:choose>&amp;lang=<xsl:value-of select="column[1]/@xml:lang"/>&amp;datatype=<xsl:value-of select="urlify (column[1]/@datatype)"/>&amp;sid=<xsl:value-of select="$sid"/></xsl:attribute>
 	        </xsl:if>
 		<xsl:attribute name="title">
@@ -389,7 +386,7 @@ function init(){
               <xsl:value-of select="column[1]/@datatype" />
             </td>
           </xsl:when-->
-	  <xsl:otherwise>
+	  <xsl:otherwise> <!-- text matches view -->
             <td class="rnk">
               <xsl:for-each select="column[@datatype='trank' or @datatype='erank']">
                 <img class="rnk">
@@ -448,19 +445,26 @@ function init(){
     <input type="hidden" name="lo" id="out_lo"/>
     <input type="hidden" name="lang" id="out_lang"/>
     <input type="hidden" name="datatype" id="out_dtp"/>
-    <input type="hidden" name="iri" id="out_iri"/>
+    <input type="hidden" name="val" id="out_val"/>
+    <input type="hidden" name="cmd" value="cond" id="cmd"/>
     Add condition: 
-    <select id="cond_type" name="cmd">
-      <option value="cond_none">None</option>
-      <option value="select_value">==</option>
-      <option value="cond_gt">&gt;=</option> 
-      <option value="cond_lt">&lt;=</option>
-      <option value="cond_range">between</option>
+    <select id="cond_type" name="cond_t">
+      <option value="none">None</option>
+      <option value="eq">==</option>
+      <option value="neq">!=</option>
+      <option value="gte">&gt;=</option> 
+      <option value="gt">&gt;</option> 
+      <option value="lte">&lt;=</option>
+      <option value="lt">&lt;</option>
+      <option value="range">Between</option>
+      <option value="neg_range">Not Between</option>
+      <option value="contains">Contains</option>
     </select>
     <span id="cond_inp_ctr" style="display:none">
+      <!--label for="ckb_neg" class="ckb">Negation:</label><input type="checkbox" name="neg" id="ckb_neg"/--> 
       <input id="cond_lo" type="text"/>
       <span id="cond_hi_ctr"> and <input id="cond_hi" type="text"/></span> <select id="cond_dt"></select>
-      <input type="button" id="set_val_range" value="Set Condition"/>
+      <input type="button" id="set_cond" value="Set Condition"/>
     </span>
   </form>                
 </xsl:if>

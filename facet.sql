@@ -483,7 +483,7 @@ create procedure
 fct_dtp (in x any)
 {
   if (isiri_id (x) or __box_flags (x) = 1)
-    return 'url';
+    return 'uri';
   return id_to_iri (rdf_datatype_of_long (x));
 }
 ;
@@ -820,75 +820,153 @@ fct_view (in tree any, in this_s int, in txt any, in pre any, in post any, in pl
 create procedure
 fct_literal (in tree any)
 {
-  declare lit, dtp, lang varchar;
+  declare val, dtp, lang varchar;
 
   dtp := cast (xpath_eval ('./@datatype', tree) as varchar);
   lang := cast (xpath_eval ('./@xml:lang', tree) as varchar);
 
+  val := cast (xpath_eval ('./@val', tree) as varchar);
+  if (0 = val or val is null) val := cast (tree as varchar);
+
   if (lang is not null and lang <> '')
-    lit := sprintf ('"""%s"""@%s', cast (tree as varchar), lang);
-  else if ('uri' = dtp or 'url' = dtp or 'iri' = dtp)
-    lit := sprintf ('<%s>', cast (tree as varchar));
-  else if (dtp like '%tring')
-    lit := sprintf ('"""%s"""', cast (tree as varchar));
-  else if (dtp = '' or dtp is null or dtp like '%nteger' or dtp like '%ouble' or dtp like '%loat' or dtp like '%nt')
-    lit := cast (tree as varchar);
-  else
-    {
-      declare qname varchar;
-      qname := b3s_uri_curie (dtp);
-      if (qname = dtp) 
-	lit := sprintf ('"%s"^^<%s>', cast (tree as varchar), dtp);
-      else
-	lit := sprintf ('"%s"^^%s', cast (tree as varchar), qname);
-    }
-  return lit;
+    return sprintf ('"""%s"""@%s', val, lang);
+
+  if (dtp like '%tring')
+    return sprintf ('"""%s"""', val);
+
+  if (dtp = '' or dtp is null or dtp like '%nteger' or dtp like '%ouble' or dtp like '%loat' or dtp like '%nt')
+    return val;
+
+  if ('uri' = dtp or 'url' = dtp or 'iri' = dtp) {
+    declare qname varchar;
+    qname := b3s_uri_curie (dtp);
+
+    if (qname = dtp) 
+      return sprintf ('"%s"^^<%s>', val, dtp);
+    else
+      return sprintf ('"%s"^^%s', val, qname);
+  }
+  return sprintf ('"%s"', val);
 }
 ;
-
--- XXX (ghard) should ensure the literal is correctly quoted in the SPARQL statement
 
 create procedure
 fct_cond (in tree any, in this_s int, in txt any)
 {
-  declare lit, op any;
+  declare val, dtp, lang, neg, cond_t any;
 
-  lit := fct_literal (tree);
+  val := fct_literal (tree);
+  cond_t := xpath_eval ('./@cond_t', tree);
 
-  op := coalesce (cast (xpath_eval ('./@op', tree) as varchar), '=');
+  if ('range' = cond_t or 'neg_range' = cond_t) {
+    return fct_cond_range (tree, this_s, txt); -- ranges are handled elsewhere
+  }
 
- -- Op is Op :)
+  if ('contains' = cond_t) {
+    return fct_cond_contains (tree, this_s, txt);
+  }
 
-  if (0 = op)
+  declare t_s varchar;
+  t_s := sprintf ('?s%d', this_s);
+
+  declare flt_inner varchar;
+  flt_inner := sprintf (fct_cond_fmt(cond_t), t_s, val);
+
+--  dbg_printf ('fct_cond: inner: %s', flt_inner);
+
+  if (neg = 'on')   
+    http (sprintf (' filter (! (%s)) . ', flt_inner), txt);
+  else 
+    http (sprintf (' filter (%s) . ', flt_inner), txt);
+
+  
+
+  return;
+}
+;
+
+create procedure
+fct_value (in tree any, in this_s int, in txt any) 
+{
+  declare val, dtp, op any;
+
+  val := fct_literal (tree);
+  op := xpath_eval ('./@op', tree);
+
+  if (0 = op or op is null)
     op := '=';
 
-  http (sprintf (' filter (?s%d %s %s) . ', this_s, op, lit), txt);
+  declare t_s varchar;
+  t_s := sprintf ('?s%d', this_s);
+
+  http (sprintf (' filter (%s %s %s) .', t_s, op, val));  
+}
+;
+
+-- side effect warning: unrecognized conds become eq
+
+create procedure
+fct_cond_fmt (in cond_t varchar)
+{
+  declare flt_inner varchar;
+
+  if (cond_t = 'neq') return '%s != %s';
+  if (cond_t = 'lt')  return '%s <  %s';
+  if (cond_t = 'gt')  return '%s <  %s';
+  if (cond_t = 'gte') return '%s >= %s';
+  if (cond_t = 'lte') return '%s <= %s';
+  return '%s = %s';
 }
 ;
 
 create procedure 
 fct_cond_range (in tree any, in this_s int, in txt any)
 {
-  declare hi, lo varchar;
+  declare cond_t, neg, lo, hi any;
 
-  lo := xpath_eval ('./@lo', tree);
-  hi := xpath_eval ('./@hi', tree);
+  cond_t := xpath_eval ('./@cond_t', tree);
+  neg    := xpath_eval ('./@neg',    tree);
+  lo     := xpath_eval ('./@lo',     tree);
+  hi     := xpath_eval ('./@hi',     tree);
+
+  declare flt_inner, flt_cl varchar;
+
+--  dbg_printf ('fct_cond_range: got lo: %s, hi: %s, neg: %s', lo, hi, cast (neg as varchar));
 
   if (lo <> '' and hi <> '') { 
-    http(sprintf (' filter (?s%d >= %s && ?s%d <= %s) .', this_s, lo, this_s, hi), txt);
-  }
-  else if (lo <> '') 
-  {
-    http(sprintf (' filter (?s%d >= %s) .', this_s, lo), txt);
-  }
-  else if (hi <> '') 
-  {
-    http(sprintf (' filter (?s%d <= %s) .', this_s, hi), txt);
+    flt_inner := sprintf ('(?s%d >= %s && ?s%d <= %s)', this_s, lo, this_s, hi);
   }
 
---  dbg_printf ('fct_cond_range: got lo: %s, hi: %s', lo, hi);
+  if (neg = 'on')
+    flt_cl := sprintf (' filter (! %s) .', flt_inner);
+  else
+    flt_cl := sprintf (' filter %s .', flt_inner);
+
+  http (flt_cl, txt);
 
   return;
+}
+;
+
+create procedure 
+fct_cond_contains (in tree any, in this_s int, in txt any)
+{
+  declare val, neg, cond_t varchar;
+
+  cond_t := xpath_eval ('./@cond_t', tree);
+  neg    := xpath_eval ('./@neg',    tree);
+
+  val := cast (xpath_eval ('.', tree) as varchar);
+
+  if (val <> '') 
+  {
+    if ('no' <> neg) {
+      http (sprintf (' filter (bif:contains (?s%d, ''"%s"'')) .', this_s, val), txt);
+    }
+    else {
+      http (sprintf (' filter (! bif:contains (?s%d, ''"%s"'')) .', this_s, val), txt);
+    }
+  }
 }
 ;
 
@@ -1032,6 +1110,8 @@ fct_text (in tree any,
 
       piri := fct_curie (cast (xpath_eval ('./@iri', tree, 1) as varchar));
 
+--      dbg_printf ('property: <%s>', piri);
+
       if (cast (xpath_eval ('./@exclude', tree) as varchar) = 'yes')
 	{
 	  http (sprintf (' filter (!bif:exists ((select (1) where { ?s%d <%s> ?v%d } ))) .', this_s, piri, new_s), txt);
@@ -1057,11 +1137,16 @@ fct_text (in tree any,
     }
 
   if ('value' = n)
+    { 
+      fct_value (tree, this_s, txt);
+    }
+
+  if ('cond' = n)
     {
       fct_cond (tree, this_s, txt);
     }
 
-  if ('value-range' = n)
+  if ('cond-range' = n)
     {
       fct_cond_range (tree, this_s, txt);
     }
