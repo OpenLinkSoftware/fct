@@ -296,6 +296,7 @@ function handle_val_anchor_click (e) {
     case "gte":
     case "eq":
     case "neq":
+    case "contains":
         OAT.Event.prevent(e);
 	$('cond_lo').value = val;
 	break;

@@ -2051,7 +2051,7 @@ exec:;
                     http_param('val'),
                     '');
 --      dbg_printf ('set_cond: val=%s, cond_t=%s', 
-                  cast (http_param('val') as varchar), cast (http_param('cond_t') as varchar));  
+--                  cast (http_param('val') as varchar), cast (http_param('cond_t') as varchar));  
     }
   }
   else if ('save' = cmd)
