@@ -838,12 +838,7 @@ fct_literal (in tree any)
     return val;
 
   if ('uri' = dtp or 'url' = dtp or 'iri' = dtp) {
-    declare qname varchar;
-    qname := b3s_uri_curie (val);
-    if (qname = val)
       return sprintf ('<%s>', val);
-    else
-      return qname;
   }
   return sprintf ('"%s"', val);
 }
