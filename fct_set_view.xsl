@@ -115,14 +115,14 @@
 	  </class>
         </xsl:when>
 
-        <xsl:when test="$op = 'class'">
+        <!-- xsl:when test="$op = 'class'">
           <class iri="{$iri}"/>
           <xsl:element name="view">
             <xsl:attribute name="type">list</xsl:attribute>
 	    <xsl:attribute name="limit"><xsl:value-of select="$limit"/></xsl:attribute>
 	    <xsl:attribute name="offset"><xsl:value-of select="$offset"/></xsl:attribute>
 	  </xsl:element>
-        </xsl:when>
+        </xsl:when -->
       </xsl:choose>
     
 
@@ -175,19 +175,19 @@
 </xsl:template>
 
 <xsl:template match="view">
-    <xsl:choose>
-	<xsl:when test="'class' = $op" >
-	    <xsl:copy>
-		<xsl:attribute name="offset"><xsl:value-of select="$offset"/></xsl:attribute>
-		<xsl:apply-templates select="@*[local-name () != 'offset'] | node()" />
-	    </xsl:copy>
-	</xsl:when>
-	<xsl:when test="'value' = $op or '' = $op" >
-	    <xsl:copy>
-		<xsl:apply-templates select="@* | node()" />
-	    </xsl:copy>
-	</xsl:when>
-    </xsl:choose>
+  <xsl:choose>
+    <xsl:when test="'class' = $op" >
+      <xsl:copy>
+        <xsl:attribute name="offset"><xsl:value-of select="$offset"/></xsl:attribute>
+        <xsl:apply-templates select="@*[local-name () != 'offset'] | node()" />
+      </xsl:copy>
+    </xsl:when>
+    <xsl:when test="'value' = $op or '' = $op" >
+      <xsl:copy>
+        <xsl:apply-templates select="@* | node()" />
+      </xsl:copy>
+    </xsl:when>
+  </xsl:choose>
 </xsl:template>
 
 <xsl:template match="@* | node()">

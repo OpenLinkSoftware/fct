@@ -1056,6 +1056,10 @@ fct_set_class (in tree any,
 			'offset', 0,
 			'exclude', exclude));
 
+  tree := xslt (registry_get ('_fct_xslt_') || 'fct_set_view.xsl',
+                tree,
+                vector ('pos', 0, 'op', 'view', 'type', 'list', 'limit', 20, 'offset', 0));
+
   update fct_state
     set fct_state = tree
     where fct_sid = sid;
@@ -1280,7 +1284,8 @@ fct_create_ses ()
   declare new_tree any;
 
   sid := sequence_next ('fct_seq');
-  new_tree := xtree_doc('<query inference="" same-as="" view3="" s-term="" c-term=""/>');
+  new_tree := xtree_doc('<?xml version="1.0" encoding="UTF-8"?>\n' ||
+                        '<query inference="" same-as="" view3="" s-term="" c-term=""/>');
 
   insert into fct_state (fct_sid, fct_state)
          values (sid, new_tree);
@@ -1506,11 +1511,11 @@ fct_set_inf (in tree any, in sid int)
       s_term := case when 'eav' = tlogy then 'e' else 's' end;
 
       tree := XMLUpdate (tree,
-      	         '/query/@inference', inf,
-		         '/query/@same-as',   sas,
-		         '/query/@view3',     view3,
-			 '/query/@s-term',    s_term,
-			 '/query/@c-term',    c_term);
+                         '/query/@inference', inf,
+                         '/query/@same-as',   sas,
+                         '/query/@view3',     view3,
+                         '/query/@s-term',    s_term,
+                         '/query/@c-term',    c_term);
 
       connection_set ('c_term', c_term);
       connection_set ('s_term', s_term);
