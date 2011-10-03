@@ -578,8 +578,11 @@ create procedure b3s_label (in _S any, in langs any)
   declare lang, stat, msg varchar;
 
   stat := '00000';
-  exec (sprintf ('sparql define input:inference "facets" '||
-  'select ?o (lang(?o)) where { <%S> virtrdf:label ?o }', _S), stat, msg, vector (), 0, meta, data);
+  --exec (sprintf ('sparql define input:inference "facets" '||
+  --'select ?o (lang(?o)) where { <%S> virtrdf:label ?o }', _S), stat, msg, vector (), 0, meta, data);
+  exec ('select __ro2sq (O), DB.DBA.RDF_LANGUAGE_OF_OBJ (__ro2sq (O)) , b3s_lbl_order (P) from RDF_QUAD table option (with ''facets'') 
+	where S = __i2id (?) and P = __i2id (''http://www.openlinksw.com/schemas/virtrdf#label'', 0) order by 3', 
+	stat, msg, vector (_S), 0, meta, data);
   if (stat <> '00000')
     return '';
   best_str := '';
