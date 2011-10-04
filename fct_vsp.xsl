@@ -33,6 +33,7 @@
 <xsl:param name="o_term"/>
 <xsl:param name="t_term"/>
 <xsl:param name="p_qry"/>
+<xsl:param name="p_xml"/>
 
 <xsl:template match = "facets">
 <div id="res">
@@ -202,7 +203,10 @@ function init(){
   var sparql_a = OAT.Dom.create('a',{}, 'sparql_a');
   sparql_a.href='/sparql?qtxt=<xsl:value-of select="urlify ($p_qry)"/>'
   sparql_a.innerHTML = 'View query as SPARQL';
-  OAT.Dom.append (['sparql_a_ctr',sparql_a]);
+  var plink_a = OAT.Dom.create('a',{}, 'plink_a');
+  plink_a.href='/fct/facet.vsp?qxml=<xsl:value-of select="urlify ($p_xml)"/>'
+  plink_a.innerHTML = 'Facet permalink';
+  OAT.Dom.append (['sparql_a_ctr',sparql_a, plink_a]);
 </script>
 <xsl:if test="$type = 'default'">
 <script type="text/javascript">

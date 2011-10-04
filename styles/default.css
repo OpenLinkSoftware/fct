@@ -443,6 +443,10 @@ div#top_ctr {
   padding-left: 5px; padding-right: -4px;
 }
 
+#top_ctr ul {
+  list-style-type: none;
+}
+
 div.error_msg { margin: 5px; }
 div.error_msg h2 {}
 div.error_msg div.body { margin: 10px;}
@@ -475,6 +479,8 @@ div.facet {
   background-color: #fff;
   border: 1px inset;
 }
+
+.plink_a {margin-left: 1em}
 
 div#sparql_link { margin-top: 10px; float: right;}
 div#sparql_link a { 

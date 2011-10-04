@@ -22,6 +22,19 @@
 
 -- Facet web service
 
+
+create procedure 
+fct_dbg_msg (in str varchar)
+{
+  declare d_lvl int;
+
+  d_lvl := registry_get ('fct_dbg_lvl');
+  if (isstring (d_lvl)) d_lvl := atoi (d_lvl);
+
+  if (d_lvl > 0) dbg_printf ('%s', str);
+}
+;
+
 create procedure
 fct_uri_curie (in uri varchar)
 {
@@ -538,8 +551,8 @@ fct_xml_wrap (in tree any, in txt any)
   declare n_cols int;
   n_cols := fct_n_cols(tree);
 
---  dbg_printf ('fct_xml_wrap: view_type: %s', view_type);
---  dbg_printf ('              n_cols   : %d', n_cols);
+--  fct_dbg_msg (sprintf ('fct_xml_wrap: view_type: %s', view_type));
+--  fct_dbg_msg (sprintf ('              n_cols   : %d', n_cols));
 
 --  dbg_obj_print (xpath_eval ('//query/text', tree, 1));
  
@@ -646,7 +659,7 @@ fct_n_cols (in tree any)
 {
   declare tp varchar;
   tp := cast (xpath_eval ('//view/@type', tree, 1) as varchar);
---  dbg_printf ('fct_n_cols: tp: %s', tp);
+--  fct_dbg_msg (sprintf ('fct_n_cols: tp: %s', tp));
   if ('list' = tp)
     return 1;
   else if ('geo' = tp)
@@ -813,7 +826,6 @@ fct_view (in tree any, in this_s int, in txt any, in pre any, in post any, in pl
     }
 
   fct_post (tree, post, lim, offs);
-
 }
 ;
 
@@ -856,6 +868,10 @@ fct_cond (in tree any, in this_s int, in txt any)
     return fct_cond_range (tree, this_s, txt); -- ranges are handled elsewhere
   }
 
+  if ('in' = cond_t) {
+    return fct_cond_in (tree, this_s, txt); -- so is IN
+  }
+
   if ('contains' = cond_t) {
     return fct_cond_contains (tree, this_s, txt);
   }
@@ -872,8 +888,6 @@ fct_cond (in tree any, in this_s int, in txt any)
     http (sprintf (' filter (! (%s)) . ', flt_inner), txt);
   else 
     http (sprintf (' filter (%s) . ', flt_inner), txt);
-
-  
 
   return;
 }
@@ -894,6 +908,8 @@ fct_value (in tree any, in this_s int, in txt any)
   t_s := sprintf ('?s%d', this_s);
 
   http (sprintf (' filter (%s %s %s) .', t_s, op, val));  
+
+  return;
 }
 ;
 
@@ -925,7 +941,7 @@ fct_cond_range (in tree any, in this_s int, in txt any)
 
   declare flt_inner, flt_cl varchar;
 
---  dbg_printf ('fct_cond_range: got lo: %s, hi: %s, neg: %s', lo, hi, cast (neg as varchar));
+--  fct_dbg_msg (sprintf ('fct_cond_range: got lo: %s, hi: %s, neg: %s', lo, hi, cast (neg as varchar)));
 
   if (lo <> '' and hi <> '') { 
     flt_inner := sprintf ('(?s%d >= %s && ?s%d <= %s)', this_s, lo, this_s, hi);
@@ -961,6 +977,32 @@ fct_cond_contains (in tree any, in this_s int, in txt any)
       http (sprintf (' filter (! bif:contains (?s%d, ''"%s"'')) .', this_s, val), txt);
     }
   }
+}
+;
+
+create procedure
+fct_cond_in (in tree any, in this_s int, in txt any) {
+
+  declare v any;
+  declare v_str varchar;
+  declare i int;
+
+  v := xpath_eval ('./cond-parm', tree, 0);
+  if (0=length(v)) return;
+  
+  for (i := 0; i < length(v); i := i + 1) {
+    fct_dbg_msg (sprintf ('val: %s\n', cast (xpath_eval ('./text()', v[i]) as varchar)));
+
+    if (i = 0) {
+     v_str := fct_literal (v[i]);
+    }
+    else 
+      v_str := v_str || ',' || fct_literal (v[i]);
+  };
+
+  fct_dbg_msg (sprintf ('fct_cond_in post: v_str: %s', cast (v_str as varchar)));
+
+  http (sprintf (' filter (?s%d in (%s)).', this_s, v_str), txt);
 }
 ;
 
@@ -1031,8 +1073,8 @@ fct_text (in tree any,
 
   n := cast (xpath_eval ('name ()', tree, 1) as varchar);
    
---  dbg_printf('fct_text pre: %s, post: %s', string_output_string(pre), string_output_string(post));
---  dbg_printf('           n: %s', n);
+--  fct_dbg_msg (sprintf('fct_text pre: %s, post: %s', string_output_string(pre), string_output_string(post)));
+--  fct_dbg_msg (sprintf('           n: %s', n));
 --  dbg_obj_print (tree);
 
   if ('class' = n)
@@ -1070,7 +1112,7 @@ fct_text (in tree any,
       v := cast (xpath_eval ('//view/@type', tree) as varchar);
       prop := cast (xpath_eval ('./@property', tree, 1) as varchar);
 
---      dbg_printf ('prop: %s', coalesce(prop, 'NULL'));
+--      fct_dbg_msg (printf ('prop: %s', coalesce(prop, 'NULL')));
 
       if ('text' = v or 'text-d' = v)
         sc_opt := ' option (score ?sc) ';
@@ -1104,7 +1146,7 @@ fct_text (in tree any,
 
       piri := fct_curie (cast (xpath_eval ('./@iri', tree, 1) as varchar));
 
---      dbg_printf ('property: <%s>', piri);
+--      fct_dbg_msg (sprintf ('property: <%s>', piri));
 
       if (cast (xpath_eval ('./@exclude', tree) as varchar) = 'yes')
 	{

@@ -163,25 +163,6 @@ fct_var_tag (in this_s int, in ctx int)
 ;
 
 create procedure
-fct_query_info_1 (in tree any,
-		  in this_s int,
-		  inout max_s int,
-		  in level int,
-		  in ctx any,
-		  in txt any,
-		  inout cno int)
-{
-  declare c any;
-  declare i, len int;
-  c := xpath_eval ('./node()', tree, 0);
-  for (i := 0; i < length (c); i := i + 1)
-    {
-      fct_query_info (c[i], this_s, max_s, level + 1, ctx, txt, cno);
-    }
-}
-;
-
-create procedure
 fct_space (in n int)
 {
   declare i int;
@@ -211,9 +192,17 @@ fct_cond_name (in cond varchar)
 ;
 
 create procedure 
+fct_li (in out_str varchar, in txt any) {
+  http ('<li>', txt);
+  http (out_str, txt);
+  http ('</li>\n', txt);
+}
+;
+
+create procedure 
 fct_val_fmt_enc (in val varchar, in lang varchar, in dtp varchar)
 {
---  dbg_printf ('fct_val_fmt_enc: %s, %s, %s', val, lang, dtp);
+--  fct_dbg_msg (sprintf ('fct_val_fmt_enc: %s, %s, %s', val, lang, dtp));
 
   if (lang <> '')
     return sprintf ('"%V"@%V', val, lang);
@@ -230,6 +219,30 @@ fct_val_fmt_enc (in val varchar, in lang varchar, in dtp varchar)
 ;
 
 create procedure
+fct_query_info_1 (in tree any,
+		  in this_s int,
+		  inout max_s int,
+		  in level int,
+		  in ctx any,
+		  in txt any,
+		  inout cno int)
+{
+  declare c any;
+  declare i, len int;
+  c := xpath_eval ('./node()', tree, 0);
+
+  http (sprintf ('<ul class="qry_nfo_lvl_%d">', level),txt);
+
+  for (i := 0; i < length (c); i := i + 1)
+    {
+      fct_query_info (c[i], this_s, max_s, level + 1, ctx, txt, cno);
+    }
+
+  http ('</ul>', txt);
+}
+;
+
+create procedure
 fct_query_info (in tree any,
 	        in this_s int,
 		inout max_s int,
@@ -242,13 +255,15 @@ fct_query_info (in tree any,
 
   n := cast (xpath_eval ('name ()', tree, 1) as varchar);
 
+  fct_dbg_msg (sprintf ('fct_query_info: level: %d, n: %s', level, n));
+
   http (fct_space (2 * level), txt);
 
   if ('class' = n)
     {
       if (cast (xpath_eval ('./@exclude', tree) as varchar) = 'yes')
 	{
-	  http (sprintf ('%s is not a <span class="iri">%s</span> . <a class="qry_nfo_cmd" href="/fct/facet.vsp?sid=%d&cmd=drop_cond&cno=%d">Drop</a>',
+	  fct_li (sprintf ('%s is not a <span class="iri">%s</span> . <a class="qry_nfo_cmd" href="/fct/facet.vsp?sid=%d&cmd=drop_cond&cno=%d">Drop</a>',
 		fct_var_tag (this_s, ctx),
 		fct_short_form (cast (xpath_eval ('./@iri', tree) as varchar)),
 		connection_get ('sid'),
@@ -257,7 +272,7 @@ fct_query_info (in tree any,
 	}
       else
 	{
-	  http (sprintf ('%s is a <span class="iri">%s</span> . <a class="qry_nfo_cmd" href="/fct/facet.vsp?sid=%d&cmd=drop_cond&cno=%d">Drop</a>',
+	  fct_li (sprintf ('%s is a <span class="iri">%s</span> . <a class="qry_nfo_cmd" href="/fct/facet.vsp?sid=%d&cmd=drop_cond&cno=%d">Drop</a>',
 		fct_var_tag (this_s, ctx),
 		fct_short_form (cast (xpath_eval ('./@iri', tree) as varchar)),
 		connection_get ('sid'),
@@ -278,13 +293,13 @@ fct_query_info (in tree any,
       prop := cast (xpath_eval ('./@property', tree, 1) as varchar);
 
       if (prop is not null)
-        http (sprintf (' %s has <span class="iri"><a href="#"/fct/facet.vsp?sid=%d&cmd=drop_text_prop">%s</a></span> containing text <span class="value">"%s"</span>. ', 
+        fct_li (sprintf (' %s has <span class="iri"><a href="#"/fct/facet.vsp?sid=%d&cmd=drop_text_prop">%s</a></span> containing text <span class="value">"%s"</span>. ', 
                        fct_var_tag (this_s, ctx),
                        connection_get ('sid'),
                        fct_short_form (prop),
                        charset_recode (xpath_eval ('string (.)', tree), '_WIDE_', 'UTF-8')), txt);
       else
-        http(sprintf (' %s has <a class="qry_info_cmd" href="/fct/facet.vsp?sid=%d&cmd=set_view&type=text-properties&limit=20&offset=0&cno=%d">any %s</a> with %s <span class="value">"%s"</span> <a href="/fct/facet.vsp?sid=%d&cmd=drop_text">Drop</a>. ', 
+        fct_li (sprintf (' %s has <a class="qry_info_cmd" href="/fct/facet.vsp?sid=%d&cmd=set_view&type=text-properties&limit=20&offset=0&cno=%d">any %s</a> with %s <span class="value">"%s"</span> <a href="/fct/facet.vsp?sid=%d&cmd=drop_text">Drop</a>. ', 
                       fct_var_tag (this_s, ctx), 
                       connection_get('sid'), 
                       cno,
@@ -300,6 +315,7 @@ fct_query_info (in tree any,
       declare new_s int;
       max_s := max_s + 1;
       new_s := max_s;
+      http ('<li>', txt);
       if (cast (xpath_eval ('./@exclude', tree) as varchar) = 'yes')
 	{
 	  http (sprintf (' %s does not have property <span class="iri">%s</span> %s . ',
@@ -319,12 +335,14 @@ fct_query_info (in tree any,
 	               connection_get ('sid'), new_s, fct_s_term (), new_s), txt);
 
       fct_query_info_1 (tree, new_s, max_s, level, ctx, txt, cno);
+      http ('</li>\n', txt);
     }
   else if ('property-of' = n)
     {
       declare new_s int;
       max_s := max_s + 1;
       new_s := max_s;
+      http ('<li>', txt);
       http (sprintf (' %s <span class="iri">%s</span> %s . ',
                      fct_var_tag (new_s, ctx),
 		     fct_short_form (cast (xpath_eval ('./@iri', tree, 1) as varchar), 1),
@@ -337,16 +355,24 @@ fct_query_info (in tree any,
 	new_s, fct_s_term (), new_s), txt);
 
       fct_query_info_1 (tree, new_s, max_s, ctx, level, txt, cno);
+      http ('</li>\n', txt);
     }
   if ('value' = n)
     {
-      http (sprintf (' %s %s %V . <a class="qry_nfo_cmd" href="/fct/facet.vsp?sid=%d&cmd=drop_cond&cno=%d">Drop</a>',
+      fct_li (sprintf (' %s %s %V . <a class="qry_nfo_cmd" href="/fct/facet.vsp?sid=%d&cmd=drop_cond&cno=%d">Drop</a>',
                      fct_var_tag (this_s, ctx),
 		     cast (xpath_eval ('./@op', tree) as varchar),
 		     fct_literal (tree),
 		     connection_get ('sid'),
 		     cno),
             txt);
+    }
+  if ('cond-parm' = n)
+    {
+      fct_li (sprintf ('%V <a class="qry_nfo_cmd" href="/fct/facet.vsp?sid=%d&cmd=drop_cond&cno=%d">Drop</a>', 
+                     fct_literal (tree),
+                     connection_get ('sid'),
+                     cno));
     }
   if ('cond' = n) 
     {
@@ -360,6 +386,7 @@ fct_query_info (in tree any,
       if (0 = lang) lang := '';
       if (0 = dtp)  dtp  := '';
 
+      http ('<li>', txt);
       if (cond_t = 'eq' or 
           cond_t = 'neq' or 
           cond_t = 'lt' or 
@@ -367,34 +394,45 @@ fct_query_info (in tree any,
           cond_t = 'gt' or 
           cond_t = 'gte')
         {
---          dbg_printf ('trivial cond t:%s, val:%s lang: %s, dtp: %s', 
---                      cond_t, val, lang, dtp);
 
           http (sprintf ('%s %s %s',
                           fct_var_tag (this_s, ctx),
                           fct_cond_name (cond_t),
-                          fct_val_fmt_enc (val, lang, dtp)), 
+	                          fct_val_fmt_enc (val, lang, dtp)), 
                 txt);
-        } else if ('contains' = cond_t) 
+        } 
+        else if ('contains' = cond_t) 
           {
             http (sprintf (' %s contains "%s" .', 
                            fct_var_tag (this_s, ctx),
                            val), 
                   txt);
+          } 
+        else if ('in' = cond_t) 
+          {
+            declare new_s int;
+            new_s := this_s + 1;
+            max_s := max_s + 1;
+
+            http (sprintf ('%s is IN: ', fct_var_tag (this_s, ctx)), txt);
+            fct_query_info_1 (tree, new_s, max_s, level, ctx, txt, cno);
           }
       http (sprintf (' <a class="qry_nfo_cmd" href="/fct/facet.vsp?sid=%d&cmd=drop_cond&cno=%d">Drop</a>', 
                       connection_get ('sid'),
                       cno), 
             txt);
+      http ('</li>\n', txt);
     }
   if ('cond-range' = n) 
     {
       declare hi, lo, neg, cond_t any;
 
       cond_t := xpath_eval ('./@cond_t',  tree);
-      hi  := xpath_eval ('./@hi',  tree);
-      lo  := xpath_eval ('./@lo',  tree);
-      neg := xpath_eval ('./@neg', tree);
+      hi     := xpath_eval ('./@hi',  tree);
+      lo     := xpath_eval ('./@lo',  tree);
+      neg    := xpath_eval ('./@neg', tree);
+
+      http ('<li>', txt);
 
       if (neg = 'on' or 'neg_range' = cond_t) 
         neg := ' not ';
@@ -413,12 +451,8 @@ fct_query_info (in tree any,
                       cno), 
             txt);
 
+      http ('</li>\n', txt);
     } 
-
-  if (ctx)
-    http ('<br/>', txt);
-  else
-    http ('\n', txt);
 }
 ;
 
@@ -597,7 +631,7 @@ fct_view_type (in vt varchar)
 create procedure
 fct_view_cmd (in tp varchar)
 {
---  dbg_printf ('fct_view_cmd: tp=%s', tp);
+--  fct_dbg_msg (sprintf ('fct_view_cmd: tp=%s', tp));
   if ('text-properties' = tp)
     return 'set_text_property';
 
@@ -782,6 +816,13 @@ fct_web (in tree any)
 
   tp := cast (xpath_eval ('//view/@type', tree) as varchar);
 
+  declare p_ses any;
+  declare p_xml varchar;
+
+  p_ses := string_output();
+  http_value (tree, null, p_ses);
+  p_xml := cast (p_ses as varchar);
+
   http_value (xslt (registry_get ('_fct_xslt_') || 'fct_vsp.xsl',
                     reply,
 		    vector ('sid',
@@ -803,7 +844,9 @@ fct_web (in tree any)
 			    't_term', 
 			    fct_t_term (),
                             'p_qry',
-                            p_qry
+                            p_qry,
+                            'p_xml',
+                            p_xml
 			    )),
 	      null, txt);
 
@@ -886,7 +929,7 @@ fct_drop (in tree any, in sid int, in pos int)
 create procedure
 fct_drop_cond (in tree any, in sid int, in cno int)
 {
-
+  fct_dbg_msg (sprintf ('fct_drop_cond: cno: %d', cno));
   tree := xslt (registry_get ('_fct_xslt_') || 'fct_drop_cond.xsl', tree, vector ('cno', cno));
 
   update fct_state set fct_state = tree where fct_sid = sid;
@@ -1278,6 +1321,23 @@ fct_load (in from_stored int)
 ;
 
 create procedure 
+fct_ses_from_xml (in xml_d varchar) 
+{
+  declare tree any;
+  declare sid int;
+
+  sid := sequence_next ('fct_seq');
+
+  tree := xtree_doc (xml_d);
+
+  insert into fct_state (fct_sid, fct_state)
+         values (sid, tree);
+
+  return sid;
+} 
+;
+
+create procedure 
 fct_create_ses () 
 {
   declare sid int;
@@ -1594,11 +1654,11 @@ fct_select_value (in tree any,
 {
   declare pos int;
 
---  dbg_printf ('fct_select_value: val: %s, lang: %s, dtp: %s, op: %s', 
+--  fct_dbg_msg (sprintf ('fct_select_value: val: %s, lang: %s, dtp: %s, op: %s', 
 --              cast (val as varchar), 
 --              cast (lang as varchar), 
 --              cast (dtp as varchar), 
---              cast (cond_t as varchar));
+--              cast (cond_t as varchar)));
 
   pos := fct_view_pos (tree);
 
@@ -1802,7 +1862,7 @@ fct_set_cond_range (in tree any,
 --  lo := fct_validate_cond_input (lo);
 --  hi := fct_validate_cond_input (hi);
 
---  dbg_printf ('fct_set_cond_range: %s, %s', lo, hi);
+--  fct_dbg_msg (sprintf ('fct_set_cond_range: %s, %s', lo, hi));
 
   if (lo is null and hi is null) 
   {
@@ -1891,13 +1951,15 @@ fct_vsp ()
   declare sid, start_time int;
   declare _to int;
   declare s_for varchar;
-  
+  declare xml_d varchar;
+
   cmd := http_param ('cmd');
   s_for := http_param ('q');
- 
+  xml_d := http_param ('qxml');
+  
   if (s_for = 0 or trim (s_for) = '') s_for := null;
 
-  if (0 = cmd and s_for is null)
+  if (0 = cmd and s_for is null and 0 = xml_d)
     {
       fct_new ();
       return;
@@ -1905,8 +1967,23 @@ fct_vsp ()
 
   sid := http_param ('sid');
 
-  if (0 <> sid) { sid := atoi (sid); }
+  if (0 <> sid) { 
+    sid := atoi (sid); 
+  }
+  else {
+    fct_dbg_msg ('fct_vsp: looking for xml');
+    declare xml_d varchar;
+    declare r_v any;
 
+    xml_d := http_param ('qxml');
+    fct_dbg_msg (sprintf ('fct_vsp: got %s', cast (xml_d as varchar)));
+
+    if (0 <> xml_d) {
+      sid := fct_ses_from_xml (xml_d);
+      cmd := 'refresh';
+    }
+  }
+  
   _to := http_param ('timeout');
 
   if (_to = 0) _to := atoi (registry_get ('fct_timeout_min'));
@@ -1961,7 +2038,7 @@ exec:;
 
   start_time := msec_time ();
 
---  dbg_printf ('fct_vsp: cmd: %s', cmd);
+  fct_dbg_msg (sprintf ('fct_vsp: cmd: %s', cmd));
 
   if ('text' = cmd)
     {
@@ -2022,7 +2099,7 @@ exec:;
 		      http_param ('lang'),
 		      http_param ('datatype'),
 		      http_param ('op'));
---    dbg_printf ('select_value: iri=%s, val=%s', cast (http_param('iri') as varchar), cast (http_param('val') as varchar));
+    fct_dbg_msg (sprintf ('select_value: iri=%s, val=%s', cast (http_param('iri') as varchar), cast (http_param('val') as varchar)));
   }
   else if ('cond' = cmd) {
     declare cond_t varchar;
@@ -2036,7 +2113,7 @@ exec:;
                           http_param('lo'),
                           http_param('hi'),
                           '');
---      dbg_printf ('range: %s-%s', http_param('lo'), http_param('hi'));
+      fct_dbg_msg (sprintf ('range: %s-%s', http_param('lo'), http_param('hi')));
     } else if ('neg_range' = cond_t) {
       fct_set_cond_range (tree, 
                           sid, 
@@ -2045,7 +2122,7 @@ exec:;
                           http_param('lo'),
                           http_param('hi'),
                           'on');
---      dbg_printf ('neg-range: %s-%s', http_param('lo'), http_param('hi'));
+      fct_dbg_msg (sprintf ('neg-range: %s-%s', http_param('lo'), http_param('hi')));
     } else {
       declare iri,val any;
       fct_set_cond (tree, 
@@ -2055,8 +2132,8 @@ exec:;
                     http_param('datatype'),
                     http_param('val'),
                     '');
---      dbg_printf ('set_cond: val=%s, cond_t=%s', 
---                  cast (http_param('val') as varchar), cast (http_param('cond_t') as varchar));  
+--      fct_dbg_msg (sprintf ('set_cond: val=%s, cond_t=%s', 
+--                  cast (http_param('val') as varchar), cast (http_param('cond_t') as varchar)));  
     }
   }
   else if ('save' = cmd)
