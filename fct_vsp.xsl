@@ -223,24 +223,28 @@ function init(){
 
 	  var pivot_link_opts = OAT.Dom.create('span', {}, 'pivot_link_opts');
 	  pivot_link_opts.innerHTML = '&nbsp;&nbsp;\
-          <!--\
-	  <a href="#" title="Sets the CXML type of subject URIs to String or Link, optionally performing a DESCRIBE on the subject">Style&nbsp;for&nbsp;RDF&nbsp;subjects</a>&nbsp;\
+	  <a href="#" title="Sets the link-out behavior of subject URIs, optionally performing a DESCRIBE on the subject">Subject&nbsp;link&nbsp;behavior</a>&nbsp;\
 	  <select id="CXML_redir_for_subjs" onchange="fct_set_pivot_subj_uri_opt()">\
-	  		<option value="" selected="true">Convert to string facets</option>\
-			<option value="121">Make plain links</option>\
-			<option value="LOCAL_PIVOT">Make SPARQL DESCRIBE Pivot links</option>\
-			<option value="LOCAL_TTL">Make SPARQL DESCRIBE download links (TTL)</option>\
-			<option value="LOCAL_CXML">Make SPARQL DESCRIBE download links (CXML)</option>\
+			<option value="121" selected="true">External resource link</option>\
+	  		<option value="">No link out</option>\
+			<!-- <option value="LOCAL_PIVOT">External faceted navigation links</option> -->\
+			<option value="LOCAL_TTL">External description resource (TTL)</option>\
+			<!-- <option value="LOCAL_CXML">External description resource (CXML)</option> -->\
+			<option value="LOCAL_NTRIPLES">External description resource (NTRIPLES)</option>\
+			<option value="LOCAL_JSON">External description resource (JSON)</option>\
+			<option value="LOCAL_XML">External description resource (RDF/XML)</option>\
 		</select>\
 		&nbsp;&nbsp;\
-                -->\
-		<a href="#" title="Sets the CXML type of resource URIs to String or Link, optionally performing a DESCRIBE on the resource">CXML&nbsp;link&nbsp;behavior</a>&nbsp;\
+		<a href="#" title="Sets the CXML type of resource URIs to String or Link, optionally performing a DESCRIBE on the resource">Facet&nbsp;link&nbsp;behavior</a>&nbsp;\
 		<select id="CXML_redir_for_hrefs" onchange="fct_set_pivot_href_opt()">\
-			<option value="" selected="true">Local faceted navigation links</option>\
-			<option value="121">External resource links</option>\
+			<option value="" selected="true">Local faceted navigation link</option>\
+			<option value="121">External resource link</option>\
 			<option value="LOCAL_PIVOT">External faceted navigation links</option>\
 			<option value="LOCAL_TTL">External description resource (TTL)</option>\
 			<option value="LOCAL_CXML">External description resource (CXML)</option>\
+			<option value="LOCAL_NTRIPLES">External description resource (NTRIPLES)</option>\
+			<option value="LOCAL_JSON">External description resource (JSON)</option>\
+			<option value="LOCAL_XML">External description resource (RDF/XML)</option>\
 		</select>';
 
       OAT.Dom.append (['pivot_a_ctr',pivot_a,pivot_pg,pivot_qrcode_opts,pivot_link_opts]);
