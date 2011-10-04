@@ -832,7 +832,7 @@ fct_web (in tree any)
 			    'type',
 			    fct_view_type (tp),
 			    'timeout',
-			    _min (timeout*2, atoi (registry_get ('fct_timeout_max'))),
+			    __min (timeout*2, atoi (registry_get ('fct_timeout_max'))),
 			    'query',
 			    tree,
 			    's_term', 
@@ -1987,7 +1987,7 @@ fct_vsp ()
   _to := http_param ('timeout');
 
   if (_to = 0) _to := atoi (registry_get ('fct_timeout_min'));
-  else _to := _min (atoi (registry_get ('fct_timeout_max')), atoi(_to));
+  else _to := __min (atoi (registry_get ('fct_timeout_max')), atoi(_to));
 
   connection_set ('timeout', _to);
 
