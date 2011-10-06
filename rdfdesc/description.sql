@@ -144,7 +144,7 @@ b3s_handle_ses (inout _path any, inout _lines any, inout _params any)
        }
    }
 
-   if (sid is not null) connection_set ('sid', sid);
+   if (sid is not null and (regexp_match ('[0-9]*', sid) = sid)) connection_set ('sid', sid);
 }
 ;
 
