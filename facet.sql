@@ -414,6 +414,7 @@ og:longitude rdfs:subPropertyOf geo:long .
 <http://linkedopencommerce.com/schemas/icecat/v1/hasCategory> rdfs:subPropertyOf rdf:type .
 <http://poolparty.punkt.at/demozone/ont#title> rdfs:subPropertyOf virtrdf:label .
 <http://purl.uniprot.org/core/scientificName> rdfs:subPropertyOf virtrdf:label .
+<http://www.openlinksw.com/schemas/googleplus#activity_title> rdfs:subPropertyOf virtrdf:label .
 ', 'xx', 'facets');
 
 rdfs_rule_set ('facets', 'facets');
