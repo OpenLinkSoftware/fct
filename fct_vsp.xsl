@@ -34,6 +34,7 @@
 <xsl:param name="t_term"/>
 <xsl:param name="p_qry"/>
 <xsl:param name="p_xml"/>
+<xsl:param name="tree"/>
 
 <xsl:template match = "facets">
 <div id="res">
@@ -447,7 +448,7 @@ function init(){
 </table>
 
 <xsl:if test="/facets/result/@type='propval-list' or /facets/result/@type='list'">
-  <form id="valrange_form" style="display:none"> 
+  <form id="cond_form"> 
     <input type="hidden" name="sid"><xsl:attribute name="value"><xsl:value-of select="$sid"/></xsl:attribute></input>
     <input type="hidden" name="hi" id="out_hi"/>
     <input type="hidden" name="lo" id="out_lo"/>
@@ -455,6 +456,7 @@ function init(){
     <input type="hidden" name="datatype" id="out_dtp"/>
     <input type="hidden" name="val" id="out_val"/>
     <input type="hidden" name="cmd" value="cond" id="cmd"/>
+    <input type="hidden" name="cond_parms" id="cond_parms"/>
     Add condition: 
     <select id="cond_type" name="cond_t">
       <option value="none">None</option>
@@ -467,6 +469,7 @@ function init(){
       <option value="range">Between</option>
       <option value="neg_range">Not Between</option>
       <option value="contains">Contains</option>
+      <option value="in">In</option>
     </select>
     <span id="cond_inp_ctr" style="display:none">
       <!--label for="ckb_neg" class="ckb">Negation:</label><input type="checkbox" name="neg" id="ckb_neg"/--> 
@@ -474,6 +477,7 @@ function init(){
       <span id="cond_hi_ctr"> and <input id="cond_hi" type="text"/></span> <select id="cond_dt"></select>
       <input type="button" id="set_cond" value="Set Condition"/>
     </span>
+    <div id="in_ctr" style="display:none"></div>
   </form>                
 </xsl:if>
 
@@ -484,6 +488,5 @@ function init(){
     <xsl:apply-templates select="@* | node()"/>
   </xsl:copy>
 </xsl:template>
-
 
 </xsl:stylesheet>

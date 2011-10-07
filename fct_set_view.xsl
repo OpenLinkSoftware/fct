@@ -162,12 +162,21 @@
                            count (./preceding::*[name () = 'query' or
 			                         name () = 'property' or
 				                 name () = 'property-of'])">
-        <cond cond_t="{$cond_t}"
+        <xsl:choose>
+          <xsl:when test="$cond_t = 'in'">
+            <cond cond_t="{$cond_t}" neg="{$neg}">
+              <xsl:copy-of select="$parms"/>
+            </cond>
+          </xsl:when>
+          <xsl:otherwise>
+            <cond cond_t="{$cond_t}"
               xml:lang="{$lang}"
 	      datatype="{$datatype}"
               neg="{$neg}">
-          <xsl:value-of select="$val"/>
-        </cond>
+              <xsl:value-of select="$val"/>
+            </cond>
+          </xsl:otherwise>
+        </xsl:choose>
       </xsl:if>
     </xsl:copy>
   </xsl:if>

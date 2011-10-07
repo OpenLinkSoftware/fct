@@ -238,7 +238,7 @@ function prop_val_dt_sel_init () {
 
     $('cond_dt').options[0].selected = true;
 
-    OAT.Event.attach ('set_cond','click', function (e) {
+    OAT.Event.attach ('set_cond', 'click', function (e) {
 	var ct = $v('cond_type');
 
 	var v_l = $v('cond_lo');
@@ -254,7 +254,13 @@ function prop_val_dt_sel_init () {
 	    v_l = '"' + v_l + '"^^<' + $v('cond_dt') + '>';
 	}
 
-	if (ct == 'gt' || ct == 'lt' | ct == 'gte' || ct == 'lte' || ct == 'eq' || ct == 'neq' || ct == 'contains') {
+	if (ct == 'gt' || 
+            ct == 'lt' || 
+            ct == 'gte' || 
+            ct == 'lte' || 
+            ct == 'eq' || 
+            ct == 'neq' || 
+            ct == 'contains') {
 	    $('out_hi').value = '';
 	}
 
@@ -267,10 +273,214 @@ function prop_val_dt_sel_init () {
         $('out_dtp').value = '';
         $('out_lang').value = '';
         
-	$('valrange_form').submit();
+	$('cond_form').submit();
     });
 
-    OAT.Dom.show ('valrange_form');
+    OAT.Dom.show ('cond_form');
+}
+
+In_ui = function (dom_ctr, form) {
+    var self=this;
+
+    this.data = [];
+    this.form = $(form);
+    this.dom_ctr = $(dom_ctr);
+
+    this.show = function () {
+      OAT.Dom.show (dom_ctr);
+    }
+
+    this.hide = function () {
+      OAT.Dom.hide (dom_ctr);
+    }
+
+    this.find_val = function (_val, _dt, _lang) {
+	for (var i = 0;i < self.data.length;i++) {
+	    if (self.data[i].val  == _val &&
+		self.data[i].dt   == _dt &&
+		self.data[i].lang == _lang)
+		return i;
+	}
+	return false;
+    }
+
+    this.add_val = function (_val, _dt, _lang) {
+
+	if (false === self.find_val (_val, _dt, _lang))
+	    self.data.append ({val: _val, dt: _dt, lang: _lang});
+
+	self.refresh ();
+    }
+
+    this.del_val = function (i) {
+	self.data.splice (i, 1);
+        self.refresh();
+    }
+
+    this.val_add_h = function (e) {
+	var _val  = self.new_val_i.value;
+	var _dt   = self.new_dt_i.value;
+        var _lang = self.new_lang_i.value;
+
+	self.add_val (_val, _dt, _lang);
+	OAT.Event.prevent(e);
+    } 
+
+    this.val_change_h = function (e) {
+
+    }
+
+    this.make_val_row = function (d, i) {
+	var new_r = OAT.Dom.create ('tr');
+        var new_val_col  = OAT.Dom.create ('td', {}, 'in_val');
+	var new_dt_col   = OAT.Dom.create ('td', {}, 'in_dt');
+        var new_lang_col = OAT.Dom.create ('td', {}, 'in_lang');
+        var new_cmd_col  = OAT.Dom.create ('td', {}, 'in_cmd');
+
+	new_val_col.innerHTML  = d.val;
+	new_dt_col.innerHTML   = d.dt;
+	new_lang_col.innerHTML = d.lang;	
+
+        var del_a = OAT.Dom.create ('a', {}, 'in_del');
+	del_a.innerHTML = 'Delete';
+
+	OAT.Event.attach (del_a, 'click', function () {
+	    self.del_val (i);
+	});
+
+	OAT.Dom.append ([new_cmd_col, del_a]);
+	OAT.Dom.append ([new_r, new_val_col, new_dt_col, new_lang_col, new_cmd_col]);
+        return new_r;
+    } 
+
+    this.sort_fun = function (a,b) {
+	return (a.val > b.val);
+    }
+
+    this.sort = function () {
+	self.data.sort (self.sort_fun);
+    }
+
+    this.refresh = function () {
+	OAT.Dom.clear (self.val_list_tbody);
+
+	self.sort ();
+
+	for (var i=0;i < self.data.length;i++) {
+            OAT.Dom.append ([self.val_list_tbody, self.make_val_row (self.data[i],i)]);
+	}
+	if (self.data.length) 
+	    OAT.Dom.show(self.val_list_thead);
+	else
+	    OAT.Dom.hide(self.val_list_thead);
+    }
+
+    this.mk_attr = function (att_s, val) {
+	var val_ck;
+        if (typeof val == 'undefined') val_ck = '';
+	else val_ck = val;
+	return (att_s + '="' + val_ck + '"');
+    }
+
+    this.mk_cond_parm = function (d) {
+	var elm = '<cond-parm ' +
+	    self.mk_attr ('datatype', d.dt) + 
+	    ' ' + 
+	    self.mk_attr ('lang', d.lang) + '>';
+	
+	return (elm.concat(d.val,'</cond-parm>'));
+    }
+
+    this.submit = function (e) {
+	OAT.Event.prevent(e);
+	var val_s = '';
+        if (!self.data.length) return;
+        
+        for (var i=0;i < self.data.length;i++) {
+	    val_s = val_s.concat(self.mk_cond_parm (self.data[i]));
+	}	    
+	
+        self.cond_parms.value = val_s;
+        self.form.submit();
+    }
+
+    this.mk_manual_fm_row = function (e) {
+	OAT.Event.prevent (e);
+        self.manual_r      = OAT.Dom.create ('tr');
+	self.new_val_c     = OAT.Dom.create ('td', {}, 'in_new_val_c');
+        self.new_val_i     = OAT.Dom.create ('input');
+	self.new_dt_c      = OAT.Dom.create ('td', {}, 'in_new_lang_c');
+        self.new_dt_i      = OAT.Dom.create ('input');
+	self.new_lang_c    = OAT.Dom.create ('td', {}, 'in_new_lang_c');
+        self.new_lang_i    = OAT.Dom.create ('input');
+        self.new_val_add_c = OAT.Dom.create ('td', {}, 'in_new_val_add_c');
+
+        self.new_add_btn           = OAT.Dom.create ('button', {}, 'in_new_add_b');
+        self.new_add_btn.innerHTML = "Add value"
+
+	OAT.Dom.append ([self.new_val_c, self.new_val_i]);
+	OAT.Dom.append ([self.new_dt_c, self.new_dt_i]);
+	OAT.Dom.append ([self.new_lang_c, self.new_lang_i]);
+	OAT.Dom.append ([self.manual_r, new_val_c, new_dt_c, new_lang_c]);
+	OAT.Dom.append ([self.val_list_tbody, self.manual_r]);
+
+ 	OAT.Event.attach (self.new_add_btn, 'click', self.val_add_h);
+    }
+
+    this.init = function () {
+        self.val_list_t     = OAT.Dom.create ('table', {}, 'val_list_ctr');
+
+	self.val_list_thead = OAT.Dom.create ('thead', {}, 'val_list_head');
+	self.val_list_thead.innerHTML = '<tr><th>Value</th><th>Datatype</th><th>Language</th></tr>';
+
+	self.val_list_tbody = OAT.Dom.create ('tbody', {}, 'val_list_body');
+
+	self.new_val_ctr         = OAT.Dom.create ('div', {}, 'new_val_ctr');
+
+	self.new_val_l           = OAT.Dom.create ('label');
+        self.new_val_l.innerHTML = "Value:";
+        self.new_val_i           = OAT.Dom.create ('input');
+
+	self.new_dt_l           = OAT.Dom.create ('label');
+        self.new_dt_l.innerHTML = "Datatype:";
+        self.new_dt_i           = OAT.Dom.create ('input');
+
+	self.new_lang_l           = OAT.Dom.create ('label');
+        self.new_lang_l.innerHTML = "Language:";
+        self.new_lang_i           = OAT.Dom.create ('input');
+
+        self.new_add_btn           = OAT.Dom.create ('button', {}, 'in_new_add_b');
+        self.new_add_btn.innerHTML = "Add value"
+
+	self.set_cond_btn = OAT.Dom.create ('button', {}, 'in_set_cond_b');
+        self.set_cond_btn.innerHTML = "Set IN Condition"
+
+ 	self.cond_parms            = $('cond_parms');
+
+ 	OAT.Event.attach (self.new_add_btn, 'click', self.val_add_h);
+ 	OAT.Event.attach (self.set_cond_btn, 'click', self.submit);
+
+        OAT.Dom.append ([self.new_val_ctr, 
+			 self.new_val_l, self.new_val_i, 
+			 self.new_dt_l, self.new_dt_i, 
+			 self.new_lang_l, self.new_lang_i,
+                         self.new_add_btn]);
+
+        OAT.Dom.append ([self.val_list_t, 
+			 self.val_list_thead, 
+			 self.val_list_tbody]);
+
+        OAT.Dom.append ([self.dom_ctr, 
+			 self.val_list_t, 
+			 self.new_val_ctr, 
+			 self.set_cond_btn]);
+
+	OAT.Dom.hide (self.val_list_thead);
+
+	self.refresh();
+    }
+
+    this.init ();
 }
 
 function handle_val_anchor_click (e) {
@@ -308,6 +518,10 @@ function handle_val_anchor_click (e) {
 	else 
 	    $('cond_lo').value = val;
 	break;
+    case "in":
+	OAT.Event.prevent(e);
+        in_ui.add_val (val, dtp, lang);
+        break;
     }
     $('out_dtp').value = dtp;
     $('out_lang').value = lang;
@@ -320,6 +534,12 @@ function prop_val_anchors_init () {
 	OAT.Event.attach (val_a[i],'click', handle_val_anchor_click);
     }
 }
+
+function prop_cond_sel_init () {
+    return;
+}
+
+var in_ui;
 
 function init()
 {
@@ -366,15 +586,23 @@ function init()
 	OAT.Anchor.assign ('fct_ft', {content: ct});
     }
 
+    //
+    // values list mode - enable UI for adding conds
+    //
+
     if ($$('list', 'result_t').length > 0) {
+	in_ui = new In_ui ('in_ctr','cond_form');
+
 	prop_val_dt_sel_init();
 	prop_val_anchors_init();
+        prop_cond_sel_init();
 
 	OAT.Dom.hide('cond_hi_ctr');
 
 	OAT.Event.attach('cond_type', 'change', function (e) {
 	    switch ($v(this)) {
 	    case "none":
+                in_ui.hide ();
 		OAT.Dom.hide ('cond_inp_ctr');
 		break;
 	    case "lt":
@@ -384,14 +612,20 @@ function init()
             case "eq":
             case "neq":
             case "contains":
+                in_ui.hide ();
 		OAT.Dom.show ('cond_inp_ctr');
 		OAT.Dom.hide ('cond_hi_ctr');
 		break;
 	    case "range":
             case "neg_range":
+                in_ui.hide();
 		OAT.Dom.show ('cond_inp_ctr');
 		OAT.Dom.show ('cond_hi_ctr');
 		break;
+            case "in":
+                OAT.Dom.hide ('cond_inp_ctr');
+                OAT.Dom.hide ('cond_hi_ctr');
+                in_ui.show();
 	    }
         });
     }
@@ -399,6 +633,9 @@ function init()
 
 // opts = { loader: function  - function gets called when user hits tab or stops entering text
 //          timer_interval: timer interval in msec };
+//
+// XXX (ghard) move to, and finish integration with, OAT
+//
 
 OAT.Autocomplete = function (_input, _value_input, _button, _form, optObj) {
     var self = this;

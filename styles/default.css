@@ -398,6 +398,18 @@ div.thr_ctr { display: inline; width: 16px; border: 0; padding: 0;margin: 0;}
   width: 650px;
 }
 
+#cond_form {
+  width: 100%;
+  border-top: 1px solid #ddd;
+  margin-top: 15px;
+  margin-left: 5px;
+}
+
+button.in_set_cond_b {
+  margin-left: 10px;
+}
+
+a.in_del:hover { cursor: pointer; }
 
 #opts input[type="checkbox"] { margin-left: 120px; }
 
