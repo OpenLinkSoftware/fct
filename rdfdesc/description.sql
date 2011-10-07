@@ -601,7 +601,9 @@ create procedure b3s_label (in _S any, in langs any)
 	}
     }
   if (__tag (best_str) = 246)
-    best_str := rdf_box_data (best_str);
+    {
+      best_str := __rdf_strsqlval (best_str);
+    }
   return best_str;
 }
 ;
