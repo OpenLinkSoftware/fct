@@ -318,12 +318,19 @@ In_ui = function (dom_ctr, form) {
     }
 
     this.val_add_h = function (e) {
+	OAT.Event.prevent(e);
 	var _val  = self.new_val_i.value;
 	var _dt   = self.new_dt_i.value;
         var _lang = self.new_lang_i.value;
 
+	_val = _val.trim();
+
+        if (_val == '') return;
+
+        if (isNaN (parseInt(_val)) && (isNaN (parseFloat(_val))))
+            _val = '"'+_val+'"';
+	
 	self.add_val (_val, _dt, _lang);
-	OAT.Event.prevent(e);
     } 
 
     this.val_change_h = function (e) {
@@ -369,10 +376,8 @@ In_ui = function (dom_ctr, form) {
 	for (var i=0;i < self.data.length;i++) {
             OAT.Dom.append ([self.val_list_tbody, self.make_val_row (self.data[i],i)]);
 	}
-	if (self.data.length) 
-	    OAT.Dom.show(self.val_list_thead);
-	else
-	    OAT.Dom.hide(self.val_list_thead);
+
+	OAT.Dom.append ([self.val_list_tbody, self.make_manual_fm_row()])
     }
 
     this.mk_attr = function (att_s, val) {
@@ -404,27 +409,29 @@ In_ui = function (dom_ctr, form) {
         self.form.submit();
     }
 
-    this.mk_manual_fm_row = function (e) {
-	OAT.Event.prevent (e);
+    this.make_manual_fm_row = function () {
         self.manual_r      = OAT.Dom.create ('tr');
-	self.new_val_c     = OAT.Dom.create ('td', {}, 'in_new_val_c');
+	var new_val_c     = OAT.Dom.create ('td', {}, 'in_new_val_c');
         self.new_val_i     = OAT.Dom.create ('input');
-	self.new_dt_c      = OAT.Dom.create ('td', {}, 'in_new_lang_c');
+	var new_dt_c      = OAT.Dom.create ('td', {}, 'in_new_lang_c');
         self.new_dt_i      = OAT.Dom.create ('input');
-	self.new_lang_c    = OAT.Dom.create ('td', {}, 'in_new_lang_c');
+	var new_lang_c    = OAT.Dom.create ('td', {}, 'in_new_lang_c');
         self.new_lang_i    = OAT.Dom.create ('input');
-        self.new_val_add_c = OAT.Dom.create ('td', {}, 'in_new_val_add_c');
 
-        self.new_add_btn           = OAT.Dom.create ('button', {}, 'in_new_add_b');
-        self.new_add_btn.innerHTML = "Add value"
+        var new_val_add_c = OAT.Dom.create ('td', {}, 'in_new_val_add_c');
+        var new_add_btn           = OAT.Dom.create ('button', {}, 'in_new_add_b');
 
-	OAT.Dom.append ([self.new_val_c, self.new_val_i]);
-	OAT.Dom.append ([self.new_dt_c, self.new_dt_i]);
-	OAT.Dom.append ([self.new_lang_c, self.new_lang_i]);
-	OAT.Dom.append ([self.manual_r, new_val_c, new_dt_c, new_lang_c]);
-	OAT.Dom.append ([self.val_list_tbody, self.manual_r]);
+        new_add_btn.innerHTML = "Add value"
 
- 	OAT.Event.attach (self.new_add_btn, 'click', self.val_add_h);
+	OAT.Dom.append ([new_val_c, self.new_val_i]);
+	OAT.Dom.append ([new_dt_c, self.new_dt_i]);
+	OAT.Dom.append ([new_lang_c, self.new_lang_i]);
+	OAT.Dom.append ([new_val_add_c, new_add_btn]);
+     
+	OAT.Dom.append ([self.manual_r, new_val_c, new_dt_c, new_lang_c, new_val_add_c]);
+
+ 	OAT.Event.attach (new_add_btn, 'click', self.val_add_h);
+        return self.manual_r;
     }
 
     this.init = function () {
@@ -435,7 +442,7 @@ In_ui = function (dom_ctr, form) {
 
 	self.val_list_tbody = OAT.Dom.create ('tbody', {}, 'val_list_body');
 
-	self.new_val_ctr         = OAT.Dom.create ('div', {}, 'new_val_ctr');
+/*	self.new_val_ctr         = OAT.Dom.create ('div', {}, 'new_val_ctr');
 
 	self.new_val_l           = OAT.Dom.create ('label');
         self.new_val_l.innerHTML = "Value:";
@@ -451,6 +458,7 @@ In_ui = function (dom_ctr, form) {
 
         self.new_add_btn           = OAT.Dom.create ('button', {}, 'in_new_add_b');
         self.new_add_btn.innerHTML = "Add value"
+*/
 
 	self.set_cond_btn = OAT.Dom.create ('button', {}, 'in_set_cond_b');
         self.set_cond_btn.innerHTML = "Set IN Condition"
@@ -460,22 +468,13 @@ In_ui = function (dom_ctr, form) {
  	OAT.Event.attach (self.new_add_btn, 'click', self.val_add_h);
  	OAT.Event.attach (self.set_cond_btn, 'click', self.submit);
 
-        OAT.Dom.append ([self.new_val_ctr, 
-			 self.new_val_l, self.new_val_i, 
-			 self.new_dt_l, self.new_dt_i, 
-			 self.new_lang_l, self.new_lang_i,
-                         self.new_add_btn]);
-
         OAT.Dom.append ([self.val_list_t, 
 			 self.val_list_thead, 
 			 self.val_list_tbody]);
 
         OAT.Dom.append ([self.dom_ctr, 
 			 self.val_list_t, 
-			 self.new_val_ctr, 
 			 self.set_cond_btn]);
-
-	OAT.Dom.hide (self.val_list_thead);
 
 	self.refresh();
     }
