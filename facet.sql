@@ -418,6 +418,7 @@ og:longitude rdfs:subPropertyOf geo:long .
 ', 'xx', 'facets');
 
 rdfs_rule_set ('facets', 'facets');
+rdfs_rule_set ('facets', 'virtrdf-label');
 
 
 create procedure 
