@@ -26,7 +26,8 @@
 <xsl:output method="html" encoding="ISO-8859-1" indent="yes"/>
 
 <xsl:variable name="page_len" select="20"/>
-<xsl:variable name="offs" select="if(or(/facets/view/@offset = '', not(/facets/view/@offset)), 1, /facets/view/@offset + 1)"/>
+<xsl:variable name="offs" 
+              select="if(or(/facets/view/@offset = '', not(/facets/view/@offset)), 1, /facets/view/@offset + 1)"/>
 <xsl:variable name="rowcnt" select="count(/facets/result/row)"/>
 <xsl:param name="s_term"/>
 <xsl:param name="p_term"/>
@@ -64,17 +65,17 @@
     Nothing found.
   </div>
 </xsl:if>
-<!--xsl:choose>
-  <xsl:when test="$type = 'text'"><h3>Text match results</h3></xsl:when>
+<xsl:choose>
+  <!--xsl:when test="$type = 'text'"><h3>Text match results</h3></xsl:when>
   <xsl:when test="$type = 'text-d'"><h3>Text match results</h3></xsl:when>
   <xsl:when test="$type = 'text-properties'"><h3>List of Properties With Matching Text</h3></xsl:when>
   <xsl:when test="$type = 'classes'"><h3>Types</h3></xsl:when>
   <xsl:when test="$type = 'properties'"><h3>Properties</h3></xsl:when>
-  <xsl:when test="$type = 'properties-in'"><h3>Referencing Properties</h3></xsl:when>
-  <xsl:when test="$type = 'list'"><h3>List</h3></xsl:when>
-  <xsl:when test="$type = 'list-count'"><h3>Distinct values</h3></xsl:when>
-  <xsl:when test="$type = 'geo'"><h3>Location</h3></xsl:when>
-</xsl:choose-->
+  <xsl:when test="$type = 'properties-in'"><h3>Referencing Properties</h3></xsl:when-->
+  <xsl:when test="$type = 'list'"><h3>Select a value or condition</h3></xsl:when>
+  <!--xsl:when test="$type = 'list-count'"><h3>Distinct values</h3></xsl:when>
+  <xsl:when test="$type = 'geo'"><h3>Location</h3></xsl:when-->
+</xsl:choose>
 <!--xsl:message terminate="no"><xsl:value-of select="$type"/></xsl:message-->
 <xsl:choose>
   <xsl:when test="$type = 'geo'">
@@ -334,7 +335,7 @@ function init(){
             </td>
 	  </xsl:if>
 	    <td>
-	      <xsl:if test="'url' = column[1]/@datatype">
+	      <xsl:if test="'uri' = column[1]/@datatype">
 		<a><xsl:attribute name="href">/describe/?url=<xsl:value-of select="urlify (column[1])"/>&amp;sid=<xsl:value-of select="$sid"/></xsl:attribute>
 		  <xsl:attribute name="class">describe</xsl:attribute>Describe</a>
 	      </xsl:if>
@@ -422,7 +423,7 @@ function init(){
 	    <xsl:for-each select="column">
 	      <td>
 		<xsl:choose>
-		  <xsl:when test="'url' = ./@datatype">
+		  <xsl:when test="'uri' = ./@datatype">
 		    <a>
 		      <xsl:attribute name="href">/describe/?url=<xsl:value-of select="urlify (.)"/></xsl:attribute>
 		      <xsl:attribute name="title"><xsl:value-of select="."/></xsl:attribute>
