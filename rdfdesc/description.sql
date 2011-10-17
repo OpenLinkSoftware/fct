@@ -845,7 +845,7 @@ fct_make_selector (in subj any, in sid integer)
 }	
 ;
 
-create procedure fct_make_qr_code (in data_to_qrcode any, in src_width int := 120, in src_height int := 120, in qr_scale int := 4)
+create procedure fct_make_qr_code (in data_to_qrcode any, in src_width int := 120, in src_height int := 120, in qr_scale int := 3)
 {
   declare qrcode_bytes, mixed_content, content varchar;
   declare qrcode any;
@@ -858,7 +858,7 @@ create procedure fct_make_qr_code (in data_to_qrcode any, in src_width int := 12
   content := "IM CreateImageBlob" (src_width, src_height, 'white', 'jpg');
   qrcode := "QRcode encodeString8bit" (data_to_qrcode);
   qrcode_bytes := aref_set_0 (qrcode, 0);
-  mixed_content := "IM PasteQRcode" (qrcode_bytes, qrcode[1], qrcode[2], qr_scale, qr_scale, 0, 0, cast (content as varchar), length (content));
+  mixed_content := "IM PasteQRcode" (qrcode_bytes, qrcode[1], qrcode[2], qr_scale, qr_scale + 2, 0, 0, cast (content as varchar), length (content));
   mixed_content := encode_base64 (cast (mixed_content as varchar));
   mixed_content := replace (mixed_content, '\r\n', '');
   return mixed_content;
