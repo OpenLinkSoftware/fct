@@ -335,7 +335,7 @@ function init(){
             </td>
 	  </xsl:if>
 	    <td>
-	      <xsl:if test="'uri' = column[1]/@datatype">
+	      <xsl:if test="'uri' = column[1]/@datatype or 'url' = column[1]/@datatype">
 		<a><xsl:attribute name="href">/describe/?url=<xsl:value-of select="urlify (column[1])"/>&amp;sid=<xsl:value-of select="$sid"/></xsl:attribute>
 		  <xsl:attribute name="class">describe</xsl:attribute>Describe</a>
 	      </xsl:if>
@@ -423,7 +423,7 @@ function init(){
 	    <xsl:for-each select="column">
 	      <td>
 		<xsl:choose>
-		  <xsl:when test="'uri' = ./@datatype">
+		  <xsl:when test="'uri' = ./@datatype or 'url' = ./@datatype">
 		    <a>
 		      <xsl:attribute name="href">/describe/?url=<xsl:value-of select="urlify (.)"/></xsl:attribute>
 		      <xsl:attribute name="title"><xsl:value-of select="."/></xsl:attribute>

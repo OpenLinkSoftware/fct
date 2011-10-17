@@ -41,7 +41,7 @@
 <xsl:param name="lang"/>
 <xsl:param name="val"/>
 
-<xsl:template match = "query | property |property-of">
+<xsl:template match = "query | property | property-of">
 
   <xsl:if test="not ($op = 'close') or
 	        not ($pos = count (./ancestor::*[name () = 'query' or

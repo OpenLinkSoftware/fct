@@ -380,7 +380,7 @@ fct_query_info (in tree any,
     }
   if ('cond-parm' = n)
     {
-      fct_li (sprintf ('%V <a class="qry_nfo_cmd" href="/fct/facet.vsp?sid=%d&cmd=drop_cond&cno=%d">Drop</a>', 
+      fct_li (sprintf ('%V', -- <a class="qry_nfo_cmd" href="/fct/facet.vsp?sid=%d&cmd=drop_cond&cno=%d">Drop</a>', 
                        fct_literal (tree),
                        connection_get ('sid'),
                        cno), 
@@ -395,6 +395,9 @@ fct_query_info (in tree any,
       lang   := xpath_eval ('./@lang',    tree);
       dtp    := xpath_eval ('./@datatype',tree);
       val    := cast (xpath_eval ('.', tree) as varchar);
+
+      declare this_cno int;
+      this_cno := cno;
 
       if (0 = lang) lang := '';
       if (0 = dtp)  dtp  := '';
@@ -423,18 +426,16 @@ fct_query_info (in tree any,
           } 
         else if ('in' = cond_t) 
           {
-            declare new_s int;
-            new_s := this_s + 1;
-            max_s := max_s + 1;
-
+            cno := cno + 1;
             http (sprintf ('%s is IN: ', fct_var_tag (this_s, ctx)), txt);
-            fct_query_info_1 (tree, new_s, max_s, level, ctx, txt, cno);
+            fct_query_info_1 (tree, this_s, max_s, level, ctx, txt, cno);
           }
+      
       http (sprintf (' <a class="qry_nfo_cmd" href="/fct/facet.vsp?sid=%d&cmd=drop_cond&cno=%d">Drop</a>', 
                       connection_get ('sid'),
-                      cno), 
+                      this_cno), 
             txt);
-      cno := cno + 1;
+
       http ('</li>\n', txt);
     }
   if ('cond-range' = n) 
@@ -464,7 +465,7 @@ fct_query_info (in tree any,
                       connection_get ('sid'),
                       cno), 
             txt);
-
+      cno := cno + 1;
       http ('</li>\n', txt);
     } 
 }
@@ -1422,8 +1423,8 @@ fct_new ()
   <div id="main_srch" style="display: none">
     <div id="TAB_ROW">
       <div class="tab" id="TAB_TXT">Text Search</div>
-      <div class="tab" id="TAB_URILBL">URI Lookup (by Label)</div>
-      <div class="tab" id="TAB_URI">URI Lookup</div>
+      <div class="tab" id="TAB_URILBL">Entity Label Lookup</div>
+      <div class="tab" id="TAB_URI">Entity URI Lookup</div>
       <div class="tab_act">
         <a href="/fct/facet.vsp?cmd=featured&sid='); http_value ( sid ); http ('&no_qry=1">Featured</a>
         &nbsp;|&nbsp;

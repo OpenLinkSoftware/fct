@@ -25,37 +25,38 @@
 <xsl:stylesheet version="1.0" 
 		xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
-<xsl:param name="pos"/>
-<xsl:param name="op"/>
-<xsl:param name="type"/>
-<xsl:param name="limit"/>
-<xsl:param name="offset"/>
-<xsl:param name="iri"/>
-<xsl:param name="name"/>
-<xsl:param name="timeout"/>
 <xsl:param name="cno"/>
 
-
-<xsl:template match = "class | value | value-range | cond | cond-range | cond-parm">
-
-  <xsl:if test="$cno != count (./ancestor::*[name () = 'class' or
-	                                     name () = 'value' or
-                                             name () = 'value-range' or
-                                             name () = 'cond' or
-                                             name () = 'cond-range' or
+<xsl:template match="class | value | value-range | cond | cond-range | cond-parm">
+  <!--xsl:comment>cno: <xsl:value-of select="$cno"/> 
+               cnt: <xsl:value-of select="count (./ancestor::*[name () = 'class' or 
+                                                               name () = 'value' or 
+                                                               name () = 'value-range' or 
+                                                               name () = 'cond' or 
+                                                               name () = 'cond-parm']) +
+                                          count (./ancestor-or-self::*/preceding-sibling::*[name () = 'class' or 
+                                                                name () = 'value' or 
+                                                                name () = 'value-range' or 
+                                                                name () = 'cond' or 
+                                                                name () = 'cond-parm'])"/>
+  </xsl:comment-->
+  <xsl:if test="$cno != (count (./ancestor::*[name () = 'class' or 
+                                             name () = 'value' or 
+                                             name () = 'value-range' or 
+                                             name () = 'cond' or 
                                              name () = 'cond-parm']) +
-                      count (./preceding::*[name () = 'class' or 
-                                            name () = 'value' or
-                                            name () = 'value-range' or
-                                            name () = 'cond' or
-                                            name () = 'cond-range' or
-                                            name () = 'cond-parm'])">
+                         count (./ancestor::*/preceding-sibling::*[name () = 'class' or 
+                                              name () = 'value' or 
+                                              name () = 'value-range' or 
+                                              name () = 'cond' or 
+                                              name () = 'cond-parm']))">
     <xsl:copy>
       <xsl:apply-templates select="@* | node()"/>
     </xsl:copy>
   </xsl:if>
+
 </xsl:template>
- 
+
 <xsl:template match="@* | node()">
   <xsl:copy>
     <xsl:apply-templates select="@* | node()"/>

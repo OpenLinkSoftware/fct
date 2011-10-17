@@ -874,6 +874,10 @@ fct_cond (in tree any, in this_s int, in txt any)
     return fct_cond_in (tree, this_s, txt); -- so is IN
   }
 
+  if ('near' = cond_t) {
+    return fct_cond_near (tree, this_s, txt); -- and NEAR
+  }
+
   if ('contains' = cond_t) {
     return fct_cond_contains (tree, this_s, txt);
   }
@@ -990,7 +994,7 @@ fct_cond_in (in tree any, in this_s int, in txt any) {
   declare i int;
 
   v := xpath_eval ('./cond-parm', tree, 0);
-  if (0=length(v)) return;
+  if (0 = length(v)) return;
   
   for (i := 0; i < length(v); i := i + 1) {
     fct_dbg_msg (sprintf ('val: %s\n', cast (xpath_eval ('./text()', v[i]) as varchar)));
@@ -1002,9 +1006,35 @@ fct_cond_in (in tree any, in this_s int, in txt any) {
       v_str := v_str || ',' || fct_literal (v[i]);
   };
 
-  fct_dbg_msg (sprintf ('fct_cond_in post: v_str: %s', cast (v_str as varchar)));
-
   http (sprintf (' filter (?s%d in (%s)).', this_s, v_str), txt);
+}
+;
+
+create procedure
+fct_cond_near (in tree any, in this_s int, in txt any) {
+
+  declare v any;
+  declare v_str varchar;
+  declare i int;
+  declare lon, lat float;
+  declare d int;
+
+  lon := xpath_eval ('./@lon', tree, 0);
+  lat := xpath_eval ('./@lat', tree, 0);
+  d   := xpath_eval ('./@d',   tree, 0);
+
+  if (length(lon) = 0 or 
+      length(lat) = 0 or 
+      length(d)   = 0) return;
+
+  lon := cast (aref (lon, 0) as float);
+  lat := cast (aref (lat, 0) as float);
+  d   := cast (aref (lon, 0) as int);
+
+  fct_dbg_msg (sprintf ('cond_near: lon: %f\, lat: %f, dist: %d', lon, lat, d));
+
+  http (sprintf (' filter (bif:st_intersects (bif:st_point (?lat%d, ?lng%d), bif:st_point (%f,%f), %d))', 
+                 this_s, this_s, lon, lat, d), txt);
 }
 ;
 
