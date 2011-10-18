@@ -346,12 +346,23 @@ function init(){
 		<!--xsl:message terminate="no"><xsl:value-of select="$query/query/class/@iri"/><xsl:value-of select="column[1]"/></xsl:message-->  
 	        <xsl:variable name="current_iri" select="column[1]"/> 
 	        <xsl:if test="not $query/query/class[@iri = $current_iri]" > 
+                  <xsl:variable name="use_iri">
+                    <xsl:choose>
+                      <xsl:when test="column[1]/@sparql_ser != ''">
+                        <xsl:value-of select="urlify(column[1]/@sparql_ser)"/>
+                      </xsl:when>
+                      <xsl:otherwise>
+                        <xsl:value-of select="urlify($current_iri)"/>
+                      </xsl:otherwise>
+                    </xsl:choose>
+                  </xsl:variable>
+                  <xsl:comment><xsl:value-of select="$current_iri"/></xsl:comment>
                   <xsl:attribute name="class">sel_val</xsl:attribute>
 		  <xsl:attribute name="href">/fct/facet.vsp?cmd=<xsl:value-of select="$command"/>&amp;<xsl:choose>
-                    <xsl:when test="column[1]/@sparql_ser != ''">iri=<xsl:value-of select="urlify(column[1]/@sparql_ser)"/></xsl:when>
-                    <xsl:when test="'cond' = $command">cond_t=eq&amp;val=<xsl:value-of select="urlify (column[1])"/></xsl:when>
-                    <xsl:otherwise>iri=<xsl:value-of select="urlify (column[1])"/></xsl:otherwise>
-                  </xsl:choose>&amp;lang=<xsl:value-of select="column[1]/@xml:lang"/>&amp;datatype=<xsl:value-of select="urlify (column[1]/@datatype)"/>&amp;sid=<xsl:value-of select="$sid"/></xsl:attribute>
+                    <xsl:when test="'cond' = $command">cond_t=eq&amp;val=<xsl:value-of select="$use_iri"/></xsl:when>
+                    <xsl:otherwise>iri=<xsl:value-of select="$use_iri"/></xsl:otherwise>
+                    </xsl:choose>&amp;lang=<xsl:value-of select="column[1]/@xml:lang"/>&amp;datatype=<xsl:value-of select="urlify (column[1]/@datatype)"/>&amp;sid=<xsl:value-of select="$sid"/>
+                  </xsl:attribute>
 	        </xsl:if>
 		<xsl:attribute name="title">
 		  <xsl:value-of select="column[1]"/>

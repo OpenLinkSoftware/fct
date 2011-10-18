@@ -168,6 +168,26 @@ g_dtp_s = {
     'http://www.w3.org/2001/XMLSchema#dateTime': 0,
 };
 
+lat_dtp_s = {
+
+};
+
+lon_dtp_s = {
+
+};
+
+point_dtp_s = {
+
+};
+
+loc_prop_s = {
+
+};
+
+point_prop_s = {
+
+};
+
 function shorten_dt (dt_val) {
     var i = dt_val.indexOf('#')+1;
     if (i == -1 || i >= dt_val.length) return dt_val;
@@ -442,24 +462,6 @@ In_ui = function (dom_ctr, form) {
 
 	self.val_list_tbody = OAT.Dom.create ('tbody', {}, 'val_list_body');
 
-/*	self.new_val_ctr         = OAT.Dom.create ('div', {}, 'new_val_ctr');
-
-	self.new_val_l           = OAT.Dom.create ('label');
-        self.new_val_l.innerHTML = "Value:";
-        self.new_val_i           = OAT.Dom.create ('input');
-
-	self.new_dt_l           = OAT.Dom.create ('label');
-        self.new_dt_l.innerHTML = "Datatype:";
-        self.new_dt_i           = OAT.Dom.create ('input');
-
-	self.new_lang_l           = OAT.Dom.create ('label');
-        self.new_lang_l.innerHTML = "Language:";
-        self.new_lang_i           = OAT.Dom.create ('input');
-
-        self.new_add_btn           = OAT.Dom.create ('button', {}, 'in_new_add_b');
-        self.new_add_btn.innerHTML = "Add value"
-*/
-
 	self.set_cond_btn = OAT.Dom.create ('button', {}, 'in_set_cond_b');
         self.set_cond_btn.innerHTML = "Set IN Condition"
 
@@ -521,6 +523,10 @@ function handle_val_anchor_click (e) {
 	OAT.Event.prevent(e);
         in_ui.add_val (val, dtp, lang);
         break;
+    case "geo":
+        OAT.Event.prevent(e);
+        geo_ui.add_val (val, dtp, lang);
+        break;
     }
     $('out_dtp').value = dtp;
     $('out_lang').value = lang;
@@ -539,6 +545,11 @@ function prop_cond_sel_init () {
 }
 
 var in_ui;
+var geo_ui = {};
+
+// XXX
+geo_ui.hide = function () {return};
+geo_ui.show = function () {return};
 
 function init()
 {
@@ -589,6 +600,7 @@ function init()
     // values list mode - enable UI for adding conds
     //
 
+
     if ($$('list', 'result_t').length > 0) {
 	in_ui = new In_ui ('in_ctr','cond_form');
 
@@ -602,6 +614,7 @@ function init()
 	    switch ($v(this)) {
 	    case "none":
                 in_ui.hide ();
+                geo_ui.hide();
 		OAT.Dom.hide ('cond_inp_ctr');
 		break;
 	    case "lt":
@@ -612,22 +625,32 @@ function init()
             case "neq":
             case "contains":
                 in_ui.hide ();
+		geo_ui.hide();
 		OAT.Dom.show ('cond_inp_ctr');
 		OAT.Dom.hide ('cond_hi_ctr');
 		break;
 	    case "range":
             case "neg_range":
                 in_ui.hide();
+		geo_ui.hide();
 		OAT.Dom.show ('cond_inp_ctr');
 		OAT.Dom.show ('cond_hi_ctr');
 		break;
             case "in":
+		geo_ui.hide();
                 OAT.Dom.hide ('cond_inp_ctr');
                 OAT.Dom.hide ('cond_hi_ctr');
                 in_ui.show();
+                break;
+            case "near":
+                in_ui.hide();
+                OAT.Dom.hide ('cond_inp_ctr');
+                OAT.Dom.hide ('cond_hi_ctr');
+                geo_ui.show();
 	    }
         });
     }
+
 }
 
 // opts = { loader: function  - function gets called when user hits tab or stops entering text

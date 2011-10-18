@@ -164,12 +164,12 @@
 				                 name () = 'property-of'])">
         <xsl:choose>
           <xsl:when test="$cond_t = 'in'">
-            <cond cond_t="{$cond_t}" neg="{$neg}">
+            <cond type="{$cond_t}" neg="{$neg}">
               <xsl:copy-of select="$parms"/>
             </cond>
           </xsl:when>
           <xsl:otherwise>
-            <cond cond_t="{$cond_t}"
+            <cond type="{$cond_t}"
               xml:lang="{$lang}"
 	      datatype="{$datatype}"
               neg="{$neg}">

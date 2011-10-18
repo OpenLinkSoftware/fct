@@ -854,7 +854,8 @@ fct_literal (in tree any)
   if ('uri' = dtp or 'url' = dtp or 'iri' = dtp) {
       return sprintf ('<%s>', val);
   }
-  return sprintf ('"%s"', val);
+
+  return sprintf ('"%s"^^<%s>', val, dtp);
 }
 ;
 
@@ -864,7 +865,9 @@ fct_cond (in tree any, in this_s int, in txt any)
   declare val, dtp, lang, neg, cond_t any;
 
   val := fct_literal (tree);
-  cond_t := xpath_eval ('./@cond_t', tree);
+  cond_t := xpath_eval ('./@type', tree);
+
+  fct_dbg_msg (sprintf ('fct_cond: type: %s', cond_t));
 
   if ('range' = cond_t or 'neg_range' = cond_t) {
     return fct_cond_range (tree, this_s, txt); -- ranges are handled elsewhere
@@ -926,9 +929,10 @@ fct_cond_fmt (in cond_t varchar)
 {
   declare flt_inner varchar;
 
+  if (cond_t = 'eq')  return '%s = %s';
   if (cond_t = 'neq') return '%s != %s';
-  if (cond_t = 'lt')  return '%s <  %s';
-  if (cond_t = 'gt')  return '%s <  %s';
+  if (cond_t = 'lt')  return '%s < %s';
+  if (cond_t = 'gt')  return '%s < %s';
   if (cond_t = 'gte') return '%s >= %s';
   if (cond_t = 'lte') return '%s <= %s';
   return '%s = %s';
@@ -940,7 +944,7 @@ fct_cond_range (in tree any, in this_s int, in txt any)
 {
   declare cond_t, neg, lo, hi any;
 
-  cond_t := xpath_eval ('./@cond_t', tree);
+  cond_t := xpath_eval ('./@type', tree);
   neg    := xpath_eval ('./@neg',    tree);
   lo     := xpath_eval ('./@lo',     tree);
   hi     := xpath_eval ('./@hi',     tree);
@@ -969,7 +973,6 @@ fct_cond_contains (in tree any, in this_s int, in txt any)
 {
   declare val, neg, cond_t varchar;
 
-  cond_t := xpath_eval ('./@cond_t', tree);
   neg    := xpath_eval ('./@neg',    tree);
 
   val := cast (xpath_eval ('.', tree) as varchar);
@@ -994,6 +997,7 @@ fct_cond_in (in tree any, in this_s int, in txt any) {
   declare i int;
 
   v := xpath_eval ('./cond-parm', tree, 0);
+
   if (0 = length(v)) return;
   
   for (i := 0; i < length(v); i := i + 1) {
@@ -1005,6 +1009,8 @@ fct_cond_in (in tree any, in this_s int, in txt any) {
     else 
       v_str := v_str || ',' || fct_literal (v[i]);
   };
+
+  fct_dbg_msg (sprintf ('fct_cond_in: v_str: %s', v_str));
 
   http (sprintf (' filter (?s%d in (%s)).', this_s, v_str), txt);
 }

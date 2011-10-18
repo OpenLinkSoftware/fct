@@ -391,7 +391,7 @@ fct_query_info (in tree any,
     {
       declare cond_t, lang, dtp, neg, val any;
 
-      cond_t := xpath_eval ('./@cond_t',  tree);
+      cond_t := xpath_eval ('./@type',  tree);
       lang   := xpath_eval ('./@lang',    tree);
       dtp    := xpath_eval ('./@datatype',tree);
       val    := cast (xpath_eval ('.', tree) as varchar);
@@ -410,11 +410,11 @@ fct_query_info (in tree any,
           cond_t = 'gt' or 
           cond_t = 'gte')
         {
-
+ --val_fmt_enc (val, lang, dtp)), 
           http (sprintf ('%s %s %s',
                           fct_var_tag (this_s, ctx),
                           fct_cond_name (cond_t),
-	                          fct_val_fmt_enc (val, lang, dtp)), 
+	                  fct_literal (xpath_eval ('.', tree))),
                 txt);
         } 
         else if ('contains' = cond_t) 
@@ -442,7 +442,7 @@ fct_query_info (in tree any,
     {
       declare hi, lo, neg, cond_t any;
 
-      cond_t := xpath_eval ('./@cond_t',  tree);
+      cond_t := xpath_eval ('./@type',  tree);
       hi     := xpath_eval ('./@hi',  tree);
       lo     := xpath_eval ('./@lo',  tree);
       neg    := xpath_eval ('./@neg', tree);
@@ -1900,7 +1900,13 @@ fct_set_cond_range (in tree any,
   {
   tree := xslt (registry_get ('_fct_xslt_') || 'fct_set_view.xsl',
                 tree,
-		vector ('pos', pos, 'op', 'cond-range', 'hi', hi, 'lo', lo, 'neg', neg, 'lang', lang, 'datatype', dtp));
+		vector ('pos', pos, 
+                        'op', 'cond-range', 
+                        'hi', hi, 
+                        'lo', lo, 
+                        'neg', neg, 
+                        'lang', lang, 
+                        'datatype', dtp));
 
   tree := xslt (registry_get ('_fct_xslt_') || 'fct_set_view.xsl',
                 tree,
@@ -1990,8 +1996,27 @@ fct_set_cond_in (in tree any,
 ;
 
 create procedure 
+fct_set_loc (in tree any,
+             in sid int)
+{
+  declare lon, lat float;
+  declare acc int;
+  
+  lon := http_param ('lon');
+  lat := http_param ('lat');
+  acc := http_param ('acc');
+
+  if (0 = lon or 0 = lat or 0 = acc) {
+    http_request_status ('HTTP/1.1 400 Bad request');
+    http('FCT002: Invalid location data\n');
+    return;
+  }
+}
+;
+
+create procedure 
 fct_gen_opensearch_link ()
-	{
+{
   declare uriqa_str varchar;
   uriqa_str := cfg_item_value( virtuoso_ini_path(), 'URIQA','DefaultHost');
 
@@ -2217,10 +2242,12 @@ exec:;
     fct_save_init (tree, sid);
   else if ('featured' = cmd)
     fct_featured (tree, sid);
+  else if ('set_loc' = cmd)
+    fct_set_loc (tree, sid);
   else
     {
-      http ('Unrecognized command');
-      return;
+      http_request_status ('HTTP/1.1 400 Bad request');
+      http ('FCT001: Unrecognized command\n');
     }
 
   declare _state any;
