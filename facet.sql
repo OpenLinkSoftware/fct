@@ -932,7 +932,7 @@ fct_cond_fmt (in cond_t varchar)
   if (cond_t = 'eq')  return '%s = %s';
   if (cond_t = 'neq') return '%s != %s';
   if (cond_t = 'lt')  return '%s < %s';
-  if (cond_t = 'gt')  return '%s < %s';
+  if (cond_t = 'gt')  return '%s > %s';
   if (cond_t = 'gte') return '%s >= %s';
   if (cond_t = 'lte') return '%s <= %s';
   return '%s = %s';
