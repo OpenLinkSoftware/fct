@@ -411,7 +411,7 @@ fct_query_info (in tree any,
           cond_t = 'gte')
         {
  --val_fmt_enc (val, lang, dtp)), 
-          http (sprintf ('%s %s %s',
+          http (sprintf ('%s %s %V',
                           fct_var_tag (this_s, ctx),
                           fct_cond_name (cond_t),
 	                  fct_literal (xpath_eval ('.', tree))),
@@ -633,12 +633,16 @@ fct_nav (in tree any,
 create procedure
 fct_view_type (in vt varchar)
 {
-  if (vt in ('properties', 'classes', 'properties-in', 'text-properties', 'list', 'list-count', 'propval-list'))
+  if (vt in ('properties', 
+             'classes', 
+             'properties-in', 
+             'text-properties', 
+             'list', 
+             'list-count',
+             'propval-list',
+             'geo'))
     return vt;
--- return 'properties';
-  if (vt = 'geo')
-    return 'geo';
-
+ 
   return 'default';
 }
 ;
