@@ -74,6 +74,10 @@ fct_view_info (in tree any, in ctx int, in txt any)
     {
       http ('Displaying Places associated with Entities', txt);
     }
+  if ('geo-list' = mode) 
+    {
+      http ('Displaying Entities with Geographical location');
+    }
   if ('properties' = mode)
     {
       http ('Displaying Attributes of Entities', txt);
@@ -302,12 +306,12 @@ fct_query_info (in tree any,
       else
         fct_li (sprintf (' %s has <a class="qry_info_cmd" href="/fct/facet.vsp?sid=%d&cmd=set_view&type=text-properties&limit=20&offset=0&cno=%d">any %s</a> with %s <span class="value">"%s"</span> <a href="/fct/facet.vsp?sid=%d&cmd=drop_text">Drop</a>. ', 
                          fct_var_tag (this_s, ctx), 
-                         connection_get('sid'), 
+                         connection_get ('sid'), 
                          cno,
 		         fct_p_term (),
 		         fct_o_term (),
 		         charset_recode (xpath_eval ('string (.)', tree), '_WIDE_', 'UTF-8'),
-                         connection_get('sid')), 
+                         connection_get ('sid')), 
                  txt);
 
     }
@@ -380,12 +384,9 @@ fct_query_info (in tree any,
     }
   if ('cond-parm' = n)
     {
-      fct_li (sprintf ('%V', -- <a class="qry_nfo_cmd" href="/fct/facet.vsp?sid=%d&cmd=drop_cond&cno=%d">Drop</a>', 
-                       fct_literal (tree),
-                       connection_get ('sid'),
-                       cno), 
+      fct_li (sprintf ('%V',
+                       fct_literal (tree)),
               txt);
-      cno := cno + 1;
     }
   if ('cond' = n) 
     {
@@ -396,13 +397,17 @@ fct_query_info (in tree any,
       dtp    := xpath_eval ('./@datatype',tree);
       val    := cast (xpath_eval ('.', tree) as varchar);
 
-      declare this_cno int;
-      this_cno := cno;
+      fct_dbg_msg (sprintf ('fct_qry_info: cond: type:%s dtp:%s lang:%s val:%s',
+                            cast (cond_t as varchar),
+                            cast (dtp as varchar),
+                            cast (lang as varchar),
+                            val));
 
       if (0 = lang) lang := '';
       if (0 = dtp)  dtp  := '';
 
       http ('<li>', txt);
+
       if (cond_t = 'eq' or 
           cond_t = 'neq' or 
           cond_t = 'lt' or 
@@ -426,17 +431,53 @@ fct_query_info (in tree any,
           } 
         else if ('in' = cond_t) 
           {
-            cno := cno + 1;
+            declare this_cno int;
+            this_cno := cno;
             http (sprintf ('%s is IN: ', fct_var_tag (this_s, ctx)), txt);
             fct_query_info_1 (tree, this_s, max_s, level, ctx, txt, cno);
+            http (sprintf (' <a class="qry_nfo_cmd" href="/fct/facet.vsp?sid=%d&cmd=drop_cond&cno=%d">Drop</a>', 
+                           connection_get ('sid'),
+                           this_cno), 
+                  txt);
+
+            http ('</li>\n', txt);
+            cno := cno + 1;
+            return;
           }
-      
+        else if ('near' = cond_t)
+          {
+            declare lat, lon float;
+            declare d integer;
+            declare prop varchar;
+            declare prop_info varchar;
+
+            lat  := xpath_eval ('./@lat', tree);
+            lon  := xpath_eval ('./@lon', tree);
+            d    := xpath_eval ('./@d', tree);
+            prop := xpath_eval ('./@location-prop', tree);
+
+            prop_info := '.';
+
+            if (prop <> '') {
+              prop_info := sprintf (' by %s property.', prop);
+            }
+            
+            http (sprintf ('%s is within %s km radius of lat:%s, lon:%s%s', 
+                           fct_var_tag(this_s, ctx),
+                           d,
+                           lat,
+                           lon,
+                           prop_info),
+                  txt);
+          }
+
       http (sprintf (' <a class="qry_nfo_cmd" href="/fct/facet.vsp?sid=%d&cmd=drop_cond&cno=%d">Drop</a>', 
                       connection_get ('sid'),
-                      this_cno), 
+                      cno), 
             txt);
 
       http ('</li>\n', txt);
+      cno := cno + 1;
     }
   if ('cond-range' = n) 
     {
@@ -465,8 +506,8 @@ fct_query_info (in tree any,
                       connection_get ('sid'),
                       cno), 
             txt);
-      cno := cno + 1;
       http ('</li>\n', txt);
+      cno := cno + 1;
     } 
 }
 ;
@@ -618,13 +659,13 @@ fct_nav (in tree any,
 
   http ('</ul><ul class="n2">', txt);
   http (sprintf ('<li><a href="/fct/facet.vsp?cmd=set_inf&sid=%d">Options</a></li>', 
-	connection_get ('sid')), txt);
+                 connection_get ('sid')), txt);
   http (sprintf ('<li><a href="/fct/facet.vsp?cmd=save_init&sid=%d">Save</a></li>', 
-	connection_get ('sid')), txt);
+                 connection_get ('sid')), txt);
   http (sprintf ('<li><a href="/fct/facet.vsp?cmd=featured&sid=%d">Featured Queries</a></li>', 
-	connection_get ('sid')), txt);
+                 connection_get ('sid')), txt);
   http (sprintf ('<li><a href="/fct/facet.vsp?sid=%d">New Search</a></li>', 
-	connection_get ('sid')), txt);
+                 connection_get ('sid')), txt);
   http ('</ul>', txt);
   http ('</div> <!-- #fct_nav -->', txt);
 }
@@ -640,7 +681,8 @@ fct_view_type (in vt varchar)
              'list', 
              'list-count',
              'propval-list',
-             'geo'))
+             'geo',
+             'geo-list'))
     return vt;
  
   return 'default';
@@ -667,7 +709,7 @@ fct_view_cmd (in tp varchar)
   if ('full-text' = tp)
     return 'set_text';
 
-  if ('list-count' = tp)
+  if ('list-count' = tp or 'geo-list' = tp)
     return 'select_value';
  
   return 'cond';
@@ -1119,6 +1161,8 @@ fct_set_class (in tree any,
   declare pos int;
 
   pos := fct_view_pos (tree);
+
+  fct_dbg_msg(sprintf('fct_set_class: sid: %d, iri: %s', sid, iri));
 
   tree := xslt (registry_get ('_fct_xslt_') || 'fct_set_view.xsl',
                 tree,
@@ -1999,6 +2043,45 @@ fct_set_cond_in (in tree any,
 }
 ;
 
+create procedure
+fct_set_cond_near (in tree any, 
+                   in sid int,
+                   in lat varchar,
+                   in lon varchar,
+                   in dist varchar,
+                   in prop varchar)                   
+{
+  fct_dbg_msg (sprintf ('fct_set_cond_near: lat:%s, lon:%s, d:%s', lat, lon, dist));
+
+  declare pos int;
+  pos := fct_view_pos (tree);
+
+  tree := xslt (registry_get ('_fct_xslt_') || 'fct_set_view.xsl',
+                tree,
+                vector ('pos', pos,
+                        'op','cond',
+                        'cond_t', 'near', 
+                        'lat', lat,
+                        'lon', lon,
+                        'd', dist));
+
+  tree := xslt (registry_get ('_fct_xslt_') || 'fct_set_view.xsl', 
+                tree, 
+                vector ('pos', 0, 
+                        'op', 'view', 
+                        'type', 'geo', 
+                        'limit', 20, 
+                        'offset', 0,
+                        'location-prop', prop));
+
+  update fct_state set fct_state = tree where fct_sid = sid;
+
+  commit work;
+
+  fct_web (tree);
+}
+;
+
 create procedure 
 fct_set_loc (in tree any,
              in sid int)
@@ -2224,6 +2307,13 @@ exec:;
                        sid,
                        http_param('neg'),
                        http_param('cond_parms'));
+    } else if ('near' = cond_t) {
+      fct_set_cond_near (tree, 
+                         sid, 
+                         http_param ('lat'), 
+                         http_param ('lon'), 
+                         http_param ('dist'),
+                         http_param ('location-prop'));
     } else {
       declare iri,val any;
       fct_set_cond (tree, 

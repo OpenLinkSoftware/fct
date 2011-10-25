@@ -299,6 +299,86 @@ function prop_val_dt_sel_init () {
     OAT.Dom.show ('cond_form');
 }
 
+Geo_ui = function (form) {
+    var self=this;
+
+    this.form = $(form);
+
+    this.lc = new OAT.LocationCache (5, [], false);
+
+    this.refresh = function () {
+	return;
+    }
+
+    this.loc_marker = null;
+
+    this.loc_acq_h = function (s,m,l) {
+	OAT.Dom.hide (self.loc_acq_thr_i);
+	OAT.Dom.hide (self.loc_ctr);
+	self.lat_i.value = l.getLat();
+	self.lon_i.value = l.getLon();
+        self.acc_i.value = l.getAcc();
+	OAT.Dom.hide (self.loc_ctr);
+        OAT.Dom.show (self.coord_ctr);
+        OAT.Dom.show (self.loc_use_b);
+	if (self.loc_marker != null)
+	    window.cMap.removeMarker (self.loc_marker);
+	self.loc_marker = window.cMap.addMarker (l.getLat(), 
+                                                 l.getLon(), 
+                                                 false, 
+                                                 {image: 'oat/images/markers/house.png',
+                                                  imageSize: [18,41],
+                                                  custData: {__fct_bubble_content: ["Current Location"]}});
+    }
+
+    this.loc_to_h = function () {
+	OAT.Dom.hide (self.loc_acq_thr_i);
+        alert ('Timeout while acquiring location');
+    }
+
+    this.loc_err_h = function () {
+	OAT.Dom.hide (self.loc_acq_thr_i);
+	alert ('Failed to acquire location');
+    }
+
+    this.acq_b_h = function (e) {
+	OAT.Event.prevent(e);
+	OAT.Dom.show (self.loc_acq_thr_i);
+	self.lc.acquireCurrent();
+    }
+
+    this.loc_use_h = function (e) {
+	OAT.Event.prevent(e);
+        if (self.lat_i.value == '' ||
+            self.lon_i.value == '' ||
+            $(cond_dist).value == '') return;
+        self.form.submit();
+    }
+
+    this.init = function () {
+	self.loc_acq_thr_i = $('loc_acq_thr_i');
+	self.loc_i = $('cond_loc');
+	self.lat_i = $('cond_lat');
+	self.lon_i = $('cond_lon');
+	self.acc_i = $('cond_acc');
+
+	self.acq_b = $('cond_loc_acq_b');
+	OAT.Event.attach (self.acq_b, 'click', self.acq_b_h);
+
+	self.loc_use_b = $('cond_loc_use_b')
+	OAT.Event.attach (self.loc_use_b, 'click', self.loc_use_h);
+
+        OAT.MSG.attach (self.lc, "LOCATION_ACQUIRED", self.loc_acq_h);
+        OAT.MSG.attach (self.lc, "LOCATION_ERROR", self.loc_err_h);
+        OAT.MSG.attach (self.lc, "LOCATION_TIMEOUT", self.loc_to_h);
+//        OAT.MSG.attach (self.lc, "GEOCODE_RESULT", self.loc_gc_h);
+//        OAT.MSG.attach (self.lc, "LOCATION_FAIL", self.gc_fail);
+//        OAT.MSG.attach (self.lc, "LOCATION_TIMEOUT", self.gc_to_h);
+    }
+
+    this.init();
+}
+
 In_ui = function (dom_ctr, form) {
     var self=this;
 
@@ -523,10 +603,6 @@ function handle_val_anchor_click (e) {
 	OAT.Event.prevent(e);
         in_ui.add_val (val, dtp, lang);
         break;
-    case "geo":
-        OAT.Event.prevent(e);
-        geo_ui.add_val (val, dtp, lang);
-        break;
     }
     $('out_dtp').value = dtp;
     $('out_lang').value = lang;
@@ -544,12 +620,8 @@ function prop_cond_sel_init () {
     return;
 }
 
-var in_ui;
-var geo_ui = {};
-
-// XXX
-geo_ui.hide = function () {return};
-geo_ui.show = function () {return};
+var in_ui = false;
+var geo_ui = false;
 
 function init()
 {
@@ -600,13 +672,13 @@ function init()
     // values list mode - enable UI for adding conds
     //
 
-
     if ($$('list', 'result_t').length > 0) {
-	in_ui = new In_ui ('in_ctr','cond_form');
-
 	prop_val_dt_sel_init();
 	prop_val_anchors_init();
         prop_cond_sel_init();
+
+	if (!in_ui) 
+	    in_ui = new In_ui ('in_ctr','cond_form');
 
 	OAT.Dom.hide('cond_hi_ctr');
 
@@ -614,7 +686,6 @@ function init()
 	    switch ($v(this)) {
 	    case "none":
                 in_ui.hide ();
-                geo_ui.hide();
 		OAT.Dom.hide ('cond_inp_ctr');
 		break;
 	    case "lt":
@@ -625,32 +696,28 @@ function init()
             case "neq":
             case "contains":
                 in_ui.hide ();
-		geo_ui.hide();
 		OAT.Dom.show ('cond_inp_ctr');
 		OAT.Dom.hide ('cond_hi_ctr');
 		break;
 	    case "range":
             case "neg_range":
                 in_ui.hide();
-		geo_ui.hide();
 		OAT.Dom.show ('cond_inp_ctr');
 		OAT.Dom.show ('cond_hi_ctr');
 		break;
             case "in":
-		geo_ui.hide();
                 OAT.Dom.hide ('cond_inp_ctr');
                 OAT.Dom.hide ('cond_hi_ctr');
                 in_ui.show();
                 break;
-            case "near":
+/*            case "near":
                 in_ui.hide();
                 OAT.Dom.hide ('cond_inp_ctr');
                 OAT.Dom.hide ('cond_hi_ctr');
-                geo_ui.show();
+                geo_ui.show(); */
 	    }
         });
     }
-
 }
 
 // opts = { loader: function  - function gets called when user hits tab or stops entering text

@@ -40,6 +40,9 @@
 <xsl:param name="neg"/>
 <xsl:param name="lang"/>
 <xsl:param name="val"/>
+<xsl:param name="lat"/>
+<xsl:param name="lon"/>
+<xsl:param name="d"/>
 
 <xsl:template match = "query | property | property-of">
 
@@ -124,7 +127,6 @@
 	  </xsl:element>
         </xsl:when -->
       </xsl:choose>
-    
 
       <xsl:if test="$op = 'value' and
 	            $pos = count (./ancestor::*[name () = 'query' or
@@ -167,6 +169,9 @@
             <cond type="{$cond_t}" neg="{$neg}">
               <xsl:copy-of select="$parms"/>
             </cond>
+          </xsl:when>
+          <xsl:when test="$cond_t = 'near'">
+            <cond type="{$cond_t}" neg="{$neg}" lat="{$lat}" lon="{$lon}" d="{$d}" location-prop="{$location-prop}"/>
           </xsl:when>
           <xsl:otherwise>
             <cond type="{$cond_t}"

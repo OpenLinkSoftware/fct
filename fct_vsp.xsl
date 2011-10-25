@@ -78,9 +78,10 @@
 </xsl:choose>
 <!--xsl:message terminate="no"><xsl:value-of select="$type"/></xsl:message-->
 <xsl:choose>
-  <xsl:when test="$type = 'geo'">
+  <xsl:when test="$type = 'geo' or $type = 'geo-list'">
     <script type="text/javascript" >
 <![CDATA[
+
 OAT.Preferences.imagePath = "oat/images/";
 
 function markerClickHandler (caller, msg, m) {
@@ -127,10 +128,12 @@ function init(){
   var providerType = OAT.Map.TYPE_G3;
   window.cMap = new OAT.Map($('user_map'),providerType,{fix:OAT.Map.FIX_ROUND1});
   OAT.Map.loadApi(providerType, {callback: mapcb});
+  window.geo_ui = new Geo_ui ('cond_form');
 }
 ]]>
     </script>
     <div id="user_map"></div>
+    <xsl:call-template name="render-geo-conds-ui"/>
   </xsl:when>
   <xsl:otherwise>
     <xsl:choose>
@@ -490,9 +493,39 @@ function init(){
       <input type="button" id="set_cond" value="Set Condition"/>
     </span>
     <div id="in_ctr" style="display:none"></div>
+    <div id="geo_ctr" style="display:none"></div>
   </form>                
 </xsl:if>
 
+<xsl:call-template name="render-geo-conds-ui"/>
+
+</xsl:template>
+
+<xsl:template name="render-geo-conds-ui">
+  <xsl:if test="$type='geo' or $type='geo-list'">
+    <form id="cond_form"> 
+      <input type="hidden" name="sid"><xsl:attribute name="value"><xsl:value-of select="$sid"/></xsl:attribute></input>
+      <input type="hidden" name="cmd" value="cond" id="cmd"/>
+      <input type="hidden" name="cond_t" value="near" id="cond_t"/>
+      <label for="cond_distance">Within: </label>
+      <input name="dist" id="cond_dist" type="text" size="5"/> km of 
+      <span id="loc_ctr">
+        <img src="images/notify_throbber.gif" alt="Locating..." id="loc_acq_thr_i" style="display:none"/>
+        <input id="cond_loc" type="text" style="display:none"/>
+      </span>
+      <span id="coord_ctr">
+        <!--label for="ckb_neg" class="ckb">Negation:</label><input type="checkbox" name="neg" id="ckb_neg"/--> 
+        <label for="cond_lat">Lat:</label>
+        <input name="lat" id="cond_lat" type="text" size="9"/>
+        <label for="cond_lon">Lon:</label>
+        <input name="lon" id="cond_lon" type="text" size="9"/>
+        <label for="cond_acc">Accuracy</label>
+        <input id="cond_acc" type="text" size="6" disabled="true"/>
+      </span>
+      <button id="cond_loc_acq_b">Acquire</button>
+      <button id="cond_loc_use_b">Set condition</button>
+    </form>                
+  </xsl:if>
 </xsl:template>
 
 <xsl:template match="@* | node()">

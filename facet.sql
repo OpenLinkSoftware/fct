@@ -553,8 +553,8 @@ fct_xml_wrap (in tree any, in txt any)
   declare n_cols int;
   n_cols := fct_n_cols(tree);
 
---  fct_dbg_msg (sprintf ('fct_xml_wrap: view_type: %s', view_type));
---  fct_dbg_msg (sprintf ('              n_cols   : %d', n_cols));
+  fct_dbg_msg (sprintf ('fct_xml_wrap: view_type: %s', view_type));
+  fct_dbg_msg (sprintf ('              n_cols   : %d', n_cols));
 
 --  dbg_obj_print (xpath_eval ('//query/text', tree, 1));
  
@@ -664,7 +664,7 @@ fct_n_cols (in tree any)
 --  fct_dbg_msg (sprintf ('fct_n_cols: tp: %s', tp));
   if ('list' = tp)
     return 1;
-  else if ('geo' = tp)
+  else if ('geo' = tp or 'geo-list' = tp)
     return 3;
   return 2;
   signal ('FCT00', 'Unknown facet view type');
@@ -709,7 +709,7 @@ element_split (in val any)
 ;
 
 create procedure
-fct_view (in tree any, in this_s int, in txt any, in pre any, in post any, in plain integer := 0)
+fct_view (in tree any, in this_s int, in txt any, in pre any, in post any, in full_tree any, in plain integer := 0)
 {
   declare lim, offs int;
   declare mode varchar;
@@ -721,7 +721,17 @@ fct_view (in tree any, in this_s int, in txt any, in pre any, in post any, in pl
 
   mode := fct_get_mode (tree, './@type');
 
---  dbg_printf('fct_view: view mode: %s', mode);
+-- geo-based conditionals force geo-list generation unless the old map mode is used
+
+-- dbg_obj_print(full_tree);
+
+  declare geo_conds any;
+  geo_conds := xpath_eval ('//cond/@cond_t = ''near''', full_tree);
+
+  if (0 <> geo_conds and mode <> 'geo') 
+    mode := 'geo-list';
+
+  fct_dbg_msg (sprintf('fct_view: view mode: %s', mode));
 
   if ('list' = mode or 'propval-list' = mode)
     {
@@ -774,6 +784,7 @@ fct_view (in tree any, in this_s int, in txt any, in pre any, in post any, in pl
       http (sprintf (' ?s%d a ?s%dc .', this_s, this_s), txt);
       http (sprintf (' group by ?s%dc order by desc 2', this_s), post);
     }
+
   if ('text' = mode or ('text-d' = mode and plain = 1))
     {
       declare exp any;
@@ -810,10 +821,11 @@ fct_view (in tree any, in this_s int, in txt any, in pre any, in post any, in pl
       http ('select ?g as ?c1, count(*) as ?c2 ', pre);
       http (' order by desc (2) ' , post);
     }
-  if ('geo' = mode)
+  if ('geo' = mode or 'geo-list' = mode)
     {
       declare loc any;
       loc := xpath_eval ('@location-prop', tree);
+
       if (loc = 'any')
 	{
 	  loc := '?anyloc';
@@ -821,6 +833,7 @@ fct_view (in tree any, in this_s int, in txt any, in pre any, in post any, in pl
 	}
       else
         http (sprintf ('select distinct ?s%d as ?c1 ?lat%d as ?c2 ?lng%d as ?c3 ', this_s, this_s, this_s), pre);
+
       if (length (loc) < 2)
          http (sprintf (' ?s%d geo:lat ?lat%d ; geo:long ?lng%d .', this_s, this_s, this_s), txt);
       else
@@ -842,11 +855,13 @@ fct_literal (in tree any)
   val := cast (xpath_eval ('./@val', tree) as varchar);
   if (0 = val or val is null) val := cast (tree as varchar);
 
+  fct_dbg_msg (sprintf('fct_literal: val:%s, dtp:%s, lang:%s', val, dtp, lang));
+
   if (lang is not null and lang <> '')
     return sprintf ('"""%s"""@%s', val, lang);
 
-  if (dtp like '%tring')
-    return sprintf ('"""%s"""', val);
+--  if (dtp like '%tring')
+--    return sprintf ('"""%s"""', val);
 
   if (dtp = '' or dtp is null or dtp like '%nteger' or dtp like '%ouble' or dtp like '%loat' or dtp like '%nt')
     return val;
@@ -927,8 +942,6 @@ fct_value (in tree any, in this_s int, in txt any)
 create procedure
 fct_cond_fmt (in cond_t varchar)
 {
-  declare flt_inner varchar;
-
   if (cond_t = 'eq')  return '%s = %s';
   if (cond_t = 'neq') return '%s != %s';
   if (cond_t = 'lt')  return '%s < %s';
@@ -1024,22 +1037,32 @@ fct_cond_near (in tree any, in this_s int, in txt any) {
   declare i int;
   declare lon, lat float;
   declare d int;
+  declare prop varchar;
 
-  lon := xpath_eval ('./@lon', tree, 0);
-  lat := xpath_eval ('./@lat', tree, 0);
-  d   := xpath_eval ('./@d',   tree, 0);
+  fct_dbg_msg (sprintf ('fct_cond_near.', lon, lat, d));
 
-  if (length(lon) = 0 or 
-      length(lat) = 0 or 
-      length(d)   = 0) return;
+  lon  := xpath_eval ('./@lon', tree, 0);
+  lat  := xpath_eval ('./@lat', tree, 0);
+  d    := xpath_eval ('./@d',   tree, 0);
+  prop := xpath_eval ('./@location-prop', tree, 0);
 
-  lon := cast (aref (lon, 0) as float);
-  lat := cast (aref (lat, 0) as float);
-  d   := cast (aref (lon, 0) as int);
+  if (length (lon)  = 0 or 
+      length (lat)  = 0 or 
+      length (d)    = 0) return;
 
-  fct_dbg_msg (sprintf ('cond_near: lon: %f\, lat: %f, dist: %d', lon, lat, d));
+  lon  := aref (lon, 0);
+  lat  := aref (lat, 0);
+  d    := cast (aref (d, 0) as int);
+  prop := aref (prop, 0);
 
-  http (sprintf (' filter (bif:st_intersects (bif:st_point (?lat%d, ?lng%d), bif:st_point (%f,%f), %d))', 
+  fct_dbg_msg (sprintf ('fct_cond_near: lon:%s, lat:%s, dist: %d', lon, lat, d));
+
+  if (length (prop) < 2)
+    http (sprintf (' ?s%d geo:lat ?lat%d ; geo:long ?lng%d .', this_s, this_s, this_s), txt);
+  else
+    http (sprintf (' ?s%d %s ?location . ?location geo:lat ?lat%d ; geo:long ?lng%d .', this_s, prop, this_s, this_s), txt);
+
+  http (sprintf (' filter (bif:st_intersects (bif:st_point (xsd:float(?lng%d),xsd:float(?lat%d)), bif:st_point (%s,%s), %d)).', 
                  this_s, this_s, lon, lat, d), txt);
 }
 ;
@@ -1084,6 +1107,7 @@ fct_text_1 (in tree any,
 	    in txt any,
 	    in pre any,
 	    in post any,
+            in full_tree any,
             in plain integer := 0)
 {
   declare c any;
@@ -1093,7 +1117,7 @@ fct_text_1 (in tree any,
 
   for (i := 0; i < length (c); i := i + 1)
     {
-      fct_text (c[i], this_s, max_s, txt, pre, post, plain);
+      fct_text (c[i], this_s, max_s, txt, pre, post, full_tree, plain);
     }
 }
 ;
@@ -1105,6 +1129,7 @@ fct_text (in tree any,
 	  in txt any,
 	  in pre any,
 	  in post any,
+          in full_tree any,
 	  in plain integer := 0)
 {
   declare n varchar;
@@ -1137,7 +1162,7 @@ fct_text (in tree any,
   if ('query' = n)
     {
       max_s := 1;
-      fct_text_1 (tree, 1, max_s, txt, pre, post, plain);
+      fct_text_1 (tree, 1, max_s, txt, pre, post, full_tree, plain);
       return;
     }
 
@@ -1191,13 +1216,13 @@ fct_text (in tree any,
 	  http (sprintf (' filter (!bif:exists ((select (1) where { ?s%d <%s> ?v%d } ))) .', this_s, piri, new_s), txt);
 	  max_s := max_s - 1;
 	  new_s := max_s;
-	  fct_text_1 (tree, new_s, max_s, txt, pre, post, plain);
+	  fct_text_1 (tree, new_s, max_s, txt, pre, post, full_tree, plain);
 	  return;
 	}
       else	
 	{
 	  http (sprintf (' ?s%d <%s> ?s%d .', this_s, piri, new_s), txt);
-	  fct_text_1 (tree, new_s, max_s, txt, pre, post, plain);
+	  fct_text_1 (tree, new_s, max_s, txt, pre, post, full_tree, plain);
 	}
     }
 
@@ -1207,7 +1232,7 @@ fct_text (in tree any,
       max_s := max_s + 1;
       new_s := max_s;
       http (sprintf (' ?s%d <%s> ?s%d .', new_s, fct_curie (cast (xpath_eval ('./@iri', tree, 1) as varchar)), this_s), txt);
-      fct_text_1 (tree, new_s, max_s, txt, pre, post, plain);
+      fct_text_1 (tree, new_s, max_s, txt, pre, post, full_tree, plain);
     }
 
   if ('value' = n)
@@ -1227,7 +1252,7 @@ fct_text (in tree any,
 
   if ('view' = n)
     {
-      fct_view (tree, this_s, txt, pre, post, plain);
+      fct_view (tree, this_s, txt, pre, post, full_tree, plain);
     }
 }
 ;
@@ -1248,7 +1273,7 @@ fct_query (in tree any, in plain integer := 0)
   if (xpath_eval ('//view[@type="graphs"]', tree) is not null)
     add_graph := 1;
 
-  fct_text (xpath_eval ('//query', tree), 0, s, txt, pre, post, plain);
+  fct_text (xpath_eval ('//query', tree), 0, s, txt, pre, post, tree, plain);
 
   http (' where {', pre);
   if (add_graph) http (' graph ?g { ', pre);
@@ -1333,7 +1358,7 @@ fct_exec (in tree any,
 
   connection_set ('sparql_query', qr2);
 
-  dbg_obj_print (qr2);
+--  dbg_obj_print (qr2);
 
   exec (qr2, sqls, msg, vector (), 0, md, res);
 
