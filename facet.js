@@ -493,7 +493,7 @@ In_ui = function (dom_ctr, form) {
 	    ' ' + 
 	    self.mk_attr ('lang', d.lang) + '>';
 	
-	return (elm.concat(d.val,'</cond-parm>'));
+	return (elm.concat(OAT.Dom.toSafeXML(d.val),'</cond-parm>'));
     }
 
     this.submit = function (e) {

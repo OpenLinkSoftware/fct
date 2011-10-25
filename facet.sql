@@ -499,7 +499,11 @@ fct_dtp (in x any)
 {
   if (isiri_id (x) or __box_flags (x) = 1)
     return 'uri';
-  return id_to_iri (rdf_datatype_of_long (x));
+
+  declare dtp any;
+
+  dtp := rdf_datatype_of_long (x, UNAME'http://www.openlinksw.com/schemas/facets/dtp/plainstring');
+  return (id_to_iri (dtp)); 
 }
 ;
 
@@ -860,8 +864,8 @@ fct_literal (in tree any)
   if (lang is not null and lang <> '')
     return sprintf ('"""%s"""@%s', val, lang);
 
---  if (dtp like '%tring')
---    return sprintf ('"""%s"""', val);
+  if (dtp = 'http://www.openlinksw.com/schemas/facets/dtp/plainstring')
+    return sprintf ('"""%s"""', val);
 
   if (dtp = '' or dtp is null or dtp like '%nteger' or dtp like '%ouble' or dtp like '%loat' or dtp like '%nt')
     return val;
