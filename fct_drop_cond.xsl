@@ -33,7 +33,7 @@
                                              name () = 'value-range' or 
                                              name () = 'cond-range' or
                                              name () = 'cond']) +
-                         count (./ancestor-or-self::*/preceding-sibling::*[name () = 'class' or 
+                         count (./ancestor-or-self::*/preceding-sibling::*/descendant-or-self::*[name () = 'class' or 
                                               name () = 'value' or 
                                               name () = 'value-range' or 
                                               name () = 'cond-range' or 
