@@ -167,7 +167,7 @@ footer:;
 <div class="dbg" style="display: none"><pre><![CDATA[<?vsp if (sq is not null) http(sq); ?>]]></div>
 </div><!-- #MD -->
 <div id="FT">
-  Faceted Search &amp; Find service<br/>
+  Faceted Search &amp; Find service v<?vsp http(DB.DBA.VAD_CHECK_VERSION('fct')); ?><br/>
   <a href="http://virtuoso.openlinksw.com/"><img src="/fct/images/virt_power_no_border.png" alt="Powered by OpenLink Virtuoso"/></a>
   <a href="http://linkeddata.org"><img src="/fct/images/LoDLogo.gif" alt="Linked Data"/></a>
   <?vsp 
