@@ -75,8 +75,9 @@ create procedure rnk_scale (in i int)
 
 grant execute on rnk_scale to "SPARQL";
 
-create procedure DB.DBA.IR_SRV (in iri iri_id_8)
+create procedure DB.DBA.IR_SRV (in iri iri_id_8)  returns any array
 {
+  vectored;
   declare str varchar;
   declare n, nth, ni int;
   if (not isiri_id (iri))
@@ -120,24 +121,28 @@ create procedure rnk_store_w (inout first int, inout str varchar, inout fill int
 {
   if (fill < 1000)
   str := subseq (str, 0, fill);
-  insert replacing rdf_iri_stat option (no cluster)  values (iri_id_from_num (first), str);
+  delete from rdf_iri_stat  table option (no cluster) where rst_iri = iri_id_from_num (first) option (no cluster);
+  insert into rdf_iri_stat option (no cluster)  values (iri_id_from_num (first), str);
   commit  work;
 }
 ;
 
-create procedure rnk_count_refs_srv ()
+create procedure rnk_count_refs_srv (in slid int)
 {
-  declare cr cursor for select s, p from rdf_quad table option (no cluster, index rdf_quad) where isiri_id (o);
-  declare s_first, s_prev, nth, sn, cnt, fill int;
+  /* bits 32-48 are the count of outgoing links from this s.  Count these */
+  declare cr cursor for select s, p, (select count (*) from rdf_quad b table option (no cluster, index rdf_quad) where b.s = a.s and b.p = a.p and isiri_id (b.o)) from rdf_quad a table option (no cluster, index rdf_quad_sp, index_only) where o >#i0 and o < iri_id_from_num (0hex7fffffffffffffff);
+  declare s_first, s_prev, nth, sn, inc, cnt, fill int;
   declare s, p iri_id;
   declare str varchar;
+  log_enable (2, 1);
   whenever not found goto last;
+  cl_set_slice ('DB.DBA.RDF_QUAD',  'RDF_QUAD', slid);
   s_first := null;
   s_prev := null;
   open cr;
   for (;;)
     {
-      fetch cr into s, p;
+      fetch cr into s, p, inc;
       sn := iri_id_num (s);
       if (s_first is null)
 	{
@@ -147,17 +152,19 @@ create procedure rnk_count_refs_srv ()
 	}
       if (sn = s_prev)
 	{
-	cnt := cnt + 1;
+	cnt := cnt + inc;
 	}
       else
 	{
 	  if (not isstring (str))
-	    str := make_string (1536);
+	    if (cnt > 0hexffff)
+	      cnt := 0hexffff;
+	  str := make_string (1536);
 	    nth := 6 * (s_prev - s_first);
 	    str[nth] := bit_shift (cnt, -8);
 	    str[nth + 1] := cnt;
+	    cnt := inc;
 	    fill := nth + 6;
-	    cnt := 1;
 	    s_prev := sn;
 	    if (sn - s_first > 255)
 	      {
@@ -169,6 +176,9 @@ create procedure rnk_count_refs_srv ()
 	}
     }
  last:
+  if (cnt > 0hexffff)
+    cnt := 0hexffff;
+
   if (not isstring (str))
   str := make_string (1536);
  nth := 6 * (s_prev - s_first);
@@ -181,8 +191,9 @@ create procedure rnk_count_refs_srv ()
 
 
 
-create procedure DB.DBA.Ist_SRV (in iri iri_id_8)
+create procedure DB.DBA.Ist_SRV (in iri iri_id_8) returns any array
 {
+  vectored;
   declare str varchar;
   declare n, nth, ni int;
   ni := iri_id_num (iri);
@@ -212,6 +223,7 @@ decl2_dpipe_define ();
 
 create procedure DB.DBA.IRI_STAT (in iri iri_id_8)
 {
+  vectored;
   declare str varchar;
   declare n, nth, ni int;
   ni := iri_id_num (iri);
@@ -253,12 +265,13 @@ create procedure rnk_store_sc (inout first int, inout str varchar, inout fill in
 {
   if (fill < 300)
   str := subseq (str, 0, fill);
-  insert replacing rdf_iri_rank option (no cluster)  values (iri_id_from_num (first), str);
+  delete from  rdf_iri_rank table option (no cluster)  where rnk_iri = iri_id_from_num (first) option (no cluster);
+  insert into rdf_iri_rank option (no cluster)  values (iri_id_from_num (first), str);
   commit  work;
 }
 ;
 
-create procedure rnk_get_ranks (in s_first iri_id)
+create procedure rnk_get_ranks (in s_first int)
 {
   declare  str varchar;
  str := (select rnk_string  from rdf_iri_rank where rnk_iri = iri_id_from_num (s_first));
@@ -270,22 +283,23 @@ create procedure rnk_get_ranks (in s_first iri_id)
 }
 ;
 
-create procedure rnk_score (in nth_iter int)
+create procedure rnk_score (in nth_iter int, in slid int)
 {
-  declare cr cursor for select o, p, iri_stat (s) from rdf_quad table option (no cluster, index rdf_quad_opgs) where o >#i0 and o < iri_id_from_num (0hexffffffffffffff00);
+  declare cr cursor for select o, p, (select sum (rnk_inc (iri_stat (s), nth_iter)) from rdf_quad b table option (index rdf_quad_pogs, no cluster, loop) where b.o = a.o and b.p = a.p)from rdf_quad a table option (no cluster, index rdf_quad_op, index_only) where o >#i0 and o < iri_id_from_num (0hexffffffffffffff00);
   declare s_first, s_prev, nth, sn, rnk, ssc, fill, n_iters int;
-  declare sc double precision;
+  declare sc, inc double precision;
   declare s, p iri_id;
   declare str varchar;
   set isolation = 'committed';
-  log_enable (2);
+  cl_set_slice ('DB.DBA.RDF_QUAD',  'RDF_QUAD', slid);
+  log_enable (2, 1);
   whenever not found goto last;
   s_first := null;
   s_prev := null;
   open cr;
   for (;;)
     {
-      fetch cr into s, p, rnk;
+      fetch cr into s, p, inc;
       sn := iri_id_num (s);
       if (s_first is null)
 	{
@@ -299,7 +313,7 @@ create procedure rnk_score (in nth_iter int)
 	}
       if (sn = s_prev)
 	{
-	sc := sc + rnk_inc (rnk, nth_iter);
+	sc := sc + inc;
 	  --	  dbg_obj_princ (' sc of ', s, ' ', sc);
 	}
       else
@@ -311,7 +325,7 @@ create procedure rnk_score (in nth_iter int)
 	    str[nth] := bit_shift (ssc, -8);
 	    str[nth + 1] := ssc;
 	    fill := nth + 2;
-	sc := rnk_inc (rnk, nth_iter);
+	sc := inc;
 	    s_prev := sn;
 	    if (sn - s_first > 255)
 	      {
@@ -339,14 +353,11 @@ create procedure rnk_score (in nth_iter int)
 
 create procedure RNK_SCORE_SRV (in nth int)
 {
-  declare aq any;
-  aq := async_queue (1);
-  aq_request (aq, 'DB.DBA.RNK_SCORE', vector (nth));
-  aq_wait_all (aq);
+  cl_call_local_slices ('DB.DBA.RDF_QUAD', 'RDF_QUAD', 'DB.DBA.RNK_SCORE', vector (nth));
 }
 ;
 
-create procedure rnk_next_cycle ()
+create procedure DB.DBA.RNK_NEXT_CYCLE_1 (in slid int)
 {
   /* copy rank to stat and set previous rank in stat to last rank */
   declare stat, rank varchar;
@@ -354,6 +365,7 @@ create procedure rnk_next_cycle ()
   declare n_done int;
   declare cr cursor for select rst_iri, rst_string from rdf_iri_stat table option (no cluster);
 --  log_enable (2);
+ cl_set_slice ('DB.DBA.RDF_QUAD', 'RDF_QUAD', slid);
   whenever not found goto done;
   open cr;
   for (;;)
@@ -386,11 +398,17 @@ done:
 }
 ;
 
+create procedure rnk_next_cycle ()
+{
+  cl_call_local_slices ('DB.DBA.RDF_QUAD',  'RDF_QUAD', 'DB.DBA.RNK_NEXT_CYCLE_1', vector ());
+}
+
+
 create procedure s_rank ()
 {
   if (not exists (select 1 from SYS_KEYS, SYS_KEY_PARTS, SYS_COLS where KEY_TABLE = 'DB.DBA.RDF_QUAD' and KEY_ID = KP_KEY_ID and KP_COL = COL_ID and KEY_MIGRATE_TO is null and KP_NTH = 0 and KEY_TABLE = \TABLE and \COLUMN = 'S'))
     signal ('42000', 'The RDF_QUAD table do not have index with leading "S", can not perform the operation');
-  cl_exec ('rnk_count_refs_srv ()');
+  cl_exec ('cl_call_local_slices (''DB.DBA.RDF_QUAD'',  ''RDF_QUAD'', ''rnk_count_refs_srv'',  vector ())');
   cl_exec ('rnk_score_srv (1)');
   cl_exec ('rnk_next_cycle ()');
   cl_exec ('rnk_score_srv (2)');
