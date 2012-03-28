@@ -51,7 +51,7 @@
 	        not ($pos = count (./ancestor::*[name () = 'query' or
 	                                         name () = 'property' or
 			                         name () = 'property-of']) +
-			    count (./preceding::*[name () = 'query' or
+			    count (./ancestor-or-self::*/preceding-sibling::*/descendant-or-self::*[name () = 'query' or
 			                          name () = 'property' or
 						  name () = 'property-of']))">
     <xsl:copy>
@@ -61,7 +61,7 @@
 	            $pos = count (./ancestor::*[name () = 'query' or
 		                                name () = 'property' or
 			                        name () = 'property-of']) +
-			   count (./preceding::*[name () = 'query' or
+			   count (./ancestor-or-self::*/preceding-sibling::*/descendant-or-self::*[name () = 'query' or
 			                         name () = 'property' or
 					         name () = 'property-of'])">
         <xsl:element name="view">
@@ -109,7 +109,7 @@
 	                $pos = count (./ancestor::*[name () = 'query' or
 		                                    name () = 'property' or
 			                            name () = 'property-of']) +
-			       count (./preceding::*[name () = 'query' or
+			       count (./ancestor-or-self::*/preceding-sibling::*/descendant-or-self::*[name () = 'query' or
 			                             name () = 'property' or
 				                     name () = 'property-of'])">
           <class iri="{$iri}">
@@ -133,7 +133,7 @@
 	            $pos = count (./ancestor::*[name () = 'query' or
 		                                name () = 'property' or
 			                        name () = 'property-of']) +
-                           count (./preceding::*[name () = 'query' or
+                           count (./ancestor-or-self::*/preceding-sibling::*/descendant-or-self::*[name () = 'query' or
 			                         name () = 'property' or
 				                 name () = 'property-of'])">
         <value xml:lang="{$lang}"
@@ -147,7 +147,7 @@
 	            $pos = count (./ancestor::*[name () = 'query' or
 		                                name () = 'property' or
 			                        name () = 'property-of']) +
-                           count (./preceding::*[name () = 'query' or
+                           count (./ancestor-or-self::*/preceding-sibling::*/descendant-or-self::*[name () = 'query' or
 			                         name () = 'property' or
 				                 name () = 'property-of'])">
         <cond-range xml:lang="{$lang}"
