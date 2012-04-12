@@ -69,7 +69,6 @@ create procedure sum_o_p_score (inout o any, inout p any)
 }
 ;
 
-
 create procedure sum_result (inout final any, 
                              inout res any, 
 			     inout text_exp any, 
