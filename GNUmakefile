@@ -40,7 +40,9 @@ DEPS	= \
 	www/*.vsp
 
 .PHONY: all
-all: $(TARGETS)
+all: ../../vad/fct_dav.vad
+
+../../vad/fct_dav.vad: $(TARGETS)
 	[ -d ../../vad ] || mkdir ../../vad
 	ln -f fct_dav.vad ../../vad/fct_dav.vad
 	
