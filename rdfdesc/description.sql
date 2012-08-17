@@ -302,7 +302,7 @@ b3s_render_iri_select (inout types_a any,
           http (sprintf ('<option value="%s" title="%s" %s>%s</option>', 
                          types_a[i][0],
                          types_a[i][0],
-                         case when i = sel then 'selected="true"' else '' end,
+                         case when i = sel then 'selected="selected"' else '' end,
                          case when types_a[i][2] <> '' then types_a[i][2] else types_a[i][1] end));
         } 
       http ('</select>');
@@ -354,7 +354,7 @@ create procedure
 b3s_sas_selected ()
 {
   if (connection_get ('sas') = 'yes') 
-    return ' checked="true" ';
+    return ' checked="selected" ';
   else 
     return ''; 
 }
