@@ -137,8 +137,11 @@
     <script type="text/javascript" >
       var featureList=["tab"];
     </script>
+    <script type="text/javascript" src="s/jquery-1.7.2.js"></script>
     <script type="text/javascript" src="/fct/oat/toolkit/loader.js"></script>
     <script type="text/javascript" src="s/description.js"></script>
+    <link rel="stylesheet" type="text/css" href="styles/jquery-ui-1.8.20.custom.css" />
+    <script type="text/javascript" src="s/jquery-ui-1.8.20.custom.min.js"></script>
 </head>
 <body class="usage_page">
   <div id="HD">
@@ -172,7 +175,12 @@
       qrimg := fct_make_qr_code (fct_make_curie (qrd, lines));
       if (qrimg is not null and strcasestr (ua, 'Mobile') is null) {
     ?>
-	      <img id="qrcode" alt="QRcode image" src="data:image/jpg;base64,<?V qrimg ?>"/>
+        <img id="qrcode_thumb" alt="QRcode icon" src="/fct/images/qr_thumb.png"/>
+        <div id="qrcode_popup" title="QRCode">
+          <div id="qrcode">
+            <img id="qrcode_img" style="height:120px; width:120px;" alt="QRcode image" src="data:image/jpg;base64,<?V qrimg ?>"/>
+          </div>
+        </div>
     <?vsp } ?>
     </div> <!-- .subj_nav -->
 

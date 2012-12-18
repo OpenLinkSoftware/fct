@@ -20,6 +20,7 @@
  *  51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  *
  */
+var $j = jQuery.noConflict();
 
 function init() {
 	init_long_list ();
@@ -138,3 +139,11 @@ function sponge_cb ()
     parms['should-sponge'] = $v('should-sponge');
     window.location = href+uri_parms_string(parms);
 }
+
+$j(document).ready(function() {
+  $j('#qrcode_popup').dialog({autoOpen:false ,resizable:true ,height:180, width:160, position:['right','top']});
+  $j('#qrcode_thumb').click(function () {
+      var dl = $j('#qrcode_popup');
+      dl.dialog('isOpen')?dl.dialog('close'):dl.dialog('open');
+     });
+});
