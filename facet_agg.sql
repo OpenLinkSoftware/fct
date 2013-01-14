@@ -1,7 +1,7 @@
 
 
 create procedure
-fct_agg_view (in tree any, in this_s int, in txt any, in pre any, in post any, in full_tree any, in plain integer := 0)
+fct_agg_view (in tree any, in agg varchar, in this_s int, in txt any, in pre any, in post any, in full_tree any, in plain integer := 0)
 {
   declare mode varchar;
 
@@ -9,17 +9,18 @@ fct_agg_view (in tree any, in this_s int, in txt any, in pre any, in post any, i
 
   if ('list' = mode or 'propval-list' = mode)
     {
-      http (sprintf ('select sum ( ?s%d ) as ?c1 ', this_s), pre);
+      http (sprintf ('select %s ( ?s%d ) as ?c1 ', agg, this_s), pre);
     }
   else if ('entities-list' = mode)
     {
-      http (sprintf ('select sum ( ?s%d ) as ?c1 ', this_s), pre);
+      http (sprintf ('select %s ( ?s%d ) as ?c1 ', agg, this_s), pre);
     }
 }
 ;
 
 create procedure
 fct_agg_text_1 (in tree any,
+    	    in agg varchar,	
 	    in this_s int,
 	    inout max_s int,
 	    in txt any,
@@ -35,13 +36,14 @@ fct_agg_text_1 (in tree any,
 
   for (i := 0; i < length (c); i := i + 1)
     {
-      fct_agg_text (c[i], this_s, max_s, txt, pre, post, full_tree, plain);
+      fct_agg_text (c[i], agg, this_s, max_s, txt, pre, post, full_tree, plain);
     }
 }
 ;
 
 create procedure
 fct_agg_text (in tree any,
+	  in agg varchar,
 	  in this_s int,
 	  inout max_s int,
 	  in txt any,
@@ -77,7 +79,7 @@ fct_agg_text (in tree any,
   if ('query' = n)
     {
       max_s := 1;
-      fct_agg_text_1 (tree, 1, max_s, txt, pre, post, full_tree, plain);
+      fct_agg_text_1 (tree, agg, 1, max_s, txt, pre, post, full_tree, plain);
       return;
     }
 
@@ -127,13 +129,13 @@ fct_agg_text (in tree any,
 	  http (sprintf (' filter not exists { ?s%d <%s> ?v%d } .', this_s, piri, new_s), txt);
 	  max_s := max_s - 1;
 	  new_s := max_s;
-	  fct_agg_text_1 (tree, new_s, max_s, txt, pre, post, full_tree, plain);
+	  fct_agg_text_1 (tree, agg, new_s, max_s, txt, pre, post, full_tree, plain);
 	  return;
 	}
       else	
 	{
 	  http (sprintf (' ?s%d <%s> ?s%d .', this_s, piri, new_s), txt);
-	  fct_agg_text_1 (tree, new_s, max_s, txt, pre, post, full_tree, plain);
+	  fct_agg_text_1 (tree, agg, new_s, max_s, txt, pre, post, full_tree, plain);
 	}
     }
 
@@ -143,7 +145,7 @@ fct_agg_text (in tree any,
       max_s := max_s + 1;
       new_s := max_s;
       http (sprintf (' ?s%d <%s> ?s%d .', new_s, fct_curie (cast (xpath_eval ('./@iri', tree, 1) as varchar)), this_s), txt);
-      fct_agg_text_1 (tree, new_s, max_s, txt, pre, post, full_tree, plain);
+      fct_agg_text_1 (tree, agg, new_s, max_s, txt, pre, post, full_tree, plain);
     }
 
   if ('value' = n)
@@ -166,13 +168,13 @@ fct_agg_text (in tree any,
   if ('view' = n)
     {
       http (sprintf (' filter (datatype (?s%d) IN (xsd:double, xsd:int, xsd:numeric, xsd:float, xsd:integer)) . ', this_s), txt);
-      fct_agg_view (tree, this_s, txt, pre, post, full_tree, plain);
+      fct_agg_view (tree, agg, this_s, txt, pre, post, full_tree, plain);
     }
 }
 ;
 
 create procedure
-fct_agg_query (in tree any, in plain integer := 0)
+fct_agg_query (in tree any, in agg varchar := 'SUM', in plain integer := 0)
 {
   declare s, add_graph int;
   declare txt, pre, post any;
@@ -182,7 +184,7 @@ fct_agg_query (in tree any, in plain integer := 0)
   post := string_output ();
 
   s := 0;
-  fct_agg_text (xpath_eval ('//query', tree), 0, s, txt, pre, post, tree, plain);
+  fct_agg_text (xpath_eval ('//query', tree), agg, 0, s, txt, pre, post, tree, plain);
   http (' where {', pre);
   http (txt, pre);
   http (' }', pre);
