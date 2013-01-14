@@ -38,6 +38,7 @@ grant execute on fct_lang to "SPARQL_SELECT";
 grant execute on fct_dtp to "SPARQL_SELECT";
 grant execute on fct_short_form to "SPARQL_SELECT";
 grant execute on fct_label_np to "SPARQL_SELECT";
+grant execute on fct_label to "SPARQL_SELECT";
 grant execute on fct_bold_tags to "SPARQL_SELECT";
 grant execute on fct_s_term to "SPARQL_SELECT";
 grant execute on fct_p_term to "SPARQL_SELECT";
