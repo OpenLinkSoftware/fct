@@ -48,7 +48,7 @@ grant execute on DB.DBA.b3s_http_print_l to SPARQL_SELECT;
 grant execute on DB.DBA.b3s_http_print_r to SPARQL_SELECT;
 grant execute on rdfdesc_http_url to "SPARQL_SELECT";
 grant execute on fct_sparql_ser to "SPARQL_SELECT";
-grant execute on b3s_lbl_order to SPARQL_SELECT;
 grant execute on DB.DBA.DAV_SEARCH_PATH to "SPARQL_SELECT";
 grant execute on DB.DBA.VT_INC_INDEX_DB_DBA_RDF_OBJ to "SPARQL_SELECT";
 grant execute on DB.DBA.fct_do_desc_rset to "SPARQL_SELECT";
+grant execute on b3s_lbl_order to "SPARQL_SELECT";
