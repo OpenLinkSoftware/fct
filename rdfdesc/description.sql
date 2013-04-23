@@ -259,7 +259,7 @@ b3s_get_types (in _s varchar,
   declare i int;
   declare stmt varchar;
 
-  stmt := sprintf ('sparql select distinct ?tp %s where { <%S> a ?tp }', _from, _s);
+  stmt := sprintf ('sparql select distinct ?tp %s where { quad map virtrdf:DefaultQuadMap { <%S> a ?tp } }', _from, _s);
   data := null;
   t_a := vector();
 
