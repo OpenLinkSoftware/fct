@@ -535,6 +535,7 @@ if (_subject <> '') {
 
       --topof := '';
       qry_str := sprintf ('select %s PRED, OBJECT, FLAG from (%s UNION ALL %s) un0', topof, dt1, dt2);
+      qry_str := replace (qry_str, 'distinct', '');
       if (_last = 0)
         { 
 	  if (length (_F) or 1 = sys_stat ('cl_run_local_only'))
