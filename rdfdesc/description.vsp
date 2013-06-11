@@ -617,6 +617,7 @@ if (_subject <> '') {
 	  <form action="/describe/" method="get">
 	  <div>
 	      <input type="hidden" name="url" value="<?V gr ?>" />
+              <input type="submit" name="go" value="Go" style="width: 0px; height: 0px; margin: 0px; padding: 0px; outline: none; border: 0px;" />
 	      <?vsp if (connection_get ('inf') is not null) { ?>
 	      <input type="hidden" name="inf" value="<?V connection_get ('inf') ?>" />
 	      <?vsp } ?>
