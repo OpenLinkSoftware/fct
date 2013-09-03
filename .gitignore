@@ -1,0 +1,10 @@
+ChangeLog
+vad_version
+fct_dav.vad
+vad_dav.xml
+vad_fs.xml
+*.db
+*.trx
+*.tdb
+*.log
+*.pxa
