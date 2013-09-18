@@ -116,6 +116,18 @@ version_init()
   fi
 }
 
+
+version_init()
+{
+    if [ -f vad_version ]
+    then
+	VERSION=`cat vad_version`
+    else
+	LOG "The vad_version does not exist, please verify your checkout"
+	exit 1
+    fi
+}
+
 do_command_safe () {
   _dsn=$1
   command=$2
