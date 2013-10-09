@@ -208,13 +208,13 @@ directory_init() {
   #cp -Rf $HOME/binsrc/rdf_mappers/virt_rdf_label.sql vad/vsp/fct
   cp -Rf styles vad/vsp/fct/rdfdesc
   cp -Rf s vad/vsp/fct/rdfdesc
-  cp $HOME/binsrc/rdf_mappers/rdfdesc/statics/jquery-1.7.2.js vad/vsp/fct/rdfdesc/s
-  cp $HOME/binsrc/rdf_mappers/rdfdesc/statics/jquery-ui-1.8.20.custom.min.js vad/vsp/fct/rdfdesc/s
-  cp $HOME/binsrc/rdf_mappers/rdfdesc/statics/jquery-ui-1.8.20.custom.css vad/vsp/fct/rdfdesc/styles
-  cp $HOME/binsrc/rdf_mappers/rdfdesc/images/qr_thumb.png vad/vsp/fct/images
+  #cp $HOME/binsrc/rdf_mappers/rdfdesc/statics/jquery-1.7.2.js vad/vsp/fct/rdfdesc/s
+  #cp $HOME/binsrc/rdf_mappers/rdfdesc/statics/jquery-ui-1.8.20.custom.min.js vad/vsp/fct/rdfdesc/s
+  #cp $HOME/binsrc/rdf_mappers/rdfdesc/statics/jquery-ui-1.8.20.custom.css vad/vsp/fct/rdfdesc/styles
+  #cp $HOME/binsrc/rdf_mappers/rdfdesc/images/qr_thumb.png vad/vsp/fct/images
   # jquery-ui-xx.custom.css requires ui icons be in an images subdirectory
-  mkdir -p vad/vsp/fct/rdfdesc/styles/images
-  cp $HOME/binsrc/rdf_mappers/rdfdesc/statics/images/*.png vad/vsp/fct/rdfdesc/styles/images
+  #mkdir -p vad/vsp/fct/rdfdesc/styles/images
+  #cp $HOME/binsrc/rdf_mappers/rdfdesc/statics/images/*.png vad/vsp/fct/rdfdesc/styles/images
 
   cat srank.sql | sed -e "s/, index rdf_quad_opgs//g" > vad/code/fct/srank_1.sql
 
