@@ -196,13 +196,23 @@
     </div> <!-- #result_nfo -->
   </div> <!-- #res -->
   <script type="text/javascript">
+
   var sparql_a = OAT.Dom.create('a',{}, 'sparql_a');
   sparql_a.href='/sparql?default-graph-uri=&amp;qtxt=<xsl:value-of select="urlify ($p_qry)"/>&amp;debug='
   sparql_a.innerHTML = 'View query as SPARQL';
+  var sparqlhpv_a;
+  if ($('pivot_a_ctr')) {
+    sparqlhpv_a = OAT.Dom.create('a',{}, 'sparqlhpv_a');
+    sparqlhpv_a.href='/HtmlPivotViewer/?url=' + window.location.protocol + '//' + window.location.host + encodeURIComponent('/sparql?default-graph-uri=&amp;query=<xsl:value-of select="urlify ($p_qry)"/>&amp;debug=&amp;timeout=&amp;should-sponge=&amp;format=text/cxml&amp;CXML_redir_for_subjs=121&amp;CXML_redir_for_hrefs=');
+    sparqlhpv_a.innerHTML = 'View raw results in HtmlPivotViewer';
+  }
   var plink_a = OAT.Dom.create('a',{}, 'plink_a');
   plink_a.href='<xsl:value-of select="$p_link"/>'; <!--'/fct/facet.vsp?qxml=<xsl:value-of select="urlify ($p_xml)"/>'; -->
   plink_a.innerHTML = 'Facet permalink';
-  OAT.Dom.append (['sparql_a_ctr',sparql_a, plink_a]);
+  if (sparqlhpv_a)
+    OAT.Dom.append (['sparql_a_ctr',sparql_a,sparqlhpv_a,plink_a]);
+  else
+    OAT.Dom.append (['sparql_a_ctr',sparql_a,plink_a]);
   </script>
   <!--xsl:message terminate="no">addthis_key:<xsl:value-of select="$addthis_key"/></xsl:message-->
   <xsl:if test="$view-type = 'entities-list' or $type = 'default'">
