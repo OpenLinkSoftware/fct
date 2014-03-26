@@ -1242,4 +1242,59 @@ create procedure b3s_gs_check_needed ()
 }
 ;
 
+-- For entity URIs of the form /about/id[/entity]/{data_source_uri}
+-- extracts the data_source_uri, i.e. the graph containing the entity
+create procedure b3s_get_entity_graph (in entity_uri varchar)
+{
+  declare arr, pa, sch, nhost, tmp, npath, entity_graph any;
+
+  arr := rfc1808_parse_uri (entity_uri);
+  if (not (arr[2] like '/about/id%'))
+    return entity_uri;
+
+  entity_graph := entity_uri;
+  pa := split_and_decode (arr[2], 0, '\0\0/');
+  if (length (pa) > 5 and pa[3] = 'entity' and pa[4] <> '' and pa [5] <> '')
+  {
+    -- Set entity_graph to the URI following /about/id/entity/
+    sch := pa[4];
+    nhost := pa [5];
+    tmp := '/about/id/entity/' || sch || '/' || nhost;
+    npath := subseq (arr[2], length (tmp));    
+    arr[0] := sch;
+    arr[1] := nhost;
+    arr[2] := npath;
+    
+    if (lower(arr[0]) in ('acct', 'mailto')) 
+    {
+      arr [2] := arr[1];
+      arr [1] := '';
+    }
+
+    entity_graph := DB.DBA.vspx_uri_compose (arr);
+  }
+  else if (length (pa) > 4 and pa[3] <> '' and pa [4] <> '')
+  {
+    -- Set entity_graph to the URI following /about/id/
+    sch := pa[3];
+    nhost := pa [4];
+    tmp := '/about/id/' || sch || '/' || nhost;
+    npath := subseq (arr[2], length (tmp));    
+    arr[0] := sch;
+    arr[1] := nhost;
+    arr[2] := npath;
+    
+    if (sch in ('acct', 'mailto'))
+    {
+      arr[2] := arr[1];
+      arr[1] := '';
+    }
+	    
+    entity_graph := DB.DBA.vspx_uri_compose (arr);
+  }
+
+  return entity_graph;
+}
+;
+
 grant execute on b3s_gs_check_needed to public;

@@ -1,0 +1,29 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<?vsp
+   declare val_vad_present, pacl_vad_present int;
+   declare gr, host varchar;
+
+   gr := {?'gr'};
+   host := http_request_header (http_request_header (), 'Host');
+   val_vad_present := 0;
+   if (__proc_exists ('VAL.DBA.username_for_online_account') is not null)
+     val_vad_present := 1;
+   pacl_vad_present := 0;
+   if (__proc_exists ('DB.DBA.profile_url_for_online_account') is not null)
+     pacl_vad_present := 1;
+?>
+
+<?include fct_val_auth.vsp ?>
+<body>
+<?include fct_val_login_status.vsp ?>
+<br/>
+<h1>Virtuoso describe / fct Service Endpoint</h1>
+<p>
+You do not have permission to view <?=gr?><br/>
+<?vsp if (val_vad_present) { ?>
+Login using a Service ID with permissions to access this resource.
+<?vsp } ?>
+</p>
+</body>
+</html>

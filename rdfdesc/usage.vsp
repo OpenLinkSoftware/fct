@@ -41,6 +41,19 @@
   declare dbg_out any;
   declare inf_rule varchar;
   declare ses_parms varchar;
+  declare val_vad_present, pacl_vad_present int;
+
+  val_vad_present := 0;
+  if (__proc_exists ('VAL.DBA.username_for_online_account') is not null)
+    val_vad_present := 1;
+  pacl_vad_present := 0;
+  if (__proc_exists ('DB.DBA.profile_url_for_online_account') is not null)
+    pacl_vad_present := 1;
+?>
+
+  <?include fct_val_auth.vsp ?>
+
+<?vsp
 
   white_page := 1;
 
@@ -147,6 +160,11 @@
 <body class="usage_page">
   <div id="HD">
     <?vsp fct_desc_page_head (); ?>
+    <div id="hd_r">
+      <div id="val_login_status">
+	<?include fct_val_login_status.vsp ?>
+      </div>
+    </div>
     <ul id="main_menu">
       <?vsp if (sid is not null) { ?>
         <li><a href="<?= b3s_render_fct_link() ?>">Facets</a></li>

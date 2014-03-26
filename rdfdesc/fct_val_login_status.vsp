@@ -1,0 +1,62 @@
+<?vsp 
+  if (val_vad_present) { 
+    declare enable_personal_acl_ui int;
+    declare desc_params varchar;
+    enable_personal_acl_ui := 0;
+    if (pacl_vad_present and __proc_exists('VAL.VAL.acl.rule.new') is not null)
+      enable_personal_acl_ui := 1;
+
+    desc_params := '';
+    if (get_keyword ('sp', params) is not null)
+      desc_params := desc_params || '&sp=' || get_keyword ('sp', params);
+    if (get_keyword ('sponger:get', params) is not null)
+      desc_params := desc_params || '&sponger:get=' || get_keyword ('sponger:get', params);
+    if (get_keyword ('sr', params) is not null)
+      desc_params := desc_params || '&sr=' || get_keyword ('sr', params);
+?>
+        <!-- <div id="val_login_status"> -->
+          <table style="width:100%;font-size:1em; border-spacing:0px;">
+            <tr>
+              <td>
+                <?vsp 
+		  declare auth_res_login_url, auth_res_logout_url, acl_ui_res_url, protocol, sep varchar;
+		  protocol := 'http'; if (is_https_ctx()) protocol := 'https';
+		  auth_res_login_url := sprintf ('%s://%s/describe/?url=%U%s', protocol, host, gr, desc_params);
+                  auth_res_logout_url := sprintf ('%s://%s/describe/?url=%U%s&action=logout', protocol, host, gr, desc_params);
+		  acl_ui_res_url := auth_res_login_url;
+		  if (val_serviceId is null or val_serviceId = 'nobody') { 
+		?>
+                  Not logged in: <a id="loginLink" href="/val/authenticate.vsp?realm=urn%3Avirtuoso%3Aval%3Arealms%3Adefault&res=<?vsp http_url(auth_res_login_url); ?>">Login</a>
+                <?vsp } else {
+                  declare serviceIdHtml varchar;
+                  if (val_isRealUser)
+                    serviceIdHtml := sprintf ('%V', val_uname);
+                  else if (val_serviceId like 'acct.persona:%')
+                    serviceIdHtml := sprintf ('%V', val_serviceId);
+                  else
+                    serviceIdHtml := sprintf ('<a href="%s">%V</a>', val_serviceId, val_serviceId);
+                ?>
+                  Logged in as: <?vsp http(serviceIdHtml); ?> 
+		  <?vsp
+		    -- TO DO:
+		    -- Logout is flaky when logged in via WebID. Some browsers don't support crypto.logout
+		    -- The WebID in effect becomes sticky and logout fails.
+		    -- For now disable the Logout option for WebID and force the user to close the browser window to end the session.
+		    if (val_auth_method > 0 and val_auth_method <> 2) { ?>
+		      | <a id="logoutLink" href="<?vsp http(auth_res_logout_url); ?>">Logout</a>
+		      <?vsp 
+		      if (enable_personal_acl_ui) { 
+		      ?>
+		        | <a id="acllink" title="Personal ACLs" href="/pacl/personal_acl_ui.vsp?res=<?vsp http_url(acl_ui_res_url); ?>">
+			  <!-- <img border="0" src="/rdfdesc/images/item_prop.png" alt="Personal ACLs">--> 
+			  Personal ACLs
+			  </a>
+		      <?vsp } ?>
+		    <?vsp } ?>
+
+                <?vsp } ?>
+              </td>
+            </tr>
+          </table>
+        <!-- </div> -->
+<?vsp } ?>
