@@ -224,45 +224,35 @@ again:
   user_permissions := DB.DBA.RDF_GRAPH_USER_PERMS_GET (_G, http_nobody_uid());
   if (val_vad_present)
   {
-    declare user_permissions_via_VAL int;
-
-    user_permissions_via_VAL := -1;
-
     -- Check whether a Personal ACL has mapped any logged-in/authenticated user to a SQL user
     if (val_serviceId is null or length (val_serviceId) = 0)
       val_serviceId := 'nobody'; -- Required for SPARQL_GS_APP_CALLBACK_VAL_SPARQL_PERMS
 
-    if (length (val_serviceId) > 0)
-    {
-      -- Only required when using WS.WS."/!sparql/")
-      -- connection_set ('SPARQLUserId', 'dba');
+    -- Only required when using WS.WS."/!sparql/")
+    -- connection_set ('SPARQLUserId', 'dba');
 
-      -- Set the effective user 
-      -- (not required for the query, since we do EXEC_AS (qry, 'dba') anyway, but required for the permissions
-      --  callback which we call directly)
-      set_user_id ('dba');
+    -- Set the effective user 
+    -- (not required for the query, since we do EXEC_AS (qry, 'dba') anyway, but required for the permissions
+    --  callback which we call directly)
+    set_user_id ('dba');
 
-      -- Set the application realm to use in the sparql graph security callback
-      connection_set ('val_sparql_rule_realm', val_sidRealm);
+    -- Set the application realm to use in the sparql graph security callback
+    connection_set ('val_sparql_rule_realm', val_sidRealm);
 
-      -- Let the callback know about the mapped SQL user so it can take system graph permissions into account (in addition to the ACL rules)
-      if (length (val_uname))
-        connection_set ('val_sparql_uname', val_uname);
+    -- Let the callback know about the mapped SQL user so it can take system graph permissions into account (in addition to the ACL rules)
+    if (length (val_uname))
+      connection_set ('val_sparql_uname', val_uname);
 
-      -- Let the callback know about the webid tmp graph
-      connection_set ('val_sparql_webid_graph', val_webidGraph);
+    -- Let the callback know about the webid tmp graph
+    connection_set ('val_sparql_webid_graph', val_webidGraph);
 
-      -- Call SPARQL_GS_APP_CALLBACK_VAL_SPARQL_PERMS directly to retrieve the user's effective graph permissions,
-      -- so we can notify the user if they don't have sufficient permission to view or sponge.
-      -- When executing a query, we define:
-      --   define sql:gs-app-callback "VAL_SPARQL_PERMS" define sql:gs-app-uid "<id>"
-      -- to enforce the graph permissions, (though if the user has insufficient permissions, the query won't be executed).
+    -- Call SPARQL_GS_APP_CALLBACK_VAL_SPARQL_PERMS directly to retrieve the user's effective graph permissions,
+    -- so we can notify the user if they don't have sufficient permission to view or sponge.
+    -- When executing a query, we define:
+    --   define sql:gs-app-callback "VAL_SPARQL_PERMS" define sql:gs-app-uid "<id>"
+    -- to enforce the graph permissions, (though if the user has insufficient permissions, the query won't be executed).
       
-      user_permissions_via_VAL := DB.DBA.SPARQL_GS_APP_CALLBACK_VAL_SPARQL_PERMS (iri_to_id(_G), val_serviceId);
-    }
-
-    if (user_permissions_via_VAL > -1)
-      user_permissions := user_permissions_via_VAL;
+    user_permissions := DB.DBA.SPARQL_GS_APP_CALLBACK_VAL_SPARQL_PERMS (iri_to_id(_G), val_serviceId);
   }
 
   graph_perms_allow_sponge := 1;

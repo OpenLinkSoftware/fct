@@ -14,6 +14,9 @@ val_sidRealm := null;
 
 if (val_vad_present = 1) {
 
+  -- Need to be dba for VAL auth procedures
+  set_user_id ('dba');
+
   -- =========================================================================================
   -- Check authentication: session ID, WebID, HTTP Auth, and optionally map to a user account 
   -- =========================================================================================
