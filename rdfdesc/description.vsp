@@ -478,7 +478,7 @@ again:
 
     <link rel="stylesheet" type="text/css" href="styles/highlighter.css" charset="utf-8" />
     <script type="text/javascript" >
-      var featureList=["tab"];
+      var featureList=["tab","ajax"];
     </script>
     <script type="text/javascript" src="s/jquery-1.7.2.js"></script>
     <script type="text/javascript" src="/fct/oat/toolkit/loader.js"></script>
@@ -595,14 +595,12 @@ again:
       </form>
 <?vsp    
   }
-  declare qrimg any;
-  qrimg := fct_make_qr_code (fct_make_curie ('http://' || host || b3s_http_url (page_resource_uri, null, get_keyword ('graph', params)), lines));
-  if (qrimg is not null and strcasestr (ua, 'Mobile') is null) {
+  if (DB.DBA.VAD_CHECK_VERSION ('c_uri') is not null and __proc_exists ('QRcode encodeString8bit', 2) is not null and strcasestr (ua, 'Mobile') is null) {
 ?>
   <img id="qrcode_thumb" alt="QRcode icon" src="/fct/images/qr_thumb.png"/>
   <div id="qrcode_popup" title="QRCode">
     <div id="qrcode">
-      <img id="qrcode_img" style="height:120px; width:120px;" alt="QRcode image" src="data:image/jpg;base64,<?V qrimg ?>"/>
+	<img id="qrcode_img" style="height:120px; width:120px;" alt="<?V fct_make_curie ('http://' || host || b3s_http_url (page_resource_uri, null, get_keyword ('graph', params)), lines) ?>" src=""/>
     </div>
   </div>
 <?vsp } ?>

@@ -144,6 +144,13 @@ $j(document).ready(function() {
   $j('#qrcode_popup').dialog({autoOpen:false ,resizable:true ,height:180, width:160, position:['right','top']});
   $j('#qrcode_thumb').click(function () {
       var dl = $j('#qrcode_popup');
+      var img = $j('#qrcode_img');
+      if (img.attr ('src').length == 0)
+        {
+	  OAT.AJAX.GET ("/c/qrcode?data_to_qrcode=" + img.attr ('alt'), false, function (data) { 
+	    img.attr ('src', data);
+	  });
+	}
       dl.dialog('isOpen')?dl.dialog('close'):dl.dialog('open');
      });
 });
