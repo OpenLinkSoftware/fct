@@ -448,7 +448,7 @@ b3s_parse_inf (in sid varchar, inout params any)
       xt := (select fct_state from fct_state where fct_sid = sid);
       inx := 1;
       vectorbld_init (grs);
-      while ((xp := xpath_eval (sprintf ('//query/@graph%d', inx), xt)) is not null)
+      while (xt is not null and (xp := xpath_eval (sprintf ('//query/@graph%d', inx), xt)) is not null)
 	{
 	  vectorbld_acc (grs, cast (xp as varchar));
 	  inx := inx + 1;
