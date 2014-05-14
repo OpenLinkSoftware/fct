@@ -1286,6 +1286,8 @@ create procedure b3s_get_entity_graph (in entity_uri varchar)
   declare arr, pa, sch, nhost, tmp, npath, entity_graph any;
 
   arr := rfc1808_parse_uri (entity_uri);
+  if (arr[0] = 'nodeID')
+    return rtrim (entity_uri, '/');
   if (not (arr[2] like '/about/id%'))
     return entity_uri;
 
