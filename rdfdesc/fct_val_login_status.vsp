@@ -26,7 +26,7 @@
 		  acl_ui_res_url := auth_res_login_url;
 		  if (val_serviceId is null or val_serviceId = 'nobody') { 
 		?>
-                  Not logged in: <a id="loginLink" href="/val/authenticate.vsp?realm=urn%3Avirtuoso%3Aval%3Arealms%3Adefault&res=<?vsp http_url(auth_res_login_url); ?>">Login</a>
+                  Not logged in: <a id="loginLink" href="/val/authenticate.vsp?res=<?vsp http_url(auth_res_login_url); ?>">Login</a>
                 <?vsp } else {
                   declare serviceIdHtml varchar;
                   if (val_isRealUser)
