@@ -256,7 +256,7 @@ again:
   }
 
   graph_perms_allow_sponge := 1;
-  if (bit_and (user_permissions, 1) = 0)
+  if (bit_and (user_permissions, 1) = 0 and bit_and (user_permissions, 4) = 0)
   {
     -- User doesn't have read permission
     declare protocol, view_uri, view_params varchar;
