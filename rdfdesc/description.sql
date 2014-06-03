@@ -1484,3 +1484,20 @@ create procedure FCT.DBA.check_auth_and_acls (
   return permissions;
 }
 ;
+
+create procedure FCT.DBA.build_page_url_on_current_host (
+  in path varchar,
+  in query varchar)
+{
+  declare protocol varchar;
+  declare host any;
+
+  host := http_request_header (http_request_header (), 'X-Forwarded-Host', null, null);
+  if (host is null)
+    host := http_request_header (http_request_header (), 'Host');
+
+  protocol := 'http'; if (is_https_ctx()) protocol := 'https';
+
+  return sprintf ('%s://%s%s?%s', protocol, host, path, query);
+}
+;

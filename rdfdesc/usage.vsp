@@ -42,6 +42,10 @@
   declare inf_rule varchar;
   declare ses_parms varchar;
   declare val_vad_present, pacl_vad_present int;
+  declare val_serviceId varchar;
+  declare val_auth_method integer;
+  declare pageUrl varchar;
+  declare user_permissions int;
 
   val_vad_present := 0;
   if (__proc_exists ('VAL.DBA.username_for_online_account') is not null)
@@ -93,6 +97,8 @@
   page_resource_uri := gr;
   page_resource_uri := replace (page_resource_uri, '%23', '#');
 
+  pageUrl := FCT.DBA.build_page_url_on_current_host ('/fct/rdfdesc/usage.vsp', sprintf ('g=%U', page_resource_uri));
+
   _S := page_resource_uri; 
 
   proxy_iri := page_resource_uri;
@@ -141,6 +147,19 @@
 
 <?include fct_val_auth.vsp ?>
 
+<?vsp
+  if (val_vad_present)
+  {
+    user_permissions := FCT.DBA.check_auth_and_acls (val_serviceId, val_auth_method, gr, pageUrl);
+    if (not user_permissions)
+      return '';
+  }
+  else
+  {
+    user_permissions := DB.DBA.RDF_GRAPH_USER_PERMS_GET (gr, http_nobody_uid());
+    -- TODO: tell the user if they have no access
+  }
+?>
 
 <!-- header -->
 <head>
