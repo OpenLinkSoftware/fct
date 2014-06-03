@@ -14,16 +14,10 @@
      pacl_vad_present := 1;
 ?>
 
-<?include fct_val_auth.vsp ?>
 <body>
-<?include fct_val_login_status.vsp ?>
-<br/>
 <h1>Virtuoso describe / fct Service Endpoint</h1>
 <p>
 You do not have permission to view <?=gr?><br/>
-<?vsp if (val_vad_present) { ?>
-Login using a Service ID with permissions to access this resource.
-<?vsp } ?>
 </p>
 </body>
 </html>
