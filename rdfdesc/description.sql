@@ -1426,6 +1426,8 @@ create procedure FCT.DBA.check_auth_and_acls (
       connection_set ('__val_req_res_label__', 'Sparql Select');
       connection_set ('__val_returnto_url__', parentPage);
 
+      connection_set ('__val_err_msg__', http_param ('error.msg'));
+
       if (serviceId is null)
         http_status_set(401);
       else
@@ -1471,6 +1473,8 @@ create procedure FCT.DBA.check_auth_and_acls (
     connection_set ('__val_req_res__', graph);
     connection_set ('__val_req_res_label__', sprintf ('Graph <%s>', graph));
     connection_set ('__val_returnto_url__', parentPage);
+
+    connection_set ('__val_err_msg__', http_param ('error.msg'));
 
     if (serviceId is null)
       http_status_set(401);
