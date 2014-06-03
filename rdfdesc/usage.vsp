@@ -49,11 +49,6 @@
   pacl_vad_present := 0;
   if (__proc_exists ('DB.DBA.profile_url_for_online_account') is not null)
     pacl_vad_present := 1;
-?>
-
-  <?include fct_val_auth.vsp ?>
-
-<?vsp
 
   white_page := 1;
 
@@ -142,6 +137,10 @@
   desc_qr := sprintf ('define sql:describe-mode "CBD" DESCRIBE <%s>', page_resource_uri);
   desc_resource_uri := sprintf ('http://%{WSHost}s/sparql?query=%U&format=cxml', desc_qr);
 ?>
+
+
+<?include fct_val_auth.vsp ?>
+
 
 <!-- header -->
 <head>

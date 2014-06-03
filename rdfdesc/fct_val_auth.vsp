@@ -12,6 +12,14 @@ val_cert := null;
 val_webidGraph := null;
 val_sidRealm := null;
 
+declare desc_params varchar;
+declare auth_res_login_url, auth_res_logout_url, acl_ui_res_url, protocol, sep varchar;
+declare host any;
+
+host := http_request_header (http_request_header (), 'X-Forwarded-Host', null, null);
+if (host is null)
+  host := http_request_header (http_request_header (), 'Host');
+
 if (val_vad_present = 1) {
 
   -- Need to be dba for VAL auth procedures
@@ -43,5 +51,19 @@ if (val_vad_present = 1) {
       realm=>val_sidRealm,
       cert=>val_cert);
   }
+
+
+  desc_params := '';
+  if (get_keyword ('sp', params) is not null)
+    desc_params := desc_params || '&sp=' || get_keyword ('sp', params);
+  if (get_keyword ('sponger:get', params) is not null)
+    desc_params := desc_params || '&sponger:get=' || get_keyword ('sponger:get', params);
+  if (get_keyword ('sr', params) is not null)
+    desc_params := desc_params || '&sr=' || get_keyword ('sr', params);
+
+  protocol := 'http'; if (is_https_ctx()) protocol := 'https';
+  auth_res_login_url := sprintf ('%s://%s/describe/?url=%U%s', protocol, host, gr, desc_params);
+  auth_res_logout_url := auth_res_login_url;
+  acl_ui_res_url := auth_res_login_url;
 }
 ?>

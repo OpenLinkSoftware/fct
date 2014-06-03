@@ -527,10 +527,13 @@ fct_query_info (in tree any,
 ;
 
 VHOST_REMOVE (lpath=>'/fct');
-VHOST_DEFINE (lpath=>'/fct',
+VHOST_DEFINE (
+  lpath=>'/fct',
     	ppath=>case when registry_get('_fct_path_') = 0 then '/fct/' else registry_get('_fct_path_') end, 
 	is_dav=>atoi (case when registry_get('_fct_dav_') = 0 then '0' else registry_get('_fct_dav_') end),
-    	vsp_user=>'dba', def_page=>'facet.vsp');
+  vsp_user=>'dba',
+  def_page=>'facet.vsp',
+  opts=>vector ('401_page', 'login.vsp', '403_page', 'login.vsp'));
 VHOST_REMOVE (lpath=>'/b3s');
 VHOST_DEFINE (lpath=>'/b3s',
     	ppath=>case when registry_get('_fct_path_') = 0 then '/fct/' else registry_get('_fct_path_') end || 'www/', 
