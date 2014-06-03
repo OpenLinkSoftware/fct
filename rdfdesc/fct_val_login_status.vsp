@@ -43,9 +43,9 @@
 		    -- The WebID in effect becomes sticky and logout fails.
 		    -- For now disable the Logout option for WebID and force the user to close the browser window to end the session.
 		    if (val_auth_method > 0 and val_auth_method <> 2) { ?>
-		      | <a id="logoutLink" href="<?vsp http(auth_res_logout_url); ?>">Logout</a>
-		      <?vsp 
-		      if (enable_personal_acl_ui) { 
+		      | <a id="logoutLink" href="/val/logout.vsp?returnto=<?/auth_res_logout_url?>">Logout</a>
+		      <?vsp
+		      if (enable_personal_acl_ui) {
 		      ?>
 		        | <a id="acllink" title="Personal ACLs" href="/pacl/personal_acl_ui.vsp?res=<?vsp http_url(acl_ui_res_url); ?>">
 			  <!-- <img border="0" src="/rdfdesc/images/item_prop.png" alt="Personal ACLs">--> 

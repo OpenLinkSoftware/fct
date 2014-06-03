@@ -21,25 +21,27 @@ if (val_vad_present = 1) {
   -- Check authentication: session ID, WebID, HTTP Auth, and optionally map to a user account 
   -- =========================================================================================
   val_webidGraph := uuid();
-  val_cert := client_attr ('client_certificate');
-  val_auth_method := VAL.DBA.authentication_details_for_connection (
-    val_sid, val_serviceId, val_uname, val_isRealUser, val_sidRealm, 'sid', val_cert, val_webidGraph);
+  val_cert := null;
 
-  -- =========================================================================================
-  -- Remove the session ID if logout was requested
-  -- =========================================================================================
-  if ({?'action'} = 'logout') {
-    if (not val_sid is null and not val_serviceId is null) {
-      -- Remove the session and cookie
-      VAL.DBA.logout (val_sid);
-
-      -- Reset local variables
-      val_serviceId := null;
-      val_uname := null;
-      val_sid := null;
-      val_isRealUser := 0;
-      val_auth_method := 0;
-    }
+  if (__proc_exists ('VAL.DBA.get_authentication_details_for_connection')) {
+    VAL.DBA.get_authentication_details_for_connection (
+      sid=>val_sid,
+      serviceId=>val_serviceId,
+      uname=>val_uname,
+      isRealUser=>val_isRealUser,
+      realm=>val_sidRealm,
+      cert=>val_cert);
+  }
+  else {
+    -- Backwards compatibility
+    val_cert := client_attr ('client_certificate');
+    VAL.DBA.authentication_details_for_connection (
+      sid=>val_sid,
+      serviceId=>val_serviceId,
+      uname=>val_uname,
+      isRealUser=>val_isRealUser,
+      realm=>val_sidRealm,
+      cert=>val_cert);
   }
 }
 ?>
