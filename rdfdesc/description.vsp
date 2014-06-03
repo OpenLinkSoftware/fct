@@ -63,6 +63,8 @@
   declare user_permissions, val_vad_present, pacl_vad_present, graph_perms_allow_sponge int;
   declare val_serviceId varchar;
   declare val_auth_method integer;
+  declare host varchar;
+  declare pageUrl varchar;
 
   val_vad_present := 0;
   if (__proc_exists ('VAL.DBA.username_for_online_account') is not null)
@@ -82,6 +84,10 @@
   -- XXX: disabled
   --declare continue handler for sqlstate 'S1TAT';
   --set result_timeout = atoi (registry_get ('fct_timeout_max'));
+
+  host := http_request_header (http_request_header (), 'X-Forwarded-Host', null, null);
+  if (host is null)
+    host := http_request_header (http_request_header (), 'Host');
 
 again:
   n_per_page := 100;
@@ -215,14 +221,23 @@ again:
         http (sprintf ('<html><body>Use of this service is not allowed for your current WebID: %V</body></html>', connection_get ('WebID', '<none>')));
         return;  
       } 
-?>
 
-  <?include fct_val_auth.vsp ?>
 
-<?vsp
+  declare desc_params varchar;
+  desc_params := '';
+  if (get_keyword ('sp', params) is not null)
+    desc_params := desc_params || '&sp=' || get_keyword ('sp', params);
+  if (get_keyword ('sponger:get', params) is not null)
+    desc_params := desc_params || '&sponger:get=' || get_keyword ('sponger:get', params);
+  if (get_keyword ('sr', params) is not null)
+    desc_params := desc_params || '&sr=' || get_keyword ('sr', params);
+
+  -- The var "pageUrl" is also used in the fct_val_login_status.vsp include below
+  pageUrl := FCT.DBA.build_page_url_on_current_host ('/describe/', sprintf ('url=%U%s', gr, desc_params));
+
   if (val_vad_present)
   {
-    user_permissions := FCT.DBA.check_auth_and_acls (val_serviceId, val_auth_method, _G, auth_res_login_url);
+    user_permissions := FCT.DBA.check_auth_and_acls (val_serviceId, val_auth_method, _G, pageUrl);
     if (not user_permissions)
         return '';
       }
@@ -237,8 +252,6 @@ again:
     -- User doesn't have read permission
     declare protocol, view_uri, view_params varchar;
     -- graph_perms_allow_sponge := 0;
-    if (val_webidGraph is not null)
-      exec ('sparql clear graph <'||val_webidGraph||'>'); ;
     view_uri := gr;
     view_params := '';
     if (get_keyword ('sp', params) is not null)
@@ -435,9 +448,6 @@ again:
 	  plink_href := plink_href || sprintf ('&graph=%U', x);
 	}
     }
-
-  if (val_webidGraph is not null)
-    exec ('sparql clear graph <'||val_webidGraph||'>'); ;
 ?>
 <head>
     <base href="http<?V case is_https_ctx () when 1 then 's' else '' end ?>://<?V host ?>/fct/rdfdesc/" />

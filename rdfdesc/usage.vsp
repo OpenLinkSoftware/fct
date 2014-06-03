@@ -97,6 +97,7 @@
   page_resource_uri := gr;
   page_resource_uri := replace (page_resource_uri, '%23', '#');
 
+  -- The var "pageUrl" is also used in the fct_val_login_status.vsp include below
   pageUrl := FCT.DBA.build_page_url_on_current_host ('/fct/rdfdesc/usage.vsp', sprintf ('g=%U', page_resource_uri));
 
   _S := page_resource_uri; 
@@ -142,12 +143,7 @@
   declare desc_qr varchar;
   desc_qr := sprintf ('define sql:describe-mode "CBD" DESCRIBE <%s>', page_resource_uri);
   desc_resource_uri := sprintf ('http://%{WSHost}s/sparql?query=%U&format=cxml', desc_qr);
-?>
 
-
-<?include fct_val_auth.vsp ?>
-
-<?vsp
   if (val_vad_present)
   {
     user_permissions := FCT.DBA.check_auth_and_acls (val_serviceId, val_auth_method, gr, pageUrl);
