@@ -1355,3 +1355,132 @@ create procedure fct_set_graphs (in sid any, in graphs any)
   commit work;
 }
 ;
+
+--!
+-- Check auth and acls. Returns the permissions the authenticated user has on the given graph. This means 0 if perm denied. In the latter case
+-- a 40x is thrown and the calling vsp page should return the empty string to V.
+--/
+create procedure FCT.DBA.check_auth_and_acls (
+  out serviceId varchar,
+  out auth_method int,
+  in graph varchar,
+  in parentPage varchar)
+{
+  declare val_sid, val_sidRealm, val_uname, val_webidGraph varchar;
+  declare val_isRealUser integer;
+  declare val_cert any;
+  declare permissions int;
+
+  serviceId := null;
+  val_uname := null;
+  val_sid := null;
+  val_isRealUser := 0;
+  val_cert := null;
+  val_webidGraph := null;
+  val_sidRealm := null;
+
+  -- Get Auth info
+  if (__proc_exists ('VAL.DBA.get_authentication_details_for_connection')) {
+    auth_method := VAL.DBA.get_authentication_details_for_connection (
+      sid=>val_sid,
+      serviceId=>serviceId,
+      uname=>val_uname,
+      isRealUser=>val_isRealUser,
+      realm=>val_sidRealm,
+      cert=>val_cert);
+  }
+  else {
+    -- Backwards compatibility
+    val_cert := client_attr ('client_certificate');
+    auth_method := VAL.DBA.authentication_details_for_connection (
+      sid=>val_sid,
+      serviceId=>serviceId,
+      uname=>val_uname,
+      isRealUser=>val_isRealUser,
+      realm=>val_sidRealm,
+      cert=>val_cert);
+  }
+
+  -- Check check_auth_and_acls
+    -- Check generic SPARQL permissions
+  if ((serviceId is null or not VAL.DBA.is_admin_user (val_uname)) and
+    VAL.DBA.acls_enabled_for_scope (VAL.DBA.get_query_scope (), val_sidRealm, 0))
+  {
+    declare acl any;
+    acl := get_keyword (
+      'urn:virtuoso:access:sparql',
+      VAL.DBA.check_acls_for_resource (
+        serviceId=>serviceId,
+        resource=>'urn:virtuoso:access:sparql',
+        realm=>val_sidRealm,
+        scope=>VAL.DBA.get_query_scope (),
+        webidGraph=>val_webidGraph,
+        certificate=>val_cert
+      ));
+    if (VAL.DBA.sparql_access_modes_to_bitmask (acl) = 0) {
+      http_rewrite ();
+
+      connection_set ('__val_denied_service_id__', serviceId);
+      connection_set ('__val_req_res__', 'urn:virtuoso:access:sparql');
+      connection_set ('__val_req_acl_scope__', VAL.DBA.get_query_scope ());
+      connection_set ('__val_req_res_label__', 'Sparql Select');
+      connection_set ('__val_returnto_url__', parentPage);
+
+      if (serviceId is null)
+        http_status_set(401);
+      else
+        http_status_set(403);
+
+      if (val_webidGraph is not null)
+        exec ('sparql clear graph <' || val_webidGraph || '>'); ;
+
+      return 0;
+    }
+  }
+
+  -- Set the effective user
+  -- (not required for the query, since we do EXEC_AS (qry, 'dba') anyway, but required for the permissions
+  --  callback which we call directly)
+  set_user_id ('dba');
+
+  -- Set the application realm to use in the sparql graph security callback
+  connection_set ('val_sparql_rule_realm', val_sidRealm);
+
+  -- Let the callback know about the mapped SQL user so it can take system graph permissions into account (in addition to the ACL rules)
+  if (length (val_uname))
+    connection_set ('val_sparql_uname', val_uname);
+
+  -- Let the callback know about the used certificate
+  if (not val_cert is null)
+    connection_set ('val_sparql_cert', val_cert);
+
+  -- Let the callback know about the webid tmp graph
+  connection_set ('val_sparql_webid_graph', val_webidGraph);
+
+  -- Call SPARQL_GS_APP_CALLBACK_VAL_SPARQL_PERMS directly to retrieve the user's effective graph permissions,
+  -- so we can notify the user if they don't have sufficient permission to view or sponge.
+  -- When executing a query, we define:
+  --   define sql:gs-app-callback "VAL_SPARQL_PERMS" define sql:gs-app-uid "<id>"
+  -- to enforce the graph permissions, (though if the user has insufficient permissions, the query won't be executed).
+  permissions := DB.DBA.SPARQL_GS_APP_CALLBACK_VAL_SPARQL_PERMS (iri_to_id(graph), coalesce (serviceId, 'nobody'));
+
+  if (bit_and (permissions, 1) = 0) {
+    http_rewrite ();
+
+    connection_set ('__val_denied_service_id__', serviceId);
+    connection_set ('__val_req_res__', graph);
+    connection_set ('__val_req_res_label__', sprintf ('Graph <%s>', graph));
+    connection_set ('__val_returnto_url__', parentPage);
+
+    if (serviceId is null)
+      http_status_set(401);
+    else
+      http_status_set(403);
+  }
+
+  if (val_webidGraph is not null)
+    exec ('sparql clear graph <' || val_webidGraph || '>'); ;
+
+  return permissions;
+}
+;

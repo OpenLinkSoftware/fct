@@ -61,6 +61,8 @@
   declare gs_user_id, gs_check_needed integer;
   declare gs_check_cond varchar;
   declare user_permissions, val_vad_present, pacl_vad_present, graph_perms_allow_sponge int;
+  declare val_serviceId varchar;
+  declare val_auth_method integer;
 
   val_vad_present := 0;
   if (__proc_exists ('VAL.DBA.username_for_online_account') is not null)
@@ -218,71 +220,15 @@ again:
   <?include fct_val_auth.vsp ?>
 
 <?vsp
-  user_permissions := DB.DBA.RDF_GRAPH_USER_PERMS_GET (_G, http_nobody_uid());
   if (val_vad_present)
   {
-    -- Check generic SPARQL permissions
-    if ((val_serviceId is null or not VAL.DBA.is_admin_user (val_uname)) and
-      VAL.DBA.acls_enabled_for_scope (VAL.DBA.get_query_scope (), val_sidRealm, 0))
-    {
-      declare acl any;
-      acl := get_keyword (
-        'urn:virtuoso:access:sparql',
-        VAL.DBA.check_acls_for_resource (
-          serviceId=>val_serviceId,
-          resource=>'urn:virtuoso:access:sparql',
-          realm=>val_sidRealm,
-          scope=>VAL.DBA.get_query_scope (),
-          webidGraph=>val_webidGraph,
-          certificate=>val_cert
-        ));
-      if (VAL.DBA.sparql_access_modes_to_bitmask (acl) = 0) {
-        http_rewrite ();
-
-        connection_set ('__val_denied_service_id__', val_serviceId);
-        connection_set ('__val_req_res__', 'urn:virtuoso:access:sparql');
-        connection_set ('__val_req_acl_scope__', VAL.DBA.get_query_scope ());
-        connection_set ('__val_req_res_label__', 'Sparql Select');
-        connection_set ('__val_returnto_url__', auth_res_login_url);
-
-        if (val_serviceId is null)
-          http_status_set(401);
-        else
-          http_status_set(403);
-
+    user_permissions := FCT.DBA.check_auth_and_acls (val_serviceId, val_auth_method, _G, auth_res_login_url);
+    if (not user_permissions)
         return '';
       }
-    }
-
-    -- Only required when using WS.WS."/!sparql/")
-    -- connection_set ('SPARQLUserId', 'dba');
-
-    -- Set the effective user 
-    -- (not required for the query, since we do EXEC_AS (qry, 'dba') anyway, but required for the permissions
-    --  callback which we call directly)
-    set_user_id ('dba');
-
-    -- Set the application realm to use in the sparql graph security callback
-    connection_set ('val_sparql_rule_realm', val_sidRealm);
-
-    -- Let the callback know about the mapped SQL user so it can take system graph permissions into account (in addition to the ACL rules)
-    if (length (val_uname))
-      connection_set ('val_sparql_uname', val_uname);
-
-    -- Let the callback know about the used certificate
-    if (not val_cert is null)
-      connection_set ('val_sparql_cert', val_cert);
-
-    -- Let the callback know about the webid tmp graph
-    connection_set ('val_sparql_webid_graph', val_webidGraph);
-
-    -- Call SPARQL_GS_APP_CALLBACK_VAL_SPARQL_PERMS directly to retrieve the user's effective graph permissions,
-    -- so we can notify the user if they don't have sufficient permission to view or sponge.
-    -- When executing a query, we define:
-    --   define sql:gs-app-callback "VAL_SPARQL_PERMS" define sql:gs-app-uid "<id>"
-    -- to enforce the graph permissions, (though if the user has insufficient permissions, the query won't be executed).
-      
-    user_permissions := DB.DBA.SPARQL_GS_APP_CALLBACK_VAL_SPARQL_PERMS (iri_to_id(_G), coalesce (val_serviceId, 'nobody'));
+  else
+  {
+    user_permissions := DB.DBA.RDF_GRAPH_USER_PERMS_GET (_G, http_nobody_uid());
   }
 
   graph_perms_allow_sponge := 1;
@@ -302,21 +248,9 @@ again:
     if (get_keyword ('sr', params) is not null)
       view_params := view_params || '&sr=' || get_keyword ('sr', params);
     protocol := 'http'; if (is_https_ctx()) protocol := 'https';
-
-    http_rewrite ();
-
-    -- FIXME: make a distinction between general sparql access and the graph
-    connection_set ('__val_denied_service_id__', val_serviceId);
-    connection_set ('__val_req_res__', _G);
-    connection_set ('__val_req_res_label__', sprintf ('Graph <%s>', _G));
-    connection_set ('__val_returnto_url__', auth_res_login_url);
-
-    if (val_serviceId is null)
-      http_status_set(401);
-    else
-      http_status_set(403);
-
-    return '';
+    http_status_set (303);
+    http_header (sprintf('Location: %s://%s//fct/rdfdesc/fct_no_view_perms.vsp?gr=%U%s\r\n', protocol, host, view_uri, view_params));
+    return;
   }
   else if (bit_and (user_permissions, 4) = 0)
   {
