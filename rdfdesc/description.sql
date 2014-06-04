@@ -1423,7 +1423,7 @@ create procedure FCT.DBA.check_auth_and_acls (
       connection_set ('__val_denied_service_id__', serviceId);
       connection_set ('__val_req_res__', 'urn:virtuoso:access:sparql');
       connection_set ('__val_req_acl_scope__', VAL.DBA.get_query_scope ());
-      connection_set ('__val_req_res_label__', 'Sparql Select');
+      connection_set ('__val_req_res_label__', 'Web Resource Description');
       connection_set ('__val_returnto_url__', parentPage);
 
       if (isstring (http_param ('error.msg')))
