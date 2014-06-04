@@ -153,7 +153,16 @@
   else
   {
     user_permissions := DB.DBA.RDF_GRAPH_USER_PERMS_GET (gr, http_nobody_uid());
-    -- TODO: tell the user if they have no access
+    if (bit_and (user_permissions, 1) = 0)
+    {
+      -- User doesn't have read permission
+      declare protocol, view_uri varchar;
+      view_uri := gr;
+      protocol := 'http'; if (is_https_ctx()) protocol := 'https';
+      http_status_set (303);
+      http_header (sprintf('Location: %s://%s//fct/rdfdesc/fct_no_view_perms.vsp?gr=%U%s\r\n', protocol, host, view_uri, FCT.DBA.get_describe_request_params (params)));
+      return;
+    }
   }
 ?>
 

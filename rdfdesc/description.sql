@@ -1501,3 +1501,21 @@ create procedure FCT.DBA.build_page_url_on_current_host (
   return sprintf ('%s://%s%s?%s', protocol, host, path, query);
 }
 ;
+
+create procedure FCT.DBA.get_describe_request_params (
+  in params any
+  )
+{
+  declare desc_params varchar;
+
+  desc_params := '';
+  if (get_keyword ('sp', params) is not null)
+    desc_params := desc_params || '&sp=' || get_keyword ('sp', params);
+  if (get_keyword ('sponger:get', params) is not null)
+    desc_params := desc_params || '&sponger:get=' || get_keyword ('sponger:get', params);
+  if (get_keyword ('sr', params) is not null)
+    desc_params := desc_params || '&sr=' || get_keyword ('sr', params);
+
+  return desc_params;
+}
+;
