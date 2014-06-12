@@ -12,7 +12,7 @@
                 <?vsp 
 		  if (val_serviceId is null or val_serviceId = 'nobody') { 
 		?>
-                  Not logged in: <a id="loginLink" href="login.vsp?returnto=<?vsp http_url(pageUrl); ?>">Login</a>
+                  Not logged in: <a id="loginLink" href="/fct/login.vsp?returnto=<?vsp http_url(pageUrl); ?>">Login</a>
                 <?vsp } else {
                   declare x, n varchar;
                   x := VAL.DBA.get_profile_url (val_serviceId);
