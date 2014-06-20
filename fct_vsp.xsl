@@ -358,7 +358,7 @@
 	  <tr><th></th><th>?s<xsl:value-of select="$pos"/> Subject Of <xsl:value-of select="$p_term"/>(s)</th><!--th>Label</th--><th></th><th>Count</th></tr>
       </xsl:when>
       <xsl:when test="$view-type = 'list-count'">
-	<tr><th></th><th><xsl:value-of select="$s_term"/></th><!--th>Title</th--><th></th><th>Occurrence Count</th></tr>
+	<tr><th></th><th><xsl:value-of select="$s_term"/></th><!--th>Title</th--><th></th><th>Count</th></tr>
       </xsl:when>
       <xsl:when test="$view-type = 'text-properties'">
 	<tr><th></th><th><xsl:value-of select="$p_term"/></th><!--th>Label</th--><th></th><th>Count</th></tr>
