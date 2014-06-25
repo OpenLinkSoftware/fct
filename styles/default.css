@@ -542,6 +542,7 @@ div.facet {
 
 .plink_a {margin-left: 1em}
 .sparqlhpv_a {margin-left: 1em}
+.pivotedit_a {margin-left: 0.1em}
 
 div#sparql_link { margin-top: 10px; float: right;}
 div#sparql_link a { 
@@ -581,13 +582,20 @@ div#dbg_output {
 
 span.advisory { font-weight: bold; }
 
-span.pivot_pg a, 
+span.pivot_page_opts a, 
+span.pivot_page_size a, 
 span.pivot_qrcode_opts a,
 span.pivot_link_opts a { text-decoration: none; }
 
-span.pivot_pg a:hover,
+span.pivot_page_opts a:hover,
+span.pivot_page_size a:hover,
 span.pivot_qrcode_opts a:hover,
 span.pivot_link_opts a:hover { text-decoration: underline; }
+
+span.pivot_page_opts a:disabled,
+span.pivot_page_size a:disabled,
+span.pivot_qrcode_opts a:disabled,
+span.pivot_link_opts a:disabled { color: #7F7F7F; }
 
 div#nav {
     float: left;

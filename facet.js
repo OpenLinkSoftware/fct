@@ -1048,6 +1048,45 @@ function fct_set_pivot_page_size()
   a.setAttribute("href", href);
 }
 
+function fct_paged_opt()
+{
+  var pg_size = $('pivot_pg_size').value;
+  pg_size = parseInt(pg_size);
+  if (isNaN(pg_size) || pg_size < 0)
+    pg_size = 0;
+  else if (pg_size > 1000)
+    pg_size = 1000;
+  var a = $('pivot_a_mpc');
+  var href = a.href;
+  if ($('pivot_paged').checked == false)
+    {
+      href = href.replace(/limit=\d+/, 'limit=0');
+      $('pivot_pg_size').style.visibility = "hidden";
+      $('pivot_qrcode').style.visibility = "hidden";
+      $('CXML_redir_for_subjs').style.visibility = "hidden";
+      $('CXML_redir_for_hrefs').style.visibility = "hidden";
+      $('pivot_pg_size_label').style.visibility='hidden';
+      $('pivot_qrcode_opts_label').style.visibility="hidden";
+      $('pivot_subject_link_opts_label').style.visibility='hidden';
+      $('pivot_href_link_opts_label').style.visibility='hidden';
+      $('pivot_a_edit').style.visibility='visible';
+    }
+  else 
+    {
+      href = href.replace(/limit=\d+/, 'limit='+pg_size);
+      $('pivot_pg_size').style.visibility = "visible";
+      $('pivot_qrcode').style.visibility = "visible";
+      $('CXML_redir_for_subjs').style.visibility = "visible";
+      $('CXML_redir_for_hrefs').style.visibility = "visible";
+      $('pivot_pg_size_label').style.visibility='visible';
+      $('pivot_qrcode_opts_label').style.visibility="visible";
+      $('pivot_subject_link_opts_label').style.visibility='visible';
+      $('pivot_href_link_opts_label').style.visibility='visible';
+      $('pivot_a_edit').style.visibility='hidden';
+    }
+  a.setAttribute("href", href);
+}
+
 function fct_set_pivot_qrcode_opt()
 {
   var qrcode_flag = $('pivot_qrcode').checked ? 1 : 0;
