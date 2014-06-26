@@ -297,6 +297,7 @@ again:
       DB.DBA.VT_INC_INDEX_DB_DBA_RDF_OBJ ();
     }
   }
+  set_user_id (http_map_get ('vsp_uid'));
 
   odd_position := 0;
   set http_charset='utf-8';
