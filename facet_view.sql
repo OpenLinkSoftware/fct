@@ -650,18 +650,18 @@ fct_nav (in tree any,
 
   if ('properties' <> tp)
     if (connection_get('s_term') = 's') 
-      fct_view_link ('properties', 'Properties', txt, 'Entity Characteristic or Property');
+      fct_view_link ('properties', 'Relation Subject', txt, 'Relationships for which selected variable denotes relation subject');
     else
-      fct_view_link ('properties', 'Relation Subjects', txt, 'Relations for which selected Entity is an Object');
+      fct_view_link ('properties', 'Relation Entity', txt, 'Relationships for which selected variable denotes relation entity');
 
   if ('text' = tp and pos = 0)
     fct_view_link ('text-properties', 'Properties containing the text', txt);
 
   if ('properties-in' <> tp)
     if (connection_get('s_term') = 's') 
-      fct_view_link ('properties-in', 'Referencing Properties', txt, 'Characteristics or Properties with Entity References as values');
+      fct_view_link ('properties-in', 'Relation Object', txt, 'Relationships for which selected variable denotes relation object');
     else
-      fct_view_link ('properties-in', 'Relation Objects', txt, 'Relations for which selected Entity is a Subject');
+      fct_view_link ('properties-in', 'Relation Value', txt, 'Relationships for which selected variable denotes relation value');
 
   if (tp <> 'list-count')
     {
