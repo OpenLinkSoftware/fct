@@ -44,7 +44,8 @@ fct_view_info (in tree any, in ctx int, in txt any)
   http ('<h3 id="view_info">', txt);
   if ('list' = mode)
     {
-      http (sprintf ('Query results for Relations for %s%d', connection_get ('s_term'), pos), txt);
+      --http (sprintf ('Query results for Relations for %s%d', connection_get ('s_term'), pos), txt);
+      http ('Find entity relationships', txt);
     }
   if ('list-count' = mode)
     {
@@ -628,7 +629,7 @@ fct_nav (in tree any,
   fct_set_conn_tlogy (tree);
 
   http ('<div id="fct_nav">', txt);
-  http ('<h3>Entity Relationship Exploration</h3>', txt);
+  http ('<h3>Entity Relationship Filters</h3>', txt);
   http ('<ul class="n1">', txt);
 
   if ('text-properties' = tp)
