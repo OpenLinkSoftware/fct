@@ -2,8 +2,8 @@
   if (val_vad_present) { 
     declare enable_personal_acl_ui int;
     enable_personal_acl_ui := 0;
-    if (pacl_vad_present and __proc_exists('VAL.VAL.acl.rule.new') is not null)
-      enable_personal_acl_ui := 1;
+    -- if (pacl_vad_present and __proc_exists('VAL.VAL.acl.rule.new') is not null)
+    --  enable_personal_acl_ui := 1;
 ?>
         <!-- <div id="val_login_status"> -->
           <table style="width:100%;font-size:1em; border-spacing:0px;">
