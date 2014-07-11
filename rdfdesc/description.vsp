@@ -189,12 +189,14 @@ again:
 
   arr := rfc1808_parse_uri (gr);
 
-  if (arr[0] = '' and arr[1] = '' and arr[2] <> '')
+  if (gr[0] <> '#'[0] and arr[0] = '' and arr[1] = '' and arr[2] <> '')
     gr := 'http://' || gr;
 
   arr := rfc1808_parse_uri (gr);
   arr [5] := '';
   doc := vspx_uri_compose (arr);
+  if (gr[0] = '#'[0])
+    doc := gr;
   -- If doc URI contains /about/id/entity/ or /about/id/, set _G to the URI following these components
   _G := b3s_get_entity_graph (doc);
   page_resource_uri := gr;
