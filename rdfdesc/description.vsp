@@ -261,7 +261,7 @@ again:
 
   if (graph_perms_allow_sponge)
   {
-    declare exit handler for sqlstate 'RDFZZ'
+    declare exit handler for sqlstate 'RDF*'
     {
       err := __SQL_MESSAGE;
       goto errend; 
