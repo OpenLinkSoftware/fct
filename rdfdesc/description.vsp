@@ -64,8 +64,9 @@
   declare val_serviceId varchar;
   declare val_auth_method integer;
   declare host varchar;
-  declare pageUrl varchar;
+  declare pageUrl, err varchar;
 
+  err := null;
   val_vad_present := 0;
   if (__proc_exists ('VAL.DBA.username_for_online_account') is not null)
     val_vad_present := 1;
@@ -260,16 +261,21 @@ again:
 
   if (graph_perms_allow_sponge)
   {
+    declare exit handler for sqlstate 'RDFZZ'
+    {
+      err := __SQL_MESSAGE;
+      goto errend; 
+    };
     -- if (get_keyword ('sp', params) = '1' and 0 = length (_F))
     if (get_keyword ('sp', params) = '1')
     {
       if (val_vad_present)
       {
-	DB.DBA.EXEC_AS (sprintf ('sparql define input:storage "" define get:soft "add" define get:enforce-acls "yes" define sql:gs-app-callback "VAL_SPARQL_PERMS" define sql:gs-app-uid "%s" SELECT * from <%S> where { ?x ?y ?z . }', 
-	    val_serviceId, _G), 'dba');
+	DB.DBA.EXEC_AS (sprintf ('sparql define get:error-recovery "signal" define input:storage "" define get:soft "add" define get:enforce-acls "yes" define sql:gs-app-callback "VAL_SPARQL_PERMS" define sql:gs-app-uid "%s" SELECT * from <%S> where { ?x ?y ?z . }', 
+	    val_serviceId, _G), 'dba', 1);
       }
       else
-	DB.DBA.EXEC_AS (sprintf ('sparql define input:storage "" define get:soft "add" SELECT * from <%S> where { ?x ?y ?z . }', _G), 'SPARQL');
+	DB.DBA.EXEC_AS (sprintf ('sparql define get:error-recovery "signal" define input:storage "" define get:soft "add" SELECT * from <%S> where { ?x ?y ?z . }', _G), 'SPARQL', 1);
       DB.DBA.VT_INC_INDEX_DB_DBA_RDF_OBJ ();
     }
     -- else if ((get_keyword ('sr', params) is not null or get_keyword ('sponger:get', params) is not null) and 0 = length (_F))
@@ -293,11 +299,12 @@ again:
         refr := atoi (get_keyword ('sr', params, '0'));		
 
       if (val_vad_present)
-	DB.DBA.EXEC_AS (sprintf ('sparql define input:storage "" define get:refresh "%d" define get:soft "%s" define get:enforce-acls "yes" define sql:gs-app-callback "VAL_SPARQL_PERMS" define sql:gs-app-uid "%s" %s SELECT * from <%S> where { ?x ?y ?z . }', refr, sp_mode, val_serviceId, sp_accept, _G), 'dba');
+	DB.DBA.EXEC_AS (sprintf ('sparql define get:error-recovery "signal" define input:storage "" define get:refresh "%d" define get:soft "%s" define get:enforce-acls "yes" define sql:gs-app-callback "VAL_SPARQL_PERMS" define sql:gs-app-uid "%s" %s SELECT * from <%S> where { ?x ?y ?z . }', refr, sp_mode, val_serviceId, sp_accept, _G), 'dba', 1);
       else
-	DB.DBA.EXEC_AS (sprintf ('sparql define input:storage "" define get:refresh "%d" define get:soft "%s" %s SELECT * from <%S> where { ?x ?y ?z . }', refr, sp_mode, sp_accept, _G), 'SPARQL');
+	DB.DBA.EXEC_AS (sprintf ('sparql define get:error-recovery "signal" define input:storage "" define get:refresh "%d" define get:soft "%s" %s SELECT * from <%S> where { ?x ?y ?z . }', refr, sp_mode, sp_accept, _G), 'SPARQL', 1);
       DB.DBA.VT_INC_INDEX_DB_DBA_RDF_OBJ ();
     }
+    errend:;
   }
   set_user_id (http_map_get ('vsp_uid'));
 
@@ -588,6 +595,8 @@ if (_subject <> '') {
   <p class="subj_delim"></p>
 <?vsp 
 } 
+     if (err is not null)
+       http_value (err, 'div');
 ?>
 <!--            <li><a href="/fct/facet.vsp?sid=<?V sid ?>&amp;cmd=set_class&amp;iri=<?V gr ?>">Choose <?V ''?> as Type</a></li>
                 <li><a href="/fct/facet.vsp?sid=<?V sid ?>&amp;cmd=open_property">Choose <?V ''?> as Property (p)</a></li>
