@@ -523,7 +523,7 @@ again:
     id="sp_link" rel="nofollow">Sponge</a>&nbsp;<a class="desc_permalink" href="<?vsp http (plink_href); ?>">Permalink</a></h2>
       <div class="ds_inf_info"> 
 	    An Entity of Type : <a href="<?V e_type ?>"><?V e_type_label ?></a>,
-	    within Data Space : <a href="http://<?V host ?>"><?V host ?></a> associated with source <a href="usage.vsp?g=<?U _S ?><?V ses_parms ?>">dataset(s)</a><br/>
+	    within Data Space : <a href="http://<?V host ?>"><?V host ?></a> associated with source <a href="usage.vsp?g=<?U _S ?><?V ses_parms ?>">document(s)</a><br/>
 <?vsp 
 
   declare is_class int;
@@ -566,7 +566,7 @@ again:
           {
 ?>
             <input type="hidden" name="cmd" value="new_with_class"/>
-            <button class="fct_sel_as_type" title="">New Facets Session with This Class</button>
+            <button class="fct_sel_as_type" title="">New Facet based on Instances of this Class</button>
 <?vsp
           }
 ?>
