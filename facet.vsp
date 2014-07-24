@@ -20,8 +20,11 @@
 <script type="text/javascript" >
     var featureList=["map", "combolist", "ajax", "tab", "json", "location"];
 </script>
+<script type="text/javascript" src="rdfdesc/s/jquery-1.7.2.js"></script>
 <script type="text/javascript" src="oat/toolkit/loader.js"></script>
 <script type="text/javascript" src="facet.js"></script>
+<script type="text/javascript" src="rdfdesc/s/jquery-ui-1.8.20.custom.min.js"></script>
+<link rel="stylesheet" type="text/css" href="rdfdesc/styles/jquery-ui-1.8.20.custom.css" />
 
 <?vsp 
   declare sid, _S, ses_parms varchar;
@@ -72,6 +75,12 @@
 <div id="HD">
   <?vsp fct_page_head (); ?>  
 </div><!-- #HD -->
+  <img id="qrcode_thumb" alt="QRcode icon" src="/fct/images/qr_thumb.png"/>
+  <div id="qrcode_popup" title="QRCode" style="display:none">
+    <div id="qrcode">
+	<img id="qrcode_img" style="height:120px; width:120px;" alt="" src=""/>
+    </div>
+  </div>
 <div id="MD">
 <?vsp 
 --

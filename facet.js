@@ -21,6 +21,8 @@
  *
  */
 
+var $j = jQuery.noConflict();
+
 function link_change (prop)
 {
   var a = $('map_link');
@@ -1114,3 +1116,18 @@ function fct_set_pivot_href_opt()
   a.setAttribute("href", href);
 }
 
+$j(document).ready(function() {
+  $j('#qrcode_popup').dialog({autoOpen:false ,resizable:true ,height:180, width:160, position:['right','top']});
+  $j('#qrcode_thumb').click(function () {
+      var dl = $j('#qrcode_popup');
+      var img = $j('#qrcode_img');
+      var pl = $j('#perma_link');
+      if (img.attr ('src').length == 0)
+        {
+	  OAT.AJAX.GET ("/c/qrcode?data_to_qrcode=" + pl.innerHTML, false, function (data) { 
+	    img.attr ('src', data);
+	  });
+	}
+      dl.dialog('isOpen')?dl.dialog('close'):dl.dialog('open');
+     });
+});
