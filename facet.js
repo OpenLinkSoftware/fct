@@ -1124,7 +1124,7 @@ $j(document).ready(function() {
       var pl = $j('#perma_link');
       if (img.attr ('src').length == 0)
         {
-	  OAT.AJAX.GET ("/c/qrcode?data_to_qrcode=" + pl.innerHTML, false, function (data) { 
+	  OAT.AJAX.GET ("/c/qrcode?data_to_qrcode=" +  window.location.protocol + '//' + window.location.host + pl.text(), false, function (data) { 
 	    img.attr ('src', data);
 	  });
 	}
