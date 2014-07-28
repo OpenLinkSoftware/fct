@@ -65,6 +65,7 @@
   declare val_auth_method integer;
   declare host varchar;
   declare pageUrl, err varchar;
+  declare dist int;
 
   err := null;
   val_vad_present := 0;
@@ -101,6 +102,8 @@ again:
         dbg_out := string_output ();
     }
   else connection_set ('b3s_dbg',0);
+
+  dist := atoi (get_keyword ('distinct', params, '1'));
      
   connection_set ('ns_ctr', 1); /* for unknown xmlns to print in RDFa */
 
@@ -520,7 +523,10 @@ again:
     href="/describe/?url=<?U page_resource_uri ?><?= case when sid is
     not null then '&sid=' || sid end ?>&amp;sponger:get=add"
     title="Click to generate local descriptor data for this entity"
-    id="sp_link" rel="nofollow">Sponge</a>&nbsp;<a class="desc_permalink" href="<?vsp http (plink_href); ?>">Permalink</a></h2>
+    id="sp_link" rel="nofollow">Sponge</a>
+&nbsp;<a class="desc_permalink" href="<?vsp http (plink_href); ?>&distinct=<?V case when dist = 0 then 1 else 0 end ?>" title="This link enables you toggle between normalized and un-normalized views of data using by applying or note applying a DISTINCT operator"><?vsp if (dist) http ('Not'); ?>Distinct</a>
+&nbsp;<a class="desc_permalink" href="<?vsp http (plink_href); ?>&distinct=<?V dist ?>">Permalink</a>
+    </h2>
       <div class="ds_inf_info"> 
 	    An Entity of Type : <a href="<?V e_type ?>"><?V e_type_label ?></a>,
 	    within Data Space : <a href="http://<?V host ?>"><?V host ?></a> associated with source <a href="usage.vsp?g=<?U _S ?><?V ses_parms ?>">document(s)</a><br/>
@@ -633,7 +639,8 @@ if (_subject <> '') {
 
       --topof := '';
       qry_str := sprintf ('select %s PRED, OBJECT, FLAG from (%s UNION ALL %s) un0', topof, dt1, dt2);
-      qry_str := replace (qry_str, 'distinct', '');
+      if (dist = 0)
+        qry_str := replace (qry_str, 'distinct', '');
       if (_last = 0)
         { 
 	  if (length (_F) or 1 = sys_stat ('cl_run_local_only'))
@@ -648,7 +655,8 @@ if (_subject <> '') {
 	    }
 	  dt2 := sprintf ('select count(*) as cnt from (sparql %s define output:valmode "LONG" select distinct ?p ?o %s where { ?o ?p <%S> } order by 1) sp2', inf, _F, _S);
 	  count_str := sprintf ('select sum (cnt) from (%s UNION ALL %s) un0', dt1, dt2);
-          count_str := replace (count_str, 'distinct', '');
+          if (dist = 0)
+            count_str := replace (count_str, 'distinct', '');
           count_str := replace (count_str, 'order by 1', '');
 	  -- dbg_obj_princ ('count_str = ', count_str);
 	  exec (count_str, null, null, vector (), 0, meta, data);
@@ -706,6 +714,7 @@ if (_subject <> '') {
 	  <div>
 	      <input type="hidden" name="url" value="<?V gr ?>" />
               <input type="submit" name="go" value="Go" style="width: 0px; height: 0px; margin: 0px; padding: 0px; outline: none; border: 0px;" />
+	      <input type="hidden" name="distinct" value="<?V dist ?>" />
 	      <?vsp if (connection_get ('inf') is not null) { ?>
 	      <input type="hidden" name="inf" value="<?V connection_get ('inf') ?>" />
 	      <?vsp } ?>

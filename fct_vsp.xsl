@@ -194,7 +194,7 @@
       <xsl:text>  Resource utilization: </xsl:text>
       <xsl:value-of select="/facets/db-activity"/> 
     </div> <!-- #result_nfo -->
-    <div id="perma_link" style="display:hidden"><xsl:value-of select="$p_link"/></div>
+    <div id="perma_link" style="display:none"><xsl:value-of select="$p_link"/></div>
   </div> <!-- #res -->
   <script type="text/javascript">
 
