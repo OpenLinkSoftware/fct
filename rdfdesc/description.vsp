@@ -524,8 +524,8 @@ again:
     not null then '&sid=' || sid end ?>&amp;sponger:get=add"
     title="Click to generate local descriptor data for this entity"
     id="sp_link" rel="nofollow">Sponge</a>
-&nbsp;<a class="desc_permalink" href="<?vsp http (plink_href); ?>&distinct=<?V case when dist = 0 then 1 else 0 end ?>" title="This link enables you toggle between normalized and un-normalized views of data using by applying or note applying a DISTINCT operator"><?vsp if (dist) http ('Not'); ?>Distinct</a>
-&nbsp;<a class="desc_permalink" href="<?vsp http (plink_href); ?>&distinct=<?V dist ?>">Permalink</a>
+&nbsp;<a class="desc_permalink" href="<?vsp http (fct_make_curie (sprintf ('%s&distinct=%d',  plink_href, equ (dist, 0)), lines)); ?>" title="This link enables you toggle between normalized and un-normalized views of data using by applying or note applying a DISTINCT operator"><?vsp if (dist) http ('Not'); ?>Distinct</a>
+&nbsp;<a class="desc_permalink" href="<?vsp http (fct_make_curie (sprintf ('%s&distinct=%d', plink_href, dist), lines)); ?>">Permalink</a>
     </h2>
       <div class="ds_inf_info"> 
 	    An Entity of Type : <a href="<?V e_type ?>"><?V e_type_label ?></a>,
