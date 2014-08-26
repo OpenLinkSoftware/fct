@@ -491,76 +491,47 @@
               </xsl:variable>
               <xsl:comment><xsl:value-of select="$current_iri"/></xsl:comment>
             </td>
-	    <td>
-		<xsl:variable name="link_text">
-		    <xsl:choose>
-			<xsl:when test="'' != string (column[2])">
-			    <xsl:value-of select="column[2]"/>
-			</xsl:when>
-			<xsl:when test="'' != column[1]/@shortform">
-			    <xsl:value-of select="column[1]/@shortform"/>
-			</xsl:when>
-			<xsl:otherwise>
-			    <xsl:value-of select="column[1]"/>
-			</xsl:otherwise>
-		    </xsl:choose>
-		</xsl:variable>
-		<xsl:choose>
-		    <xsl:when test="'uri' = column[1]/@datatype or 'url' = column[1]/@datatype">
-			<xsl:call-template name="render-describe-link">
-			    <xsl:with-param name="uri" select="column[1]"/>
-			    <xsl:with-param name="shortform" select="column[1]/@shortform"/>
-			    <xsl:with-param name="content" select="$link_text"/>
-			</xsl:call-template>
-		    </xsl:when>
-		    <xsl:otherwise>
-			<a id="a_{position (.)}">
-			    <xsl:attribute name="class">sel_val</xsl:attribute>
-			    <xsl:attribute name="href">
-				<xsl:text>/fct/facet.vsp?cmd=</xsl:text>
-				<xsl:value-of select="$command"/>
-				<xsl:text>&amp;</xsl:text>
-				<xsl:choose>
-				    <xsl:when test="'cond' = $command">cond_t=eq&amp;val=<xsl:value-of select="$use_iri"/></xsl:when>
-				    <xsl:otherwise>iri=<xsl:value-of select="$use_iri"/></xsl:otherwise>
-				</xsl:choose>
-				<xsl:text>&amp;lang=</xsl:text>
-				<xsl:value-of select="column[1]/@xml:lang"/>
-				<xsl:text>&amp;datatype=</xsl:text>
-				<xsl:value-of select="urlify (column[1]/@datatype)"/>
-				<xsl:text>&amp;sid=</xsl:text>
-				<xsl:value-of select="$sid"/>
-			    </xsl:attribute> <!-- href -->
-			    <xsl:attribute name="title">
-				<xsl:value-of select="column[1]"/>
-			    </xsl:attribute>
-			    <xsl:value-of select="$link_text"/>
-			</a>
-		    </xsl:otherwise>
-		</xsl:choose>
+            <td>
+              <a id="a_{position (.)}">
+                <xsl:attribute name="class">sel_val</xsl:attribute>
+                <xsl:attribute name="href">
+                  <xsl:text>/fct/facet.vsp?cmd=</xsl:text>
+                  <xsl:value-of select="$command"/>
+                  <xsl:text>&amp;</xsl:text>
+                  <xsl:choose>
+                    <xsl:when test="'cond' = $command">cond_t=eq&amp;val=<xsl:value-of select="$use_iri"/></xsl:when>
+                    <xsl:otherwise>iri=<xsl:value-of select="$use_iri"/></xsl:otherwise>
+                  </xsl:choose>
+                  <xsl:text>&amp;lang=</xsl:text>
+                  <xsl:value-of select="column[1]/@xml:lang"/>
+                  <xsl:text>&amp;datatype=</xsl:text>
+                  <xsl:value-of select="urlify (column[1]/@datatype)"/>
+                  <xsl:text>&amp;sid=</xsl:text>
+                  <xsl:value-of select="$sid"/>
+                </xsl:attribute> <!-- href -->
+                <xsl:attribute name="title">
+                  <xsl:value-of select="column[1]"/>
+                </xsl:attribute>
+                <xsl:choose>
+                  <xsl:when test="'' != string (column[2])">
+                    <xsl:value-of select="column[2]"/>
+                  </xsl:when>
+                  <xsl:when test="'' != column[1]/@shortform">
+                    <xsl:value-of select="column[1]/@shortform"/>
+                  </xsl:when>
+                  <xsl:otherwise>
+                    <xsl:value-of select="column[1]"/>
+                  </xsl:otherwise>
+                </xsl:choose>
+              </a>
             </td>
             <td>
               <xsl:if test="'uri' = column[1]/@datatype or 'url' = column[1]/@datatype">
-			<a id="a_{position (.)}">
-			    <xsl:attribute name="class">sel_val</xsl:attribute>
-			    <xsl:attribute name="href">
-				<xsl:text>/fct/facet.vsp?cmd=</xsl:text>
-				<xsl:value-of select="$command"/>
-				<xsl:text>&amp;</xsl:text>
-				<xsl:choose>
-				    <xsl:when test="'cond' = $command">cond_t=eq&amp;val=<xsl:value-of select="$use_iri"/></xsl:when>
-				    <xsl:otherwise>iri=<xsl:value-of select="$use_iri"/></xsl:otherwise>
-				</xsl:choose>
-				<xsl:text>&amp;lang=</xsl:text>
-				<xsl:value-of select="column[1]/@xml:lang"/>
-				<xsl:text>&amp;datatype=</xsl:text>
-				<xsl:value-of select="urlify (column[1]/@datatype)"/>
-				<xsl:text>&amp;sid=</xsl:text>
-				<xsl:value-of select="$sid"/>
-			    </xsl:attribute> <!-- href -->
-			    <xsl:attribute name="title">Query condition selector that adds this item to the query builder</xsl:attribute>
-			    Select
-			</a>
+                <xsl:call-template name="render-describe-link">
+                  <xsl:with-param name="uri" select="column[1]"/>
+                  <xsl:with-param name="shortform" select="column[1]/@shortform"/>
+                  <xsl:with-param name="content">Describe</xsl:with-param>
+                </xsl:call-template>
               </xsl:if>
             </td>
             <xsl:if test="$view-type = 'list'">
