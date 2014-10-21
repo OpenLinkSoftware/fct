@@ -226,14 +226,14 @@
   if ($('pivot_a_ctr')) {
     var pivot_a = OAT.Dom.create('a', {}, 'pivot_a');
     var pivotedit_a = OAT.Dom.create('a', {}, 'pivotedit_a');
-    pivot_a.href='/pivot_collections/pivot.vsp?sid=<xsl:value-of select="$sid"/>&amp;limit=0&amp;qrcodes=0&amp;CXML_redir_for_subjs=&amp;CXML_redir_for_hrefs=&amp;q=<xsl:value-of select="urlify (normalize-space(/facets/sparql))"/>'
+    pivot_a.href='/pivot_collections/pivot.vsp?sid=<xsl:value-of select="$sid"/>&amp;limit=0&amp;qrcodes=0&amp;CXML_redir_for_subjs=DESCRIBE&amp;CXML_redir_for_hrefs=DESCRIBE&amp;q=<xsl:value-of select="urlify (normalize-space(/facets/sparql))"/>'
 	  pivot_a.innerHTML = 'View as a Pivot collection';
       pivot_a.id = 'pivot_a_mpc';
 	  var pivot_page_opts = OAT.Dom.create('span', {}, 'pivot_page_opts');
 	  pivot_page_opts.innerHTML = '&nbsp;&nbsp;<a href="#" title="View a paged snapshot collection">Paged Snapshot</a><input type="checkbox" onclick="fct_paged_opt()" id="pivot_paged" />';
       var pivot_page_size = OAT.Dom.create('span', {}, 'pivot_page_size');
       pivot_page_size.innerHTML = '&nbsp;&nbsp;&nbsp;<a  href="#" title="Sets the maximum number of entities displayed in a PivotViewer page. Entities on other pages are accessible via Related Collections links. A value of 0 disables paging. Range: 0..1000" style="visibility:hidden" id="pivot_pg_size_label">Page size</a>&nbsp;<input type="text" onblur="fct_set_pivot_page_size()" id="pivot_pg_size" size="4" maxlength="4" value="75" style="visibility:hidden" />&nbsp;&nbsp;';
-    pivotedit_a.href='/pivot_collections/pivot.vsp?sid=<xsl:value-of select="$sid"/>&amp;edit=1&amp;limit=0&amp;qrcodes=0&amp;CXML_redir_for_subjs=&amp;CXML_redir_for_hrefs=&amp;q=<xsl:value-of select="urlify (normalize-space(/facets/sparql))"/>'
+    pivotedit_a.href='/pivot_collections/pivot.vsp?sid=<xsl:value-of select="$sid"/>&amp;edit=1&amp;limit=0&amp;qrcodes=0&amp;CXML_redir_for_subjs=DESCRIBE&amp;CXML_redir_for_hrefs=DESCRIBE&amp;q=<xsl:value-of select="urlify (normalize-space(/facets/sparql))"/>'
 	  pivotedit_a.innerHTML = '(edit query)';
           pivotedit_a.id = 'pivot_a_edit';
 	  var pivot_qrcode_opts = OAT.Dom.create('span', {}, 'pivot_qrcode_opts');
