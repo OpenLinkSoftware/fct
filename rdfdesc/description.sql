@@ -902,7 +902,7 @@ again:
 	   	S = iri_to_id (_object, 0) and P = iri_to_id ('http://bblfish.net/work/atom-owl/2006-06-06/#src', 0);
 	   http (sprintf ('<div id="x_content"><iframe src="%s" width="100%%" height="100%%" frameborder="0"><p>Your browser does not support iframes.</p></iframe></div><br/>', src));
 	 }
-       else if (http_mime_type (_url) like 'image/%' or http_mime_type (_url) = 'application/x-openlink-photo')
+       else if (http_mime_type (_url) like 'image/%' or http_mime_type (_url) = 'application/x-openlink-photo' or prop = 'http://xmlns.com/foaf/0.1/depiction')
 	 {
 	   declare u any;
 	   if (b3s_o_is_out (prop))
@@ -966,7 +966,7 @@ again:
        vlbl := charset_recode (_object, 'UTF-8', '_WIDE_');
        if (vlbl = 0)
          vlbl := charset_recode (_object, current_charset (), '_WIDE_');
-       if (vlbl = 0 or _object like '<object%')
+       if (vlbl = 0 or _object like '<object%' or _object like '<iframe%')
          http (_object);
        else
          http_value (vlbl);
