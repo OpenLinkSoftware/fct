@@ -201,22 +201,10 @@
   var sparql_a = OAT.Dom.create('a',{}, 'sparql_a');
   sparql_a.href='/sparql?default-graph-uri=&amp;qtxt=<xsl:value-of select="urlify ($p_qry)"/>&amp;debug='
   sparql_a.innerHTML = 'View query as SPARQL';
-/*
-  var sparqlhpv_a;
-  if ($('pivot_a_ctr')) {
-    sparqlhpv_a = OAT.Dom.create('a',{}, 'sparqlhpv_a');
-    sparqlhpv_a.href='/HtmlPivotViewer/?url=' + window.location.protocol + '//' + window.location.host + encodeURIComponent('/sparql?default-graph-uri=&amp;query=<xsl:value-of select="urlify ($p_qry)"/>&amp;debug=&amp;timeout=&amp;should-sponge=&amp;format=text/cxml&amp;CXML_redir_for_subjs=121&amp;CXML_redir_for_hrefs=');
-    sparqlhpv_a.innerHTML = 'View raw results in HtmlPivotViewer';
-  }
-*/
   var plink_a = OAT.Dom.create('a',{}, 'plink_a');
   plink_a.href='<xsl:value-of select="$p_link"/>'; <!--'/fct/facet.vsp?qxml=<xsl:value-of select="urlify ($p_xml)"/>'; -->
   plink_a.innerHTML = 'Facet permalink';
-/*
-  if (sparqlhpv_a)
-    OAT.Dom.append (['sparql_a_ctr',sparql_a,sparqlhpv_a,plink_a]);
-  else
-*/
+
     OAT.Dom.append (['sparql_a_ctr',sparql_a,plink_a]);
   </script>
   <!--xsl:message terminate="no">addthis_key:<xsl:value-of select="$addthis_key"/></xsl:message-->
@@ -226,14 +214,16 @@
   if ($('pivot_a_ctr')) {
     var pivot_a = OAT.Dom.create('a', {}, 'pivot_a');
     var pivotedit_a = OAT.Dom.create('a', {}, 'pivotedit_a');
-    pivot_a.href='/pivot_collections/pivot.vsp?sid=<xsl:value-of select="$sid"/>&amp;limit=0&amp;qrcodes=0&amp;CXML_redir_for_subjs=DESCRIBE&amp;CXML_redir_for_hrefs=DESCRIBE&amp;q=<xsl:value-of select="urlify (normalize-space(/facets/sparql))"/>'
+    var pivot_query_limit = OAT.Dom.create('span', {}, 'pivot_query_limit');
+    pivot_query_limit.innerHTML = '&nbsp;&nbsp;&nbsp;<a  href="#" title="Sets the maximum number of triples used to generated the pivot collection. A value of 0 means there is no limit." id="pivot_qry_limit_label">Query limit</a>&nbsp;<input type="text" onblur="fct_set_pivot_query_limit()" id="pivot_qry_limit" size="4" maxlength="4" value="500" />&nbsp;&nbsp;';
+    pivot_a.href='/pivot_collections/pivot.vsp?sid=<xsl:value-of select="$sid"/>&amp;pagesize=0&amp;limit=500&amp;qrcodes=0&amp;CXML_redir_for_subjs=DESCRIBE&amp;CXML_redir_for_hrefs=DESCRIBE&amp;q=<xsl:value-of select="urlify (normalize-space(/facets/sparql))"/>'
 	  pivot_a.innerHTML = 'View as a Pivot collection';
       pivot_a.id = 'pivot_a_mpc';
 	  var pivot_page_opts = OAT.Dom.create('span', {}, 'pivot_page_opts');
 	  pivot_page_opts.innerHTML = '&nbsp;&nbsp;<a href="#" title="View a paged snapshot collection">Paged Snapshot</a><input type="checkbox" onclick="fct_paged_opt()" id="pivot_paged" />';
       var pivot_page_size = OAT.Dom.create('span', {}, 'pivot_page_size');
       pivot_page_size.innerHTML = '&nbsp;&nbsp;&nbsp;<a  href="#" title="Sets the maximum number of entities displayed in a PivotViewer page. Entities on other pages are accessible via Related Collections links. A value of 0 disables paging. Range: 0..1000" style="visibility:hidden" id="pivot_pg_size_label">Page size</a>&nbsp;<input type="text" onblur="fct_set_pivot_page_size()" id="pivot_pg_size" size="4" maxlength="4" value="75" style="visibility:hidden" />&nbsp;&nbsp;';
-    pivotedit_a.href='/pivot_collections/pivot.vsp?sid=<xsl:value-of select="$sid"/>&amp;edit=1&amp;limit=0&amp;qrcodes=0&amp;CXML_redir_for_subjs=DESCRIBE&amp;CXML_redir_for_hrefs=DESCRIBE&amp;q=<xsl:value-of select="urlify (normalize-space(/facets/sparql))"/>'
+    pivotedit_a.href='/pivot_collections/pivot.vsp?sid=<xsl:value-of select="$sid"/>&amp;edit=1&amp;pagesize=0&amp;limit=500&amp;qrcodes=0&amp;CXML_redir_for_subjs=DESCRIBE&amp;CXML_redir_for_hrefs=DESCRIBE&amp;q=<xsl:value-of select="urlify (normalize-space(/facets/sparql))"/>'
 	  pivotedit_a.innerHTML = '(edit query)';
           pivotedit_a.id = 'pivot_a_edit';
 	  var pivot_qrcode_opts = OAT.Dom.create('span', {}, 'pivot_qrcode_opts');
@@ -272,56 +262,8 @@
 		</select>&nbsp;';
 
 
-      OAT.Dom.append (['pivot_a_ctr',pivot_a,pivotedit_a,pivot_page_opts,pivot_page_size,pivot_qrcode_opts,pivot_link_opts]);
+      OAT.Dom.append (['pivot_a_ctr',pivot_a,pivotedit_a,pivot_query_limit,pivot_page_opts,pivot_page_size,pivot_qrcode_opts,pivot_link_opts]);
 
-/*
-    var pivot_a = OAT.Dom.create('a', {}, 'pivot_a');
-    var pivotedit_a = OAT.Dom.create('a', {}, 'pivotedit_a');
-    pivot_a.href='/pivot_collections/pivot.vsp?sid=<xsl:value-of select="$sid"/>&amp;limit=75&amp;qrcodes=0&amp;CXML_redir_for_subjs=&amp;CXML_redir_for_hrefs=&amp;q=<xsl:value-of select="urlify (normalize-space(/facets/sparql))"/>'
-	  pivot_a.innerHTML = 'Make Pivot collection';
-      pivot_a.id = 'pivot_a_mpc';
-    pivotedit_a.href='/pivot_collections/pivot.vsp?sid=<xsl:value-of select="$sid"/>&amp;edit=1&amp;limit=0&amp;qrcodes=0&amp;CXML_redir_for_subjs=&amp;CXML_redir_for_hrefs=&amp;q=<xsl:value-of select="urlify (normalize-space(/facets/sparql))"/>'
-	  pivotedit_a.innerHTML = 'Edit Pivot collection';
-
-      var pivot_pg = OAT.Dom.create('span', {}, 'pivot_pg');
-      pivot_pg.innerHTML = '&nbsp;&nbsp;(&nbsp;<a  href="#" title="Sets the maximum number of entities displayed in a PivotViewer page. Entities on other pages are accessible via Related Collections links. A value of 0 disables paging, displaying all entities in a single PivotViewer page. Range: 0..1000">Page size</a>&nbsp;<input type="text" onblur="fct_set_pivot_page_size()" id="pivot_pg_size" size="4" maxlength="4" value="75" />&nbsp;&nbsp;)';
-	  var pivot_qrcode_opts = OAT.Dom.create('span', {}, 'pivot_qrcode_opts');
-	  pivot_qrcode_opts.innerHTML = '&nbsp;&nbsp;<a href="#" title="Include a QRcode adjacent to each item\'s image">with QRcodes</a><input type="checkbox" onclick="fct_set_pivot_qrcode_opt()" id="pivot_qrcode" />';
-
-	  var pivot_link_opts = OAT.Dom.create('span', {}, 'pivot_link_opts');
-	  pivot_link_opts.innerHTML = '&nbsp;&nbsp;\
-	  <a href="#" title="Sets the link-out behavior of subject URIs, optionally performing a DESCRIBE on the subject">Subject&nbsp;&nbsp;link&nbsp;behavior</a>&nbsp;\
-	  <select id="CXML_redir_for_subjs" onchange="fct_set_pivot_subj_uri_opt()">\
-			<option value="121" selected="true">External resource link</option>\
-	  		<option value="">No link out</option>\
-			<!-- <option value="LOCAL_PIVOT">External faceted navigation links</option> -->\
-                        <option value="DESCRIBE"> External Description Link</option>\
-                        <option value="ABOUT_RDF">External Sponged Data Link (RDF)</option>\
-                        <option value="ABOUT_HTML">External Sponged Data Link (HTML)</option>\
-			<option value="LOCAL_TTL">External description resource (TTL)</option>\
-			<!-- <option value="LOCAL_CXML">External description resource (CXML)</option> -->\
-			<option value="LOCAL_NTRIPLES">External description resource (NTRIPLES)</option>\
-			<option value="LOCAL_JSON">External description resource (JSON)</option>\
-			<option value="LOCAL_XML">External description resource (RDF/XML)</option>\
-		</select>\
-		&nbsp;&nbsp;\
-		<a href="#" title="Sets the CXML type of resource URIs to String or Link, optionally performing a DESCRIBE on the resource">Facet&nbsp;link&nbsp;behavior</a>&nbsp;\
-		<select id="CXML_redir_for_hrefs" onchange="fct_set_pivot_href_opt()">\
-			<option value="" selected="true">Local faceted navigation link</option>\
-			<option value="121">External resource link</option>\
-			<option value="LOCAL_PIVOT">External faceted navigation links</option>\
-                        <option value="DESCRIBE"> External Description Links</option>\
-                        <option value="ABOUT_RDF">External Sponged Data Links (RDF)</option>\
-                        <option value="ABOUT_HTML">External Sponged Data Links (HTML)</option>\
-			<option value="LOCAL_TTL">External description resource (TTL)</option>\
-			<option value="LOCAL_CXML">External description resource (CXML)</option>\
-			<option value="LOCAL_NTRIPLES">External description resource (NTRIPLES)</option>\
-			<option value="LOCAL_JSON">External description resource (JSON)</option>\
-			<option value="LOCAL_XML">External description resource (RDF/XML)</option>\
-		</select>';
-
-      OAT.Dom.append (['pivot_a_ctr',pivotedit_a,pivot_a,pivot_pg,pivot_qrcode_opts,pivot_link_opts]);
-*/
   }
     </script>
   </xsl:if>

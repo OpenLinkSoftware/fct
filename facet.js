@@ -1046,12 +1046,36 @@ function fct_set_pivot_page_size()
 
   var a = $('pivot_a_mpc');
   var href = a.href;
-  href = href.replace(/limit=\d+/, 'limit='+pg_size);
+  href = href.replace(/pagesize=\d+/, 'pagesize='+pg_size);
+  a.setAttribute("href", href);
+}
+
+function fct_set_pivot_query_limit()
+{
+  var qry_limit = $('pivot_qry_limit').value;
+  qry_limit = parseInt(qry_limit);
+  if (isNaN(qry_limit) || qry_limit < 0)
+    qry_limit = 0;
+
+  $('pivot_qry_limit').value = qry_limit.toString();
+
+  var a = $('pivot_a_mpc');
+  var href = a.href;
+  href = href.replace(/limit=\d+/, 'limit='+qry_limit);
+  a.setAttribute("href", href);
+
+  a = $('pivot_a_edit');
+  href = a.href;
+  href = href.replace(/limit=\d+/, 'limit='+qry_limit);
   a.setAttribute("href", href);
 }
 
 function fct_paged_opt()
 {
+  var qry_limit = $('pivot_qry_limit').value;
+  qry_limit = parseInt(qry_limit);
+  if (isNaN(qry_limit) || qry_limit < 0)
+    qry_limit = 0;
   var pg_size = $('pivot_pg_size').value;
   pg_size = parseInt(pg_size);
   if (isNaN(pg_size) || pg_size < 0)
@@ -1062,7 +1086,8 @@ function fct_paged_opt()
   var href = a.href;
   if ($('pivot_paged').checked == false)
     {
-      href = href.replace(/limit=\d+/, 'limit=0');
+      href = href.replace(/pagesize=\d+/, 'pagesize=0');
+      href = href.replace(/limit=\d+/, 'limit='+qry_limit);
       $('pivot_pg_size').style.visibility = "hidden";
       $('pivot_qrcode').style.visibility = "hidden";
       $('CXML_redir_for_subjs').style.visibility = "hidden";
@@ -1071,11 +1096,14 @@ function fct_paged_opt()
       $('pivot_qrcode_opts_label').style.visibility="hidden";
       $('pivot_subject_link_opts_label').style.visibility='hidden';
       $('pivot_href_link_opts_label').style.visibility='hidden';
-      $('pivot_a_edit').style.visibility='visible';
+      $('pivot_a_edit').style.visibility = "visible";
+      $('pivot_qry_limit').style.visibility = "visible";
+      $('pivot_qry_limit_label').style.visibility = "visible";
     }
   else 
     {
-      href = href.replace(/limit=\d+/, 'limit='+pg_size);
+      href = href.replace(/pagesize=\d+/, 'pagesize='+pg_size);
+      href = href.replace(/limit=\d+/, 'limit=0');
       $('pivot_pg_size').style.visibility = "visible";
       $('pivot_qrcode').style.visibility = "visible";
       $('CXML_redir_for_subjs').style.visibility = "visible";
@@ -1084,7 +1112,9 @@ function fct_paged_opt()
       $('pivot_qrcode_opts_label').style.visibility="visible";
       $('pivot_subject_link_opts_label').style.visibility='visible';
       $('pivot_href_link_opts_label').style.visibility='visible';
-      $('pivot_a_edit').style.visibility='hidden';
+      $('pivot_a_edit').style.visibility = "hidden";
+      $('pivot_qry_limit').style.visibility = "hidden";
+      $('pivot_qry_limit_label').style.visibility = "hidden";
     }
   a.setAttribute("href", href);
 }
