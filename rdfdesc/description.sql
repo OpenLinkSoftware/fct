@@ -1281,7 +1281,7 @@ create procedure b3s_gs_check_needed ()
 
 create procedure b3s_get_entity_graph (in entity_uri varchar)
 {
-  return (select top 1 id_to_iri(G) from DB.DBA.RDF_QUAD where S = iri_to_id (entity_uri));
+  return coalesce ((select top 1 id_to_iri(G) from DB.DBA.RDF_QUAD where S = iri_to_id (entity_uri)), entity_uri);
 }
 ;
 
