@@ -199,6 +199,8 @@ again:
   arr := rfc1808_parse_uri (gr);
   arr [5] := '';
   doc := vspx_uri_compose (arr);
+  if (arr[0] = 'nodeID')
+    doc := rtrim (doc, '/');
   if (gr[0] = '#'[0])
     doc := gr;
   -- If doc URI contains /about/id/entity/ or /about/id/, set _G to the URI following these components
