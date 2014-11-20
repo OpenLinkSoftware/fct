@@ -1440,6 +1440,47 @@ create procedure FCT.DBA.check_auth_and_acls (
 }
 ;
 
+create procedure FCT.DBA.check_auth (
+  out serviceId varchar,
+  out auth_method int
+  )
+{
+  declare val_sid, val_sidRealm, val_uname, val_webidGraph varchar;
+  declare val_isRealUser integer;
+  declare val_cert any;
+  declare permissions int;
+
+  serviceId := null;
+  val_uname := null;
+  val_sid := null;
+  val_isRealUser := 0;
+  val_cert := null;
+  val_sidRealm := null;
+
+  -- Get Auth info
+  if (__proc_exists ('VAL.DBA.get_authentication_details_for_connection')) {
+    auth_method := VAL.DBA.get_authentication_details_for_connection (
+      sid=>val_sid,
+      serviceId=>serviceId,
+      uname=>val_uname,
+      isRealUser=>val_isRealUser,
+      realm=>val_sidRealm,
+      cert=>val_cert);
+  }
+  else {
+    -- Backwards compatibility
+    val_cert := client_attr ('client_certificate');
+    auth_method := VAL.DBA.authentication_details_for_connection (
+      sid=>val_sid,
+      serviceId=>serviceId,
+      uname=>val_uname,
+      isRealUser=>val_isRealUser,
+      realm=>val_sidRealm,
+      cert=>val_cert);
+  }
+}
+;
+
 create procedure FCT.DBA.build_page_url_on_current_host (
   in path varchar,
   in query varchar)

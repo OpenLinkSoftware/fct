@@ -1519,6 +1519,8 @@ fct_exec (in tree any,
   sqls := '00000';
 
   qr := fct_query (xpath_eval ('//query', tree, 1));
+  if (VAD_CHECK_VERSION ('VAL') is not null)
+    qr := fct_inject_val_graph_security_callback (qr);
 
   query := qr;
 
@@ -1588,5 +1590,34 @@ fct_exec (in tree any,
 --  dbg_obj_print (results[0]);
 
   return res;
+}
+;
+
+create procedure
+fct_inject_val_graph_security_callback (in qr varchar)
+{
+  declare val_serviceId, val_sid, val_realm, val_uname, val_webidGraph varchar;
+  declare val_isRealUser integer;
+  declare val_cert any;
+
+  val_realm := null;
+  val_webidGraph := uuid();
+
+  VAL.DBA.get_authentication_details_for_connection (
+    sid => val_sid,
+    serviceId => val_serviceId,
+    uname => val_uname,
+    isRealUser => val_isRealUser,
+    realm => val_realm,
+    cert => val_cert,
+    webidGraph => val_webidGraph );
+
+  connection_set ('val_sparql_rule_realm', val_realm);
+  if (not val_uname is null)
+    connection_set ('val_sparql_uname', val_uname);
+  connection_set ('val_sparql_webid_graph', val_webidGraph);
+
+  qr := sprintf ('define sql:gs-app-callback "VAL_SPARQL_PERMS" define sql:gs-app-uid "%s" ', coalesce (val_serviceId, 'nobody')) || qr;
+  return qr;
 }
 ;

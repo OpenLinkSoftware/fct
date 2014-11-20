@@ -69,7 +69,7 @@
 
   err := null;
   val_vad_present := 0;
-  if (__proc_exists ('VAL.DBA.username_for_online_account') is not null)
+  if (VAD_CHECK_VERSION ('VAL') is not null)
     val_vad_present := 1;
   pacl_vad_present := 0;
   if (__proc_exists ('DB.DBA.profile_url_for_online_account') is not null)

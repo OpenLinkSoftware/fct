@@ -8,8 +8,40 @@
 
 <?vsp 
   declare main_ss varchar;
+  declare val_vad_present int;
+  declare val_serviceId, pageUrl, query_str varchar;
+  declare val_auth_method integer;
   main_ss := registry_get ('fct_main_ss');
   if (not isstring (main_ss)) main_ss := 'styles/default.css';
+
+  val_vad_present := 0;
+  if (VAD_CHECK_VERSION ('VAL') is not null)
+    val_vad_present := 1;
+
+  -- Construct the full request URL for return from a VAL login dialog, noting all the request parameters.
+  -- http_request_get('QUERY_STRING') isn't used as it doesn't include any params in the body of a POST request.
+  pageUrl := http_path();
+  query_str := '';
+  for (declare i, j, l int, i := 0, j := 1, l := length (params); i < l; i := i + 2)
+  {
+    if (params[i] <> 'Content')
+    {
+      declare k,v varchar;
+      if (j > 1)
+	query_str := query_str || '&';
+      k := params[i];
+      v := params[i+1];
+      if (starts_with(v, 'http'))
+	v := sprintf ('%U', v);
+      query_str := query_str || k || '=' || v;
+      j := j + 1;
+    }
+  }
+  if (length (query_str))
+    pageUrl := pageUrl || '?' || query_str;
+
+  if (val_vad_present)
+    FCT.DBA.check_auth (val_serviceId, val_auth_method);
 ?>
   <link rel="stylesheet" type="text/css" href="<?=main_ss?>"  charset="utf-8" />
 
@@ -74,6 +106,11 @@
 <div id="PG">
 <div id="HD">
   <?vsp fct_page_head (); ?>  
+    <div id="hd_r">
+      <div id="val_login_status">
+	<?include rdfdesc/fct_val_login_status.vsp ?>
+      </div>
+    </div>
 </div><!-- #HD -->
   <img id="qrcode_thumb" alt="QRcode icon" src="/fct/images/qr_thumb.png"/>
   <div id="qrcode_popup" title="QRCode" style="display:none">
