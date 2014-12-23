@@ -1617,7 +1617,15 @@ fct_inject_val_graph_security_callback (in qr varchar)
     connection_set ('val_sparql_uname', val_uname);
   connection_set ('val_sparql_webid_graph', val_webidGraph);
 
-  qr := sprintf ('define sql:gs-app-callback "VAL_SPARQL_PERMS" define sql:gs-app-uid "%s" ', coalesce (val_serviceId, 'nobody')) || qr;
+  if (sys_stat ('enable_g_in_sec') = 1)
+    {
+      connection_set ('SPARQLUserId', 'VAL_SPARQL_ADMIN_G_CTX');
+      VAL.DBA.set_graph_context_query ( serviceId=>val_serviceId, realm=>val_sid, certificate=>val_cert, webidGraph=>val_webidGraph);
+    }
+  else
+    {
+      qr := sprintf ('define sql:gs-app-callback "VAL_SPARQL_PERMS" define sql:gs-app-uid "%s" ', coalesce (val_serviceId, 'nobody')) || qr;
+    }
   return qr;
 }
 ;
