@@ -1617,7 +1617,7 @@ fct_inject_val_graph_security_callback (in qr varchar)
     connection_set ('val_sparql_uname', val_uname);
   connection_set ('val_sparql_webid_graph', val_webidGraph);
 
-  if (sys_stat ('enable_g_in_sec') = 1)
+  if (atod (sys_stat ('db_ver_string')) >= 7.5 and sys_stat ('enable_g_in_sec') = 1)
     {
       connection_set ('SPARQLUserId', 'VAL_SPARQL_ADMIN_G_CTX');
       VAL.DBA.set_graph_context_query ( serviceId=>val_serviceId, realm=>val_sid, certificate=>val_cert, webidGraph=>val_webidGraph);
