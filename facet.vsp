@@ -30,9 +30,7 @@
       if (j > 1)
 	query_str := query_str || '&';
       k := params[i];
-      v := params[i+1];
-      if (starts_with(v, 'http'))
-	v := sprintf ('%U', v);
+      v := sprintf ('%U', params[i+1]);
       query_str := query_str || k || '=' || v;
       j := j + 1;
     }
@@ -241,6 +239,14 @@ declare exit handler for sqlstate '*'
   
 };
 fct_vsp ();
+-- val is installed and no user and no result, consider to login first
+if (val_vad_present and connection_get ('noresult') = 1 and val_serviceId is null or val_serviceId = 'nobody')
+  {
+    http_rewrite ();
+    http_request_status ('HTTP/1.1 302 Found');
+    http_header (sprintf ('Location: /fct/login.vsp?returnto=%U\r\n', fct_make_curie (pageUrl, lines)));
+    return;
+  }
 footer:;
 
 ?>
