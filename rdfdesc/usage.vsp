@@ -157,10 +157,10 @@
     {
       -- User doesn't have read permission
       declare protocol, view_uri varchar;
-      view_uri := gr;
+      view_uri := sprintf ('/fct/rdfdesc/usage.vsp?g=%U%s', gr, FCT.DBA.get_describe_request_params (params));
       protocol := 'http'; if (is_https_ctx()) protocol := 'https';
       http_status_set (303);
-      http_header (sprintf('Location: %s://%s//fct/rdfdesc/fct_no_view_perms.vsp?gr=%U%s\r\n', protocol, host, view_uri, FCT.DBA.get_describe_request_params (params)));
+      http_header (sprintf('Location: %s://%s/fct/login.vsp?returnto=%U\r\n', protocol, host, view_uri));
       return;
     }
   }
