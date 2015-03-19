@@ -240,8 +240,7 @@ again:
 
   graph_perms_allow_sponge := sponge_request;
   view_mode := 'full';
-  if (_G is not null) 
-    b3s_get_user_graph_permissions (_G, pageUrl, val_vad_present, val_serviceId, val_auth_method, graph_perms_allow_sponge, view_mode); 
+  b3s_get_user_graph_permissions (_G, pageUrl, val_vad_present, val_serviceId, val_auth_method, graph_perms_allow_sponge, view_mode); 
   if (view_mode = 'none')
   {
     -- User doesn't have read permission
