@@ -1399,6 +1399,8 @@ create procedure b3s_get_user_graph_permissions (
     else
       view_mode := 'read-only';
   }
+
+  return user_permissions;
 }
 ;
 
@@ -1435,7 +1437,7 @@ create procedure FCT.DBA.check_auth_and_acls (
   declare val_sid, val_sidRealm, val_uname, val_webidGraph varchar;
   declare val_isRealUser integer;
   declare val_cert any;
-  declare permissions int;
+  declare permissions, user_generic_sparql_permissions, user_permissions_on_service, user_permissions_on_graph int;
 
   serviceId := null;
   val_uname := null;
@@ -1467,10 +1469,16 @@ create procedure FCT.DBA.check_auth_and_acls (
       cert=>val_cert);
   }
 
-  -- Check check_auth_and_acls
-    -- Check generic SPARQL permissions
+  user_generic_sparql_permissions := 7; -- Permissions on resource <urn:virtuoso:access:sparql>
+  user_permissions_on_service := 7; -- Permissions on resource <urn:virtuoso:access:sponger:describe>, i.e. /describe service 
+  user_permissions_on_graph := 7; -- Permissions on target graph
+
+  -- ================================
+  -- Check generic SPARQL permissions
+  -- ================================
+
   if ((serviceId is null or not VAL.DBA.is_admin_user (val_uname)) and
-    VAL.DBA.acls_enabled_for_scope (VAL.DBA.get_query_scope (), val_sidRealm, 0))
+      VAL.DBA.acls_enabled_for_scope (VAL.DBA.get_query_scope (), val_sidRealm, 0))
   {
     declare acl any;
     acl := get_keyword (
@@ -1483,13 +1491,14 @@ create procedure FCT.DBA.check_auth_and_acls (
         webidGraph=>val_webidGraph,
         certificate=>val_cert
       ));
-    if (VAL.DBA.sparql_access_modes_to_bitmask (acl) = 0) {
+    user_generic_sparql_permissions := VAL.DBA.sparql_access_modes_to_bitmask (acl);
+    if (user_generic_sparql_permissions = 0) {
       http_rewrite ();
 
       connection_set ('__val_denied_service_id__', serviceId);
       connection_set ('__val_req_res__', 'urn:virtuoso:access:sparql');
       connection_set ('__val_req_acl_scope__', VAL.DBA.get_query_scope ());
-      connection_set ('__val_req_res_label__', 'Web Resource Description');
+      connection_set ('__val_req_res_label__', 'SPARQL');
       connection_set ('__val_returnto_url__', parentPage);
 
       if (isstring (http_param ('error.msg')))
@@ -1507,10 +1516,68 @@ create procedure FCT.DBA.check_auth_and_acls (
     }
   }
 
+  -- =========================================
+  -- Get user permissions on /describe service
+  -- =========================================
+
+  if (serviceId is null or not VAL.DBA.is_admin_user (val_uname))
+  {
+    declare describe_service_acl any;
+    describe_service_acl := get_keyword ('urn:virtuoso:access:sponger:describe',
+      VAL.DBA.check_acls_for_resource (
+      serviceId=>serviceId,
+      resource=>'urn:virtuoso:access:sponger:describe',
+      realm=>val_sidRealm,
+      scope=>'urn:virtuoso:val:scopes:sponger:describe',
+      webidGraph=>val_webidGraph,
+      honorScopeState=>1
+    ));
+
+    if (connection_get ('b3s_dbg'))
+    {
+      dbg_printf ('%s: Checking if VAL service ID <%s> has access to /describe service', current_proc_name(), serviceId);
+      dbg_obj_princ('describe_service_acl: ', describe_service_acl);      
+    }
+    
+    user_permissions_on_service := VAL.DBA.sparql_access_modes_to_bitmask (describe_service_acl);
+    if (user_permissions_on_service = 0) 
+    {
+      -- Required by VAL authentication dialog for user to request access to the resource they've been denied access to
+      if (VAL.DBA.get_resource_owner (resource=>'urn:virtuoso:access:sponger:describe', scope=>'urn:virtuoso:val:scopes:sponger:describe') is null)
+	VAL.DBA.set_resource_ownership ( 'urn:virtuoso:val:scopes:sponger:describe', 'urn:virtuoso:access:sponger:describe', VAL.DBA.user_personal_uri ('dba'));
+
+      http_rewrite ();
+      connection_set ('__val_denied_service_id__', serviceId);
+      connection_set ('__val_req_res__', 'urn:virtuoso:access:sponger:describe');
+      connection_set ('__val_req_acl_scope__', 'urn:virtuoso:val:scopes:sponger:describe');
+      connection_set ('__val_req_res_label__', '/describe service');
+      connection_set ('__val_returnto_url__', parentPage);
+
+      if (isstring (http_param ('error.msg')))
+	connection_set ('__val_err_msg__', http_param ('error.msg'));
+
+      if (serviceId is null)
+        http_status_set(401);
+      else
+        http_status_set(403);
+
+      if (val_webidGraph is not null)
+	exec ('sparql clear graph <' || val_webidGraph || '>'); ;
+
+      return 0;
+    }
+  }
+
+  -- ====================================
+  -- Get user permissions on target graph
+  -- ====================================
+
   if (graph is null) 
+  {
     -- => We don't know the graph, or we're handling an entity contained in several graphs
     -- Just perform the authentication details retrieval above, don't attempt to retrieve permissions
-    return 15;
+    return bit_and (user_generic_sparql_permissions, user_permissions_on_service);
+  }
 
   -- Set the effective user
   -- (not required for the query, since we do EXEC_AS (qry, 'dba') anyway, but required for the permissions
@@ -1536,7 +1603,9 @@ create procedure FCT.DBA.check_auth_and_acls (
   -- When executing a query, we define:
   --   define sql:gs-app-callback "VAL_SPARQL_PERMS" define sql:gs-app-uid "<id>"
   -- to enforce the graph permissions, (though if the user has insufficient permissions, the query won't be executed).
-  permissions := DB.DBA.SPARQL_GS_APP_CALLBACK_VAL_SPARQL_PERMS (iri_to_id(graph), coalesce (serviceId, 'nobody'));
+  user_permissions_on_graph := DB.DBA.SPARQL_GS_APP_CALLBACK_VAL_SPARQL_PERMS (iri_to_id(graph), coalesce (serviceId, 'nobody'));
+
+  permissions := bit_and (user_generic_sparql_permissions, bit_and (user_permissions_on_service, user_permissions_on_graph));
 
   if (bit_and (permissions, 1) = 0) {
     http_rewrite ();

@@ -1,6 +1,7 @@
 <?vsp
   connection_set ('__val_oauth_scope__', 'profile');
   connection_set ('__val_auth_page__', '/fct/login.vsp');
-  connection_set ('__val_req_res_label__', 'Faceted Browser');
+  if (connection_get ('__val_req_res_label__') is null)
+    connection_set ('__val_req_res_label__', 'Faceted Browser');
 ?>
 <?include /DAV/VAD/val/authenticate.vsp ?>
