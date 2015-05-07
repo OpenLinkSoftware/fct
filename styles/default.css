@@ -642,3 +642,5 @@ a.desc_permalink { font-size: 9pt; font-weight: normal }
 }
 
 #val_login_status a:hover { color: lightgray; }
+
+img.dicon { border-width:0; height:20px; vertical-align: middle; } 
