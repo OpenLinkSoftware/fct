@@ -1602,6 +1602,9 @@ fct_inject_val_graph_security_callback (in qr varchar)
   declare val_isRealUser integer;
   declare val_cert any;
 
+  if (VAL.DBA.acls_enabled_for_scope (VAL.DBA.get_query_scope ()) = 0)
+    return qr;
+
   val_realm := null;
   val_webidGraph := uuid();
 
