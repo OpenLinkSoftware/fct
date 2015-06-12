@@ -1031,6 +1031,7 @@ function fct_sel_neg (cb)
     }
   else
     a.href = a.href + '&exclude=yes';
+  fct_nav_to (a.href);
 }
 
 function fct_set_pivot_page_size()
