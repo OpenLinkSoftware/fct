@@ -1312,12 +1312,32 @@ create procedure b3s_get_entity_graph (in entity_uri varchar, in sponge_request 
 	  G not in (select RGGM_MEMBER_IID from DB.DBA.RDF_GRAPH_GROUP_MEMBER 
                     where RGGM_GROUP_IID = iri_to_id('http://www.openlinksw.com/schemas/virtrdf#PrivateGraphs')));
       if (num_containing_graphs > 1)
+      {
+	if (connection_get ('b3s_dbg'))
+	  dbg_printf ('%s: > 1 public graph contains <%s> as a subject URI. Returning null for containing graph', current_proc_name(), entity_uri);
 	return null;
+      }
       else
-	 return (select top 1 id_to_iri(G) from DB.DBA.RDF_QUAD where 
+      {
+	entity_graph := (select top 1 id_to_iri(G) from DB.DBA.RDF_QUAD where 
           S = iri_to_id (entity_uri) and 
 	  G not in (select RGGM_MEMBER_IID from DB.DBA.RDF_GRAPH_GROUP_MEMBER 
                     where RGGM_GROUP_IID = iri_to_id('http://www.openlinksw.com/schemas/virtrdf#PrivateGraphs')));
+	-- Assume client is attempting to view an empty graph
+	if (entity_graph is not null)
+	{
+	  if (connection_get ('b3s_dbg'))
+	    dbg_printf ('%s: Graph containing <%s> is: %s', current_proc_name(), entity_uri, entity_graph);
+	  ;
+	}
+	else
+	{
+	  entity_graph := entity_uri;
+	  if (connection_get ('b3s_dbg'))
+	    dbg_printf ('%s: Graph <%s> is presumed empty', current_proc_name(), entity_graph);
+	}
+	return entity_graph;
+      }
     }
   }
 
@@ -1328,9 +1348,15 @@ create procedure b3s_get_entity_graph (in entity_uri varchar, in sponge_request 
 	  G not in (select RGGM_MEMBER_IID from DB.DBA.RDF_GRAPH_GROUP_MEMBER 
                     where RGGM_GROUP_IID = iri_to_id('http://www.openlinksw.com/schemas/virtrdf#PrivateGraphs')));
   if (entity_graph is not null)
+  {
+    if (connection_get ('b3s_dbg'))
+      dbg_printf ('%s: World graph containing <%s> is: %s', current_proc_name(), entity_uri, entity_graph);
     return entity_graph;
+  }
 
   -- Assume the original containing graph has been cleared. Deduce it.
+  if (connection_get ('b3s_dbg'))
+    dbg_printf ('%s: Assuming the original containing graph has been cleared. Deducing it.', current_proc_name());
 
   if (arr[2] like '/proxy-iri/%')
     return RDF_SPONGE_PROXY_IRI_GET_GRAPH (entity_uri);
@@ -1387,6 +1413,7 @@ create procedure b3s_get_entity_graph (in entity_uri varchar, in sponge_request 
 create procedure b3s_get_user_graph_permissions (
   in graph varchar,
   in pageUrl varchar,
+  in sponge_request int,
   in val_vad_present int,
   inout val_serviceId varchar,
   inout val_auth_method int,
@@ -1410,7 +1437,7 @@ create procedure b3s_get_user_graph_permissions (
   -- Call FCT.DBA.check_auth_and_acls() even if graph is null, as this routine also retrieves the
   -- user's authentication details and sets the val_serviceId.
   if (val_vad_present)
-    user_permissions := FCT.DBA.check_auth_and_acls (val_serviceId, val_auth_method, graph, pageUrl);
+    user_permissions := FCT.DBA.check_auth_and_acls (val_serviceId, val_auth_method, graph, pageUrl, sponge_request);
   else if (graph is not null)
     user_permissions := DB.DBA.RDF_GRAPH_USER_PERMS_GET (graph, http_nobody_uid());
 
@@ -1461,7 +1488,9 @@ create procedure FCT.DBA.check_auth_and_acls (
   out serviceId varchar,
   out auth_method int,
   in graph varchar,
-  in parentPage varchar)
+  in parentPage varchar,
+  in sponge_request int := 0
+  )
 {
   declare val_sid, val_sidRealm, val_uname, val_webidGraph varchar;
   declare val_isRealUser integer;
@@ -1521,9 +1550,16 @@ create procedure FCT.DBA.check_auth_and_acls (
         certificate=>val_cert
       ));
     user_generic_sparql_permissions := VAL.DBA.sparql_access_modes_to_bitmask (acl);
-    if (user_generic_sparql_permissions = 0) {
-      http_rewrite ();
+    if (connection_get ('b3s_dbg'))
+      dbg_printf ('%s: user_generic_sparql_permissions: %d', current_proc_name(), user_generic_sparql_permissions);
+    if (user_generic_sparql_permissions = 0  -- /sparql service denies read access
+        or
+	sponge_request and (bit_and (user_generic_sparql_permissions, 4) = 0))  -- /sparql service denies sponge access
+    {
+      if (connection_get ('b3s_dbg'))
+	dbg_printf ('No read or sponge permission on generic Sponge service - Forcing authentication');
 
+      http_rewrite ();
       connection_set ('__val_denied_service_id__', serviceId);
       connection_set ('__val_req_res__', 'urn:virtuoso:access:sparql');
       connection_set ('__val_req_acl_scope__', VAL.DBA.get_query_scope ());
@@ -1532,6 +1568,12 @@ create procedure FCT.DBA.check_auth_and_acls (
 
       if (isstring (http_param ('error.msg')))
         connection_set ('__val_err_msg__', http_param ('error.msg'));
+      else if (connection_get ('b3s_dbg'))
+      {
+	declare err_msg varchar;
+	err_msg := sprintf ('Current user has no %s permission on <urn:virtuoso:access:sparql>', (case user_generic_sparql_permissions  when 0 then 'read' else 'sponge' end));
+        connection_set ('__val_err_msg__', err_msg);
+      }
 
       if (serviceId is null)
         http_status_set(401);
@@ -1569,8 +1611,16 @@ create procedure FCT.DBA.check_auth_and_acls (
     }
     
     user_permissions_on_service := VAL.DBA.sparql_access_modes_to_bitmask (describe_service_acl);
-    if (user_permissions_on_service = 0) 
+    if (connection_get ('b3s_dbg'))
+      dbg_printf ('%s: user_permissions_on_service: %d', current_proc_name(), user_permissions_on_service);
+
+    if (user_permissions_on_service = 0  -- /describe service denies read access
+        or
+	sponge_request and (bit_and (user_permissions_on_service, 4) = 0))  -- /describe service denies sponge access
     {
+      if (connection_get ('b3s_dbg'))
+	dbg_printf ('No read or sponge permission on /describe service - Forcing authentication');
+
       -- Required by VAL authentication dialog for user to request access to the resource they've been denied access to
       if (VAL.DBA.get_resource_owner (resource=>'urn:virtuoso:access:sponger:describe', scope=>'urn:virtuoso:val:scopes:sponger:describe') is null)
 	VAL.DBA.set_resource_ownership ( 'urn:virtuoso:val:scopes:sponger:describe', 'urn:virtuoso:access:sponger:describe', VAL.DBA.user_personal_uri ('dba'));
@@ -1579,11 +1629,18 @@ create procedure FCT.DBA.check_auth_and_acls (
       connection_set ('__val_denied_service_id__', serviceId);
       connection_set ('__val_req_res__', 'urn:virtuoso:access:sponger:describe');
       connection_set ('__val_req_acl_scope__', 'urn:virtuoso:val:scopes:sponger:describe');
-      connection_set ('__val_req_res_label__', '/describe service');
+      -- connection_set ('__val_req_res_label__', '/describe service');
+      connection_set ('__val_req_res_label__', 'Faceted Browsing Service');
       connection_set ('__val_returnto_url__', parentPage);
 
       if (isstring (http_param ('error.msg')))
 	connection_set ('__val_err_msg__', http_param ('error.msg'));
+      else if (connection_get ('b3s_dbg'))
+      {
+	declare err_msg varchar;
+	err_msg := sprintf ('Current user has no %s permission on /describe service', (case user_permissions_on_service  when 0 then 'read' else 'sponge' end));
+	connection_set ('__val_err_msg__', err_msg);
+      }
 
       if (serviceId is null)
         http_status_set(401);
@@ -1633,10 +1690,17 @@ create procedure FCT.DBA.check_auth_and_acls (
   --   define sql:gs-app-callback "VAL_SPARQL_PERMS" define sql:gs-app-uid "<id>"
   -- to enforce the graph permissions, (though if the user has insufficient permissions, the query won't be executed).
   user_permissions_on_graph := DB.DBA.SPARQL_GS_APP_CALLBACK_VAL_SPARQL_PERMS (iri_to_id(graph), coalesce (serviceId, 'nobody'));
-
   permissions := bit_and (user_generic_sparql_permissions, bit_and (user_permissions_on_service, user_permissions_on_graph));
+  if (connection_get ('b3s_dbg'))
+  {
+    dbg_printf ('%s: user_permissions_on_graph: %d', current_proc_name(), user_permissions_on_graph);
+    dbg_printf ('%s: composite permissions: %d', current_proc_name(), permissions);
+  }
 
-  if (bit_and (permissions, 1) = 0) {
+  if (bit_and (permissions, 1) = 0  -- No read permission on graph (/sparql and /describe perms already checked above)
+      or
+      sponge_request and (bit_and (permissions, 4) = 0))  -- No sponge permission on graph (/sparql and /describe perms already checked above)
+  {
     http_rewrite ();
 
     connection_set ('__val_denied_service_id__', serviceId);
@@ -1646,6 +1710,12 @@ create procedure FCT.DBA.check_auth_and_acls (
 
     if (isstring (http_param ('error.msg')))
       connection_set ('__val_err_msg__', http_param ('error.msg'));
+    else if (connection_get ('b3s_dbg'))
+    {
+      declare err_msg varchar;
+      err_msg := sprintf ('Current user has no %s permission on target graph', (case bit_and (permissions, 1)  when 0 then 'read' else 'sponge' end));
+      connection_set ('__val_err_msg__', err_msg);
+    }
 
     if (serviceId is null)
       http_status_set(401);

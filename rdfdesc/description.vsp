@@ -66,7 +66,9 @@
   declare host varchar;
   declare pageUrl, err varchar;
   declare dist int;
+  declare auto_sponge_on_empty_graph int;
 
+  auto_sponge_on_empty_graph := 1;
   val_serviceId := null;
   err := null;
   val_vad_present := 0;
@@ -240,7 +242,7 @@ again:
 
   graph_perms_allow_sponge := sponge_request;
   view_mode := 'full';
-  graph_perms := b3s_get_user_graph_permissions (_G, pageUrl, val_vad_present, val_serviceId, val_auth_method, graph_perms_allow_sponge, view_mode); 
+  graph_perms := b3s_get_user_graph_permissions (_G, pageUrl, sponge_request, val_vad_present, val_serviceId, val_auth_method, graph_perms_allow_sponge, view_mode); 
   b3s_dbg_out (dbg_out, 'effective user graph permissions: ' || sprintf('%d', graph_perms));
   if (view_mode = 'none')
   {
@@ -700,11 +702,58 @@ if (_subject <> '') {
       if (inx < n_per_page)
         dis_next := 1;
 
-      if  (odd_position = 0)
-	 {
-	    http_request_status ('HTTP/1.1 404 Not found');
-	    http ('<tr><td colspan="2"><p>No further information is available.</p></td></tr>');
-	 }
+      if (odd_position = 0)
+      {
+	if (auto_sponge_on_empty_graph)
+	{
+	  -- Sponging wasn't explicitly requested in the request URL.
+	  -- The view dataset is empty.
+	  -- Rather than display an empty result set, force automatic sponging.
+
+	  declare spongeUrl, protocol varchar;
+	  protocol := 'http'; if (is_https_ctx()) protocol := 'https';
+	  spongeUrl := sprintf ('%s://%s/describe/?url=%U&sponger:get=add&sr=clean', protocol, host, gr);
+
+	  if (val_vad_present and not graph_perms_allow_sponge)
+	  {
+	    -- The current user is looking at a read-only view of an empty result set.
+	    -- Logging in (or re-logging in as a different user) may permit sponging, so display a login dialog.
+	    -- Force a re-sponge if authentication succeeds
+
+	    declare auth_dlg_msg varchar;
+	    auth_dlg_msg := 'No cached data is available. Authenticate to re-sponge.'; 
+
+	    http_rewrite ();
+	    connection_set ('__val_denied_service_id__', val_serviceId);
+	    connection_set ('__val_req_res__', 'urn:virtuoso:access:sponger:describe');
+	    connection_set ('__val_req_acl_scope__', 'urn:virtuoso:val:scopes:sponger:describe');
+	    -- connection_set ('__val_req_res_label__', '/describe service');
+	    connection_set ('__val_req_res_label__', 'Faceted Browsing Service');
+	    connection_set ('__val_post_auth_action__','complete Extract, Transform, and Load operation using');
+	    connection_set ('__val_returnto_url__', spongeUrl);
+
+	    if (connection_get ('b3s_dbg'))
+	      connection_set ('__val_err_msg__', auth_dlg_msg);
+
+	    if (val_serviceId is null)
+	      http_status_set(401);
+	    else
+	      http_status_set(403);
+
+	    return 0;
+	  }
+	  else if (not sponge_request)
+	  {
+	    http_rewrite ();
+	    http_status_set (303);
+	    http_header (sprintf('Location: %s\r\n', spongeUrl));
+	    return 0;
+	  }
+	}
+
+	http_request_status ('HTTP/1.1 404 Not found');
+	http ('<tr><td colspan="2"><p>No further information is available.</p></td></tr>');
+      }
 ?>
       </table>
       <div id="nav">
