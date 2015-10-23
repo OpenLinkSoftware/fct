@@ -1519,7 +1519,7 @@ fct_exec (in tree any,
   sqls := '00000';
 
   qr := fct_query (xpath_eval ('//query', tree, 1));
-  if (VAD_CHECK_VERSION ('VAL') is not null)
+  if (VAD_CHECK_VERSION ('VAL') is not null and registry_get ('fct_use_val') = '1')
     qr := fct_inject_val_graph_security_callback (qr);
 
   query := qr;

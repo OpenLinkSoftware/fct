@@ -68,7 +68,8 @@
   declare dist int;
   declare auto_sponge_on_empty_graph int;
 
-  auto_sponge_on_empty_graph := 1;
+  if (registry_get ('fct_auto_sponge') = '1')
+    auto_sponge_on_empty_graph := 1;
   val_serviceId := null;
   err := null;
   val_vad_present := 0;
