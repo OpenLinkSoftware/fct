@@ -1910,7 +1910,7 @@ fct_select_value (in tree any,
 --    {
       tree := xslt (registry_get ('_fct_xslt_') || 'fct_set_view.xsl',
                     tree,
-	            vector ('pos', 0, 'op', 'view', 'type', 'list', 'limit', 20, 'offset', 0));
+	            vector ('pos', pos, 'op', 'view', 'type', 'list', 'limit', 20, 'offset', 0));
 --    }
 
   update fct_state set fct_state = tree where fct_sid = sid;
@@ -2162,7 +2162,7 @@ fct_set_cond (in tree any,
 
   tree := xslt (registry_get ('_fct_xslt_') || 'fct_set_view.xsl',
                 tree,
-                vector ('pos', 0, 'op', 'view', 'type', 'list', 'limit', 20, 'offset', 0));
+                vector ('pos', pos, 'op', 'view', 'type', 'list', 'limit', 20, 'offset', 0));
 
   update fct_state set fct_state = tree where fct_sid = sid;
 
