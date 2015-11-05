@@ -240,7 +240,7 @@ declare exit handler for sqlstate '*'
 };
 fct_vsp ();
 -- val is installed and no user and no result, consider to login first
-if (val_vad_present and connection_get ('noresult') = 1 and val_serviceId is null or val_serviceId = 'nobody')
+if (0 and val_vad_present and connection_get ('noresult') = 1 and val_serviceId is null or val_serviceId = 'nobody')
   {
     http_rewrite ();
     http_request_status ('HTTP/1.1 302 Found');
