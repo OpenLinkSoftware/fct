@@ -67,6 +67,8 @@
   declare pageUrl, err varchar;
   declare dist int;
   declare auto_sponge_on_empty_graph int;
+  declare log4v_vad_present, log4v_err_handling_in_progress int;
+  declare log4v_app_id any;
 
   if (registry_get ('fct_auto_sponge') = '1')
     auto_sponge_on_empty_graph := 1;
@@ -78,6 +80,13 @@
   pacl_vad_present := 0;
   if (__proc_exists ('DB.DBA.profile_url_for_online_account') is not null)
     pacl_vad_present := 1;
+  if (VAD_CHECK_VERSION ('Log4Virtuoso') is not null)
+  {
+    log4v_vad_present := 1;
+    log4v_app_id := registry_get ('sponger_log4v_app_id'); 
+    if (log4v_app_id = 0)
+      log4v_app_id := 'urn:virtuoso:log4v:app:describe' ;
+  }
 
   deadl := 0;
 
@@ -258,8 +267,30 @@ again:
     declare exit handler for sqlstate 'RDF*'
     {
       err := __SQL_MESSAGE;
+      if (log4v_err_handling_in_progress)
+	log4v_err_handling_in_progress := 0;
+      else if (log4v_vad_present)
+      {
+	rollback work;
+	log4v_err_handling_in_progress := 1;
+	goto post_process_err_with_log4v;
+      }
+      rollback work;
       goto errend; 
     };
+
+post_process_err_with_log4v:
+    -- Allow log4v to replace the current SQL state and error message with any customized values 
+    -- configured for the /about service. log4v will re-signal if the given SQL state or error 
+    -- message are overwritten by process_error().
+    if (log4v_err_handling_in_progress)
+    {
+      LOG4V.DBA.process_error (__SQL_STATE, __SQL_MESSAGE, log4v_app_id);
+
+      -- If process_error doesn't resignal ...
+      log4v_err_handling_in_progress := 0;
+    }
+
     -- if (get_keyword ('sp', params) = '1' and 0 = length (_F))
     if (get_keyword ('sp', params) = '1')
     {
@@ -600,8 +631,6 @@ if (_subject <> '') {
   <p class="subj_delim"></p>
 <?vsp 
 } 
-     if (err is not null)
-       http_value (err, 'div');
 ?>
 <!--            <li><a href="/fct/facet.vsp?sid=<?V sid ?>&amp;cmd=set_class&amp;iri=<?V gr ?>">Choose <?V ''?> as Type</a></li>
                 <li><a href="/fct/facet.vsp?sid=<?V sid ?>&amp;cmd=open_property">Choose <?V ''?> as Property (p)</a></li>
@@ -750,8 +779,19 @@ if (_subject <> '') {
 	  }
 	}
 
-	http_request_status ('HTTP/1.1 404 Not found');
-	http ('<tr><td colspan="2"><p>No further information is available.</p></td></tr>');
+	if (err is not null)
+	{
+	  http_request_status ('HTTP/1.1 400 Bad Request');
+	  http ('<tr><td colspan="2"><div id="err">');
+	  http_value (err);
+	  http ('</div></td></tr>');
+	}
+	else
+	{
+	  http_request_status ('HTTP/1.1 404 Not Found');
+	  http ('<tr><td colspan="2"><p>No further information is available.</p></td></tr>');
+	}
+
       }
 ?>
       </table>
