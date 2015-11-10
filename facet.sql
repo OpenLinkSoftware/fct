@@ -823,7 +823,10 @@ fct_view (in tree any, in this_s int, in txt any, in pre any, in post any, in fu
 
   if ('list-count' = mode)
     {
-      http (sprintf ('select ?s%d as ?c1 count (*) as ?c2 where { select distinct ?s%d ', this_s, this_s), pre);
+      declare i int;
+      http (sprintf ('select ?s%d as ?c1 count (*) as ?c2 where { select distinct ', this_s), pre);
+      for (i := 1; i <= this_s; i := i + 1)
+        http (sprintf ('?s%d ', i), pre);
       if (xpath_eval ('ancestor::query/text', tree)) http ('?g ', pre);
       http (sprintf (' } group by ?s%d order by desc 2', this_s), post);
     }
