@@ -1,7 +1,7 @@
 #
 #  $Id$
 #
-#  (C)Copyright 2009-2014 OpenLink Software.
+#  Copyright (C) 2009-2016 OpenLink Software.
 #  All Rights Reserved.
 #
 #  The copyright above and this notice must be preserved in all
