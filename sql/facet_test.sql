@@ -60,7 +60,7 @@ select fct_test ('<query> <text>hottie</text><view type="text-properties" limit=
 
 select fct_test ('<query> <text property="http://purl.org/dc/elements/1.1/description">hottie</text><view type="text" limit="20"/></query>');
 
-select xslt ('file://fct/fct_vsp.xsl',
+select xslt ('file://fct/xslt/fct_vsp.xsl',
              xtree_doc ('<facets><result><row><column>http://xyz.com/xyz.htm</column></row></result></facets>'), 
              vector ('sid', 2, 'type', 'properties'))
 

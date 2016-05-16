@@ -86,7 +86,7 @@
     <file type="$TYPE$" source_uri="www/*.css" target_uri="fct/" />
     <file type="$TYPE$" source_uri="www/*.html" target_uri="fct/" />
     <file type="$TYPE$" source_uri="*.vsp" target_uri="fct/" />
-    <file type="$TYPE$" source_uri="*.xsl" target_uri="fct/" />
+    <file type="$TYPE$" source_uri="xslt/*.xsl" target_uri="fct/" />
     <file type="$TYPE$" source_uri="*.js" target_uri="fct/" />
     <file type="$TYPE$" source_uri="images/*" target_uri="fct/" />
     <file type="$TYPE$" source_uri="oat/toolkit/*.js" target_uri="fct/" />

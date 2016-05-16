@@ -7,7 +7,7 @@ FCT_FILES	= \
 	*.txt \
 	*.vsp \
 	*.xml \
-	*.xsl \
+	xslt/*.xsl \
 	images/*.gif \
 	images/*.png \
 	images/*.svg \
