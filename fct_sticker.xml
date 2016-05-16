@@ -92,6 +92,7 @@
     <file type="$TYPE$" source_uri="oat/toolkit/*.js" target_uri="fct/" />
     <file type="$TYPE$" source_uri="rdfdesc/*.vsp" target_uri="fct/" />
     <file type="$TYPE$" source_uri="css/*.css" target_uri="fct/" />
+    <file type="$TYPE$" source_uri="fonts/*" target_uri="fct/" />
 </resources>
 <registry>
 </registry>
