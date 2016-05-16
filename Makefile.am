@@ -3,7 +3,7 @@ FCT_FILES	= \
 	*.html \
 	*.js \
 	*.owl \
-	*.sql \
+	sql/*.sql \
 	*.txt \
 	*.vsp \
 	*.xml \
@@ -11,7 +11,6 @@ FCT_FILES	= \
 	images/*.gif \
 	images/*.png \
 	images/*.svg \
-	rdfdesc/*.sql \
 	rdfdesc/*.vsp \
 	s/*.js \
 	styles/*.css \
@@ -22,7 +21,6 @@ FCT_FILES	= \
 	VirtTripleLoader/src/virtTripleLoaderInit/*.java \
 	www/*.css \
 	www/*.html \
-	www/*.sql \
 	www/*.vsp
 
 VERSION=`./gen_version.sh`

@@ -37,41 +37,41 @@
     registry_set('_fct_dav_', '$ISDAV$');
     if (lt (sys_stat ('st_dbms_ver'), '06.00.3126') and not exists (select 1 from DB.DBA.SYS_KEYS where upper (KEY_NAME) = 'RDF_QUAD_OPGS') and (select count(*) from (select top 10000 1 as x from RDF_QUAD) stb) < 10000) { 
       log_message ('Altering the index layout on RDF_QUAD'); 
-       DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/fct_inx.sql', 0, 'report', 1);
+       DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/fct_inx.sql', 0, 'report', 1);
        log_message ('done.'); 
     } 
-    DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/ns.sql', 0, 'report', 1);
-    DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/virt_rdf_label.sql', 0, 'report', 1);
-    DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/facet.sql', 0, 'report', 1);
-    DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/complete_ddl.sql', 0, 'report', 1);
-    DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/b3s_cl_rexec.sql', 0, 'report', 1);
-    DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/cl_prx.sql', 0, 'report', 1);
-    DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/complete.sql', 0, 'report', 1);
-    DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/complete_svc.sql', 0, 'report', 1);
-    DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/description.sql', 0, 'report', 1);
-    DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/facet_agg.sql', 0, 'report', 1);
-    DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/facet_svc.sql', 0, 'report', 1);
-    DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/facet_view.sql', 0, 'report', 1);
-    DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/nsdecl.sql', 0, 'report', 1);
-    DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/search.sql', 0, 'report', 1);
-    DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sum.sql', 0, 'report', 1);
-    DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/val_scopes.sql', 0, 'report', 1);
+    DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/ns.sql', 0, 'report', 1);
+    DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/virt_rdf_label.sql', 0, 'report', 1);
+    DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/facet.sql', 0, 'report', 1);
+    DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/complete_ddl.sql', 0, 'report', 1);
+    DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/b3s_cl_rexec.sql', 0, 'report', 1);
+    DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/cl_prx.sql', 0, 'report', 1);
+    DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/complete.sql', 0, 'report', 1);
+    DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/complete_svc.sql', 0, 'report', 1);
+    DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/description.sql', 0, 'report', 1);
+    DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/facet_agg.sql', 0, 'report', 1);
+    DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/facet_svc.sql', 0, 'report', 1);
+    DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/facet_view.sql', 0, 'report', 1);
+    DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/nsdecl.sql', 0, 'report', 1);
+    DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/search.sql', 0, 'report', 1);
+    DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/sum.sql', 0, 'report', 1);
+    DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/val_scopes.sql', 0, 'report', 1);
     if (sys_stat ('cl_run_local_only') = 1) 
-      DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/complete_single.sql', 0, 'report', 1); 
+      DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/complete_single.sql', 0, 'report', 1);
     else { 
-      DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/complete_cl.sql', 0, 'report', 1); 
+      DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/complete_cl.sql', 0, 'report', 1);
     }    
     if (exists (select 1 from DB.DBA.SYS_KEYS where upper (KEY_NAME) = 'RDF_QUAD_SP')) 
-      DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/srank23.sql', 0, 'report', 1); 
+      DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/srank23.sql', 0, 'report', 1);
     else if (exists (select 1 from DB.DBA.SYS_KEYS where upper (KEY_NAME) = 'RDF_QUAD_OPGS')) 
-      DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/srank.sql', 0, 'report', 1); 
+      DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/srank.sql', 0, 'report', 1);
     else { 
-      DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/srank_1.sql', 0, 'report', 1); 
+      DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/srank_1.sql', 0, 'report', 1);
         result ('00000', 'You should read http://host:port/fct/install.html for instructions');
     }    
         result ('00000', 'GUI is accesible via http://host:port/fct');
         result ('00000', 'Post-installation guide is available from http://host:port/fct/post_install.html');
-      DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/grants.sql', 0, 'report', 1); 
+      DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/grants.sql', 0, 'report', 1);
     ]]>
   </sql>
   <sql purpose='pre-uninstall'>
@@ -80,9 +80,8 @@
   </sql>
 </ddls>
 <resources>
-    <file type="$TYPE$" source_uri="*.sql" target_uri="fct/" />
+    <file type="$TYPE$" source_uri="sql/*.sql" target_uri="fct/" />
     <file type="$TYPE$" source_uri="*.html" target_uri="fct/" />
-    <file type="$TYPE$" source_uri="www/*.sql" target_uri="fct/$f$" />
     <file type="$TYPE$" source_uri="www/*.vsp" target_uri="fct/" />
     <file type="$TYPE$" source_uri="www/*.css" target_uri="fct/" />
     <file type="$TYPE$" source_uri="www/*.html" target_uri="fct/" />
@@ -91,7 +90,6 @@
     <file type="$TYPE$" source_uri="*.js" target_uri="fct/" />
     <file type="$TYPE$" source_uri="images/*" target_uri="fct/" />
     <file type="$TYPE$" source_uri="oat/toolkit/*.js" target_uri="fct/" />
-    <file type="$TYPE$" source_uri="rdfdesc/*.sql" target_uri="fct/$f$" />
     <file type="$TYPE$" source_uri="rdfdesc/*.vsp" target_uri="fct/" />
     <file type="$TYPE$" source_uri="s/*.css" target_uri="fct/rdfdesc/s/$f$" />
     <file type="$TYPE$" source_uri="s/*.js" target_uri="fct/rdfdesc/s/$f$" />
