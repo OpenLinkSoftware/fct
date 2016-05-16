@@ -50,10 +50,10 @@
 <script type="text/javascript" >
     var featureList=["map", "combolist", "ajax", "tab", "json", "location"];
 </script>
-<script type="text/javascript" src="rdfdesc/s/jquery-1.7.2.js"></script>
-<script type="text/javascript" src="oat/toolkit/loader.js"></script>
-<script type="text/javascript" src="facet.js"></script>
-<script type="text/javascript" src="rdfdesc/s/jquery-ui-1.8.20.custom.min.js"></script>
+<script type="text/javascript" src="/fct/js/jquery-1.7.2.js"></script>
+<script type="text/javascript" src="/fct/oat/toolkit/loader.js"></script>
+<script type="text/javascript" src="/fct/js/facet.js"></script>
+<script type="text/javascript" src="/fct/js/jquery-ui-1.8.20.custom.min.js"></script>
 <link rel="stylesheet" type="text/css" href="rdfdesc/styles/jquery-ui-1.8.20.custom.css" />
 
 <?vsp 

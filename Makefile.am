@@ -1,7 +1,7 @@
 FCT_STICKER	= fct_sticker.xml
 FCT_FILES	= \
 	*.html \
-	*.js \
+	js/*.js \
 	*.owl \
 	sql/*.sql \
 	*.txt \
@@ -12,7 +12,6 @@ FCT_FILES	= \
 	images/*.png \
 	images/*.svg \
 	rdfdesc/*.vsp \
-	s/*.js \
 	styles/*.css \
 	styles/images/*.png \
 	vad_version \

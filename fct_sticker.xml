@@ -87,12 +87,11 @@
     <file type="$TYPE$" source_uri="www/*.html" target_uri="fct/" />
     <file type="$TYPE$" source_uri="*.vsp" target_uri="fct/" />
     <file type="$TYPE$" source_uri="xslt/*.xsl" target_uri="fct/" />
-    <file type="$TYPE$" source_uri="*.js" target_uri="fct/" />
+    <file type="$TYPE$" source_uri="js/*.js" target_uri="fct/" />
     <file type="$TYPE$" source_uri="images/*" target_uri="fct/" />
     <file type="$TYPE$" source_uri="oat/toolkit/*.js" target_uri="fct/" />
     <file type="$TYPE$" source_uri="rdfdesc/*.vsp" target_uri="fct/" />
     <file type="$TYPE$" source_uri="s/*.css" target_uri="fct/rdfdesc/s/$f$" />
-    <file type="$TYPE$" source_uri="s/*.js" target_uri="fct/rdfdesc/s/$f$" />
     <file type="$TYPE$" source_uri="s/*.css" target_uri="fct/rdfdesc/s/$f$" />
     <file type="$TYPE$" source_uri="styles/*.css" target_uri="fct/rdfdesc/styles/$f$" />
     <file type="$TYPE$" source_uri="styles/*.css" target_uri="fct/styles/$f$" />
