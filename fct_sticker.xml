@@ -91,11 +91,8 @@
     <file type="$TYPE$" source_uri="images/*" target_uri="fct/" />
     <file type="$TYPE$" source_uri="oat/toolkit/*.js" target_uri="fct/" />
     <file type="$TYPE$" source_uri="rdfdesc/*.vsp" target_uri="fct/" />
-    <file type="$TYPE$" source_uri="s/*.css" target_uri="fct/rdfdesc/s/$f$" />
-    <file type="$TYPE$" source_uri="s/*.css" target_uri="fct/rdfdesc/s/$f$" />
-    <file type="$TYPE$" source_uri="styles/*.css" target_uri="fct/rdfdesc/styles/$f$" />
-    <file type="$TYPE$" source_uri="styles/*.css" target_uri="fct/styles/$f$" />
-    <file type="$TYPE$" source_uri="styles/images/*" target_uri="fct/rdfdesc/styles/images/$f$" />
+    <file type="$TYPE$" source_uri="css/*.css" target_uri="fct/" />
+    <file type="$TYPE$" source_uri="css/images/*" target_uri="fct/" />
 </resources>
 <registry>
 </registry>

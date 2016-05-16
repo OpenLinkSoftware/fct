@@ -484,18 +484,18 @@ post_process_err_with_log4v:
     <?vsp 
 	declare main_ss varchar;
         main_ss := registry_get ('fct_main_ss');
-        if (not isstring (main_ss)) main_ss := 'styles/default.css';
+        if (not isstring (main_ss)) main_ss := '/fct/css/default.css';
     ?>
     <link rel="stylesheet" type="text/css" href="<?=main_ss?>"  charset="utf-8" />
 
-    <link rel="stylesheet" type="text/css" href="styles/highlighter.css" charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="/fct/css/highlighter.css" charset="utf-8" />
     <script type="text/javascript" >
       var featureList=["tab","ajax"];
     </script>
     <script type="text/javascript" src="/fct/js/jquery-1.7.2.js"></script>
     <script type="text/javascript" src="/fct/oat/toolkit/loader.js"></script>
     <script type="text/javascript" src="/fct/js/description.js"></script>
-    <link rel="stylesheet" type="text/css" href="styles/jquery-ui-1.8.20.custom.css" />
+    <link rel="stylesheet" type="text/css" href="/fct/css/jquery-ui-1.8.20.custom.css" />
     <script type="text/javascript" src="/fct/js/jquery-ui-1.8.20.custom.min.js"></script>
 <?vsp fct_links_mup (_S, rdf_link); ?>
 </head>

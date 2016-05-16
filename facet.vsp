@@ -12,7 +12,7 @@
   declare val_serviceId, pageUrl, query_str varchar;
   declare val_auth_method integer;
   main_ss := registry_get ('fct_main_ss');
-  if (not isstring (main_ss)) main_ss := 'styles/default.css';
+  if (not isstring (main_ss)) main_ss := '/fct/css/default.css';
 
   val_vad_present := 0;
   if (VAD_CHECK_VERSION ('VAL') is not null)
@@ -54,7 +54,7 @@
 <script type="text/javascript" src="/fct/oat/toolkit/loader.js"></script>
 <script type="text/javascript" src="/fct/js/facet.js"></script>
 <script type="text/javascript" src="/fct/js/jquery-ui-1.8.20.custom.min.js"></script>
-<link rel="stylesheet" type="text/css" href="rdfdesc/styles/jquery-ui-1.8.20.custom.css" />
+<link rel="stylesheet" type="text/css" href="/fct/css/jquery-ui-1.8.20.custom.css" />
 
 <?vsp 
   declare sid, _S, ses_parms varchar;

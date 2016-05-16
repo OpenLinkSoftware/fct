@@ -12,13 +12,12 @@ FCT_FILES	= \
 	images/*.png \
 	images/*.svg \
 	rdfdesc/*.vsp \
-	styles/*.css \
-	styles/images/*.png \
+	css/*.css \
+	css/images/*.png \
 	vad_version \
 	VirtTripleLoader/.classpath \
 	VirtTripleLoader/.project \
 	VirtTripleLoader/src/virtTripleLoaderInit/*.java \
-	www/*.css \
 	www/*.html \
 	www/*.vsp
 

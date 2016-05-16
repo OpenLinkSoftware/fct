@@ -171,15 +171,15 @@
     <base href="http<?V case is_https_ctx () when 1 then 's' else '' end ?>://<?V host ?>/fct/rdfdesc/" />
     <title>Metadata about: <?vsp http (sprintf ('%s', label)); ?></title>
     <link rel="alternate" type="application/rdf+xml" href="<?=rdf_link?>" title="RDF" />
-    <link rel="stylesheet" type="text/css" href="styles/default.css" charset="utf-8" />
-    <link rel="stylesheet" type="text/css" href="styles/highlighter.css" charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="/fct/css/default.css" charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="/fct/css/highlighter.css" charset="utf-8" />
     <script type="text/javascript" >
       var featureList=["tab"];
     </script>
     <script type="text/javascript" src="/fct/js/jquery-1.7.2.js"></script>
     <script type="text/javascript" src="/fct/oat/toolkit/loader.js"></script>
     <script type="text/javascript" src="/fct/js/description.js"></script>
-    <link rel="stylesheet" type="text/css" href="styles/jquery-ui-1.8.20.custom.css" />
+    <link rel="stylesheet" type="text/css" href="/fct/css/jquery-ui-1.8.20.custom.css" />
     <script type="text/javascript" src="/fct/js/jquery-ui-1.8.20.custom.min.js"></script>
 </head>
 <body class="usage_page">
