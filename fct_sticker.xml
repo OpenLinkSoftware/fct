@@ -80,6 +80,7 @@
   </sql>
 </ddls>
 <resources>
+    <file type="$TYPE$" source_uri="owl/*.owl" target_uri="fct/" />
     <file type="$TYPE$" source_uri="sql/*.sql" target_uri="fct/" />
     <file type="$TYPE$" source_uri="*.html" target_uri="fct/" />
     <file type="$TYPE$" source_uri="www/*.vsp" target_uri="fct/" />

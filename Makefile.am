@@ -2,7 +2,7 @@ FCT_STICKER	= fct_sticker.xml
 FCT_FILES	= \
 	*.html \
 	js/*.js \
-	*.owl \
+	owl/*.owl \
 	sql/*.sql \
 	*.txt \
 	*.vsp \
