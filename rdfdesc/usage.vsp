@@ -176,11 +176,11 @@
     <script type="text/javascript" >
       var featureList=["tab"];
     </script>
-    <script type="text/javascript" src="/fct/js/jquery-1.7.2.js"></script>
+    <script type="text/javascript" src="/fct/js/jquery-1.12.3.min.js"></script>
     <script type="text/javascript" src="/fct/oat/toolkit/loader.js"></script>
     <script type="text/javascript" src="/fct/js/description.js"></script>
-    <link rel="stylesheet" type="text/css" href="/fct/css/jquery-ui-1.8.20.custom.css" />
-    <script type="text/javascript" src="/fct/js/jquery-ui-1.8.20.custom.min.js"></script>
+    <script type="text/javascript" src="/fct/js/jquery-ui-1.11.4.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/fct/css/jquery-ui-1.11.4.min.css" />
 </head>
 <body class="usage_page">
   <div id="HD">

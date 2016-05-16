@@ -13,7 +13,6 @@ FCT_FILES	= \
 	images/*.svg \
 	rdfdesc/*.vsp \
 	css/*.css \
-	css/images/*.png \
 	vad_version \
 	VirtTripleLoader/.classpath \
 	VirtTripleLoader/.project \

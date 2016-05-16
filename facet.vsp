@@ -50,11 +50,11 @@
 <script type="text/javascript" >
     var featureList=["map", "combolist", "ajax", "tab", "json", "location"];
 </script>
-<script type="text/javascript" src="/fct/js/jquery-1.7.2.js"></script>
+<script type="text/javascript" src="/fct/js/jquery-1.12.3.min.js"></script>
 <script type="text/javascript" src="/fct/oat/toolkit/loader.js"></script>
 <script type="text/javascript" src="/fct/js/facet.js"></script>
-<script type="text/javascript" src="/fct/js/jquery-ui-1.8.20.custom.min.js"></script>
-<link rel="stylesheet" type="text/css" href="/fct/css/jquery-ui-1.8.20.custom.css" />
+<script type="text/javascript" src="/fct/js/jquery-ui-1.11.4.min.js"></script>
+<link rel="stylesheet" type="text/css" href="/fct/css/jquery-ui-1.11.4.min.css" />
 
 <?vsp 
   declare sid, _S, ses_parms varchar;

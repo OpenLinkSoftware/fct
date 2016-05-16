@@ -84,7 +84,6 @@
     <file type="$TYPE$" source_uri="sql/*.sql" target_uri="fct/" />
     <file type="$TYPE$" source_uri="*.html" target_uri="fct/" />
     <file type="$TYPE$" source_uri="www/*.vsp" target_uri="fct/" />
-    <file type="$TYPE$" source_uri="www/*.css" target_uri="fct/" />
     <file type="$TYPE$" source_uri="www/*.html" target_uri="fct/" />
     <file type="$TYPE$" source_uri="*.vsp" target_uri="fct/" />
     <file type="$TYPE$" source_uri="xslt/*.xsl" target_uri="fct/" />
@@ -93,7 +92,6 @@
     <file type="$TYPE$" source_uri="oat/toolkit/*.js" target_uri="fct/" />
     <file type="$TYPE$" source_uri="rdfdesc/*.vsp" target_uri="fct/" />
     <file type="$TYPE$" source_uri="css/*.css" target_uri="fct/" />
-    <file type="$TYPE$" source_uri="css/images/*" target_uri="fct/" />
 </resources>
 <registry>
 </registry>
