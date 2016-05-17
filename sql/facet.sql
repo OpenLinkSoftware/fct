@@ -823,8 +823,12 @@ fct_view (in tree any, in this_s int, in txt any, in pre any, in post any, in fu
 
   if ('list-count' = mode)
     {
-      http (sprintf ('select ?s%d as ?c1 count (*) as ?c2 ', this_s), pre);
-      http (sprintf (' group by ?s%d order by desc 2', this_s), post);
+      declare i int;
+      http (sprintf ('select ?s%d as ?c1 count (*) as ?c2 where { select distinct ', this_s), pre);
+      for (i := 1; i <= this_s; i := i + 1)
+        http (sprintf ('?s%d ', i), pre);
+      if (xpath_eval ('ancestor::query/text', tree)) http ('?g ', pre);
+      http (sprintf (' } group by ?s%d order by desc 2', this_s), post);
     }
 
   if ('entities-list' = mode)
@@ -1271,6 +1275,7 @@ fct_text (in tree any,
     {
       declare ciri varchar;
       ciri := fct_curie (cast (xpath_eval ('./@iri', tree) as varchar));
+      ciri := replace (ciri, ' ', '%20');
 
       fct_dbg_msg (sprintf ('class: %s', cast (ciri as varchar)));
 
@@ -1325,7 +1330,9 @@ fct_text (in tree any,
       txs_qr := fti_make_search_string_inner (charset_recode (xpath_eval ('string (.)', tree), '_WIDE_', 'UTF-8'), txs_arr);	
       if (length (txs_arr) > wlimit)
 	signal ('22023', 'The request is too large');
+      http (' quad map virtrdf:DefaultQuadMap { graph ?g { ', txt);
       http (sprintf (' ?s%d %s ?o%d . ?o%d bif:contains  ''%s'' %s .', this_s, prop, this_s, this_s, txs_qr, sc_opt), txt);
+      http (' } } ', txt);
     }
 
   if ('property' = n)
@@ -1338,6 +1345,7 @@ fct_text (in tree any,
       new_s := max_s;
 
       piri := fct_curie (cast (xpath_eval ('./@iri', tree, 1) as varchar));
+      piri := replace (piri, ' ', '%20');
 
 --      fct_dbg_msg (sprintf ('property: <%s>', piri));
 
@@ -1359,9 +1367,12 @@ fct_text (in tree any,
   if ('property-of' = n)
     {
       declare new_s int;
+      declare piri any;
       max_s := max_s + 1;
       new_s := max_s;
-      http (sprintf (' ?s%d <%s> ?s%d .', new_s, fct_curie (cast (xpath_eval ('./@iri', tree, 1) as varchar)), this_s), txt);
+      piri := fct_curie (cast (xpath_eval ('./@iri', tree, 1) as varchar));
+      piri := replace (piri, ' ', '%20');
+      http (sprintf (' ?s%d <%s> ?s%d .', new_s, piri, this_s), txt);
       fct_text_1 (tree, new_s, max_s, txt, pre, post, full_tree, plain);
     }
 
@@ -1427,11 +1438,11 @@ fct_query (in tree any, in plain integer := 0)
 
   fct_text (xpath_eval ('//query', tree), 0, s, txt, pre, post, tree, plain);
 
-  http (' where {', pre);
-  if (add_graph) http (' quad map virtrdf:DefaultQuadMap { graph ?g { ', pre);
+  if (xpath_eval ('//view[@type="list-count"]', tree) is null)
+    http (' where ', pre);
+  http (' {', pre);
   http (txt, pre);
   http (' }', pre);
-  if (add_graph) http (' } } ', pre);
   http (post, pre);
 
   return string_output_string (pre);
@@ -1519,7 +1530,7 @@ fct_exec (in tree any,
   sqls := '00000';
 
   qr := fct_query (xpath_eval ('//query', tree, 1));
-  if (VAD_CHECK_VERSION ('VAL') is not null)
+  if (VAD_CHECK_VERSION ('VAL') is not null and registry_get ('fct_use_val') = '1')
     qr := fct_inject_val_graph_security_callback (qr);
 
   query := qr;

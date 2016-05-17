@@ -24,7 +24,7 @@
 -- Facets web page
 
 registry_set ('_fct_xslt_', 
-              case when registry_get('_fct_url_') = 0 then 'file://fct/xslt/' else registry_get('_fct_url_') || 'xslt/' end);
+              case when registry_get('_fct_url_') = 0 then 'file://fct/' else registry_get('_fct_url_') end);
 
 
 create procedure
@@ -692,16 +692,16 @@ fct_nav (in tree any,
 	    		'<select name="map_of" onchange="javascript:link_change(this.value)">'||
 	    		'<option value="any">Any location</option>'||
 	    		'<option value="">Shown items</option>'||
-	    		'<option value="dbpprop:location">dbpedia:location</option>'||
-	    		'<option value="dbpprop:place">dbpedia:place</option>'||
+	    		'<option value="dbp:location">dbpedia:location</option>'||
+	    		'<option value="dbp:place">dbpedia:place</option>'||
 	    		'<option value="foaf:based_near">foaf:based_near</option>'||
 	    		'<option value="geo:location">geo:location</option>'||
 	    		'<option value="geo:Point">geo:Point</option>'||
-	    		'<option value="dbpprop:birthPlace">dbpedia:birthPlace</option>'||
-	    		'<option value="dbpprop:placeOfBirth">dbpedia:placeOfBirth</option>'||
-	    		'<option value="dbpprop:birthplace">dbpedia:birthplace</option>'||
-	    		'<option value="dbpprop:placeOfDeath">dbpedia:placeOfDeath</option>'||
-	    		'<option value="dbpprop:deathPlace">dbpedia:deathPlace</option>'||
+	    		'<option value="dbp:birthPlace">dbpedia:birthPlace</option>'||
+	    		'<option value="dbp:placeOfBirth">dbpedia:placeOfBirth</option>'||
+	    		'<option value="dbp:birthplace">dbpedia:birthplace</option>'||
+	    		'<option value="dbp:placeOfDeath">dbpedia:placeOfDeath</option>'||
+	    		'<option value="dbp:deathPlace">dbpedia:deathPlace</option>'||
 			'</select></li>',
                  connection_get ('sid'), 'geo', 'Geospatial Entities projected over Map overlays', 'Places'), txt);
     }
@@ -1393,7 +1393,7 @@ http ('
 
    demo_xsl_uri := registry_get ('sparql_demo_xsl_uri');
 
-   if (0 = demo_xsl_uri) demo_xsl_uri := 'http://' || uriqa_str || '/fct/xslt/isparql_describe.xsl';
+   if (0 = demo_xsl_uri) demo_xsl_uri := 'http://' || uriqa_str || '/fct/isparql_describe.xsl';
 
 http('
 <script type="text/javascript">

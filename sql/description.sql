@@ -149,6 +149,33 @@ b3s_handle_ses (inout _path any, inout _lines any, inout _params any)
 ;
 
 -- XXX should probably find the most specific if more than one class and inference rule is set
+create procedure 
+b3s_e_type (in subj varchar)
+{
+  declare meta, data, ll any;
+  declare i int;
+  declare stat, msg any;
+
+  ll := 'http://www.w3.org/2002/07/owl#Thing';
+
+  if (length (subj))
+    {	
+      stat := '00000';
+      data := null;
+      exec (sprintf ('sparql select ?tp where { <%s> a ?tp }', subj), stat, msg, vector (), 100, meta, data);
+
+      if (length (data))
+	{
+	  for (i := 0; i < length (data); i := i + 1) 
+            {
+              if (data[i][0] is not null)
+  	        return data[i][0];
+            }
+	}
+    }
+  return ll;
+}
+;
 
 create procedure 
 b3s_type (in subj varchar, 
@@ -165,7 +192,7 @@ b3s_type (in subj varchar,
 
   if (length (subj))
     {	
-      exec (sprintf ('sparql select ?l ?tp %s where { <%S> a ?tp optional { ?tp rdfs:label ?l } }', _from, subj), 
+      exec (sprintf ('sparql select ?l ?tp %s where { <%s> a ?tp optional { ?tp rdfs:label ?l } }', _from, subj), 
 	  null, null, vector (), 100, meta, data);
 
       if (length (data))
@@ -220,7 +247,7 @@ create procedure b3s_find_class_type (in _s varchar, in _f varchar, inout types_
   st := '00000';
   msg:= '';
 
-  stmt := sprintf ('sparql select ?to %s where { quad map virtrdf:DefaultQuadMap { ?to a <%S> }}', _f, _s);
+  stmt := sprintf ('sparql select ?to %s where { quad map virtrdf:DefaultQuadMap { ?to a <%s> }}', _f, _s);
 
   exec (stmt, st, msg, vector(), 1, meta, data);
 
@@ -259,7 +286,7 @@ b3s_get_types (in _s varchar,
   declare i int;
   declare stmt varchar;
 
-  stmt := sprintf ('sparql select distinct ?tp %s where { quad map virtrdf:DefaultQuadMap { <%S> a ?tp } }', _from, _s);
+  stmt := sprintf ('sparql select distinct ?tp %s where { quad map virtrdf:DefaultQuadMap { <%s> a ?tp } }', _from, _s);
   data := null;
   t_a := vector();
 
@@ -293,7 +320,7 @@ b3s_get_all_types (in _s varchar,
   declare i int;
   declare stmt varchar;
 
-  stmt := sprintf ('sparql select distinct ?tp %s where { <%S> a ?tp }', _from, _s);
+  stmt := sprintf ('sparql select distinct ?tp %s where { <%s> a ?tp }', _from, _s);
   data := null;
   t_a := vector();
 
@@ -600,6 +627,8 @@ create procedure b3s_label_get (inout data any, in langs any)
    if (not isstring (label))
      label := cast (label as varchar);
    --label := regexp_replace (label, '<[^>]+>', '', 1, null);  
+  if (label is null)
+    label := ''; 
   if (0 and sys_stat ('cl_run_local_only'))
     {
       label := xpath_eval ('string(.)', xtree_doc (label, 2));
@@ -619,9 +648,11 @@ b3s_uri_curie (in uri varchar)
 
   delim := -1;
 
-  uriSearch := uri;
   if (uri is null)
     return '';
+  if (iswidestring (uri))
+    uri := charset_recode (uri, '_WIDE_', 'UTF-8');
+  uriSearch := uri;
   nsPrefix := null;
   while (nsPrefix is null and delim <> 0) {
 
@@ -751,7 +782,7 @@ create procedure b3s_label (in _S any, in langs any, in lbl_order_pref_id int :=
     }
   stat := '00000';
   --exec (sprintf ('sparql define input:inference "facets" '||
-  --'select ?o (lang(?o)) where { <%S> virtrdf:label ?o }', _S), stat, msg, vector (), 0, meta, data);
+  --'select ?o (lang(?o)) where { <%s> virtrdf:label ?o }', _S), stat, msg, vector (), 0, meta, data);
   exec (sprintf ('select __ro2sq (O), DB.DBA.RDF_LANGUAGE_OF_OBJ (__ro2sq (O)) , cast (b3s_lbl_order (P, %d) as int) from RDF_QUAD table option (with ''facets'') 
 	where S = __i2id (?) and P = __i2id (''http://www.openlinksw.com/schemas/virtrdf#label'', 0) and not is_bnode_iri_id (O) order by 3 option (same_as)', lbl_order_pref_id), 
 	stat, msg, vector (_S), 0, meta, data);
@@ -792,10 +823,26 @@ create procedure b3s_xsd_link (in t varchar)
 
 create procedure b3s_o_is_out (in x any)
 {
-  declare f any;
+  declare f, s, og any;
   f := 'http://xmlns.com/foaf/0.1/';
+  s := 'http://schema.org/';
+  og := 'http://opengraphprotocol.org/schema/';
   -- foaf:page, foaf:homePage, foaf:img, foaf:logo, foaf:depiction
-  if (__ro2sq (x) in (f||'page', f||'homePage', f||'img', f||'logo', f||'depiction', 'http://schema.org/url', 'http://schema.org/downloadUrl'))
+  if (__ro2sq (x) in (f||'page', f||'homePage', f||'img', f||'logo', f||'depiction', 'http://schema.org/url', 'http://schema.org/downloadUrl', 'http://schema.org/potentialAction', s||'logo', s||'image', s || 'mainEntityOfPage', og || 'image', 'http://www.openlinksw.com/ontology/webservices#usageExample'))
+    {
+      return 1;
+    }
+  return 0;
+}
+;
+
+create procedure b3s_o_is_img (in x any)
+{
+  declare f, s, og any;
+  f := 'http://xmlns.com/foaf/0.1/';
+  s := 'http://schema.org/';
+  og := 'http://opengraphprotocol.org/schema/';
+  if (__ro2sq (x) in (f||'img', f||'logo', f||'depiction', s||'logo', s||'image', og || 'image', 'http://ogp.me/ns#image'))
     {
       return 1;
     }
@@ -842,7 +889,7 @@ b3s_http_print_r (in subj any, in _object any, in sid varchar, in prop any, in l
 	 itemid := _object;
      }
    http (sprintf ('\t<li%s itemid="%s" itemscope itemtype="%s"><span class="literal">', 
-   	case visible when 0 then ' style="display:none;"' else '' end, itemid, 'http://www.w3.org/2002/07/owl#Thing'));
+   	case visible when 0 then ' style="display:none;"' else '' end, itemid, b3s_e_type (itemid)));
 again:
    if (__tag (_object) = 246)
      {
@@ -871,10 +918,10 @@ again:
 	   whenever not found goto usual_iri;
 	   select id_to_iri (O) into src from DB.DBA.RDF_QUAD where 
 	   	S = iri_to_id (_object, 0) and P = iri_to_id ('http://bblfish.net/work/atom-owl/2006-06-06/#src', 0);
-	   http (sprintf ('<div id="x_content"><iframe src="%s" width="100%%" height="100%%" frameborder="0"><p>Your browser does not support iframes.</p></iframe></div><br/>', src));
+	   http (sprintf ('<div id="x_content"><iframe src="%s" width="100%%" height="100%%" frameborder="0" sandbox=""><p>Your browser does not support iframes.</p></iframe></div><br/>', src));
 	   http (sprintf ('<link %s href="%s"/>', rdfa, case when flag = 0 then _object else subj end));
 	 }
-       else if (http_mime_type (_url) like 'image/%' or http_mime_type (_url) = 'application/x-openlink-photo' or prop = 'http://xmlns.com/foaf/0.1/depiction')
+       else if (http_mime_type (_url) like 'image/%' or http_mime_type (_url) = 'application/x-openlink-photo' or b3s_o_is_img (prop))
 	 {
 	   declare u any;
 	   if (b3s_o_is_out (prop))
@@ -899,12 +946,9 @@ again:
 	   http_value (case when vlbl <> 0 then vlbl else lbl end);
 	   http (sprintf ('</a>'));
 	   http (sprintf ('<link %s href="%s"/>', rdfa, case when flag = 0 then _url else subj end));
-	   if (b3s_o_is_out (prop))
-	     http (sprintf ('&nbsp;<a href="%s"><img src="/fct/images/goout.gif" border="0"/></a>', _url));
+	   if (b3s_o_is_out (prop) and flag = 0)
+	     http (sprintf ('&nbsp;<a href="%s"><img src="/fct/images/fct-linkout-16-blk.png" border="0"/></a>', _url));
 	 }
-       --if (registry_get ('fct_sponge') = '1' and _url like 'http://%' or _url like 'https://%')
-       --	 http (sprintf ('&nbsp;<a class="uri" href="%s&sp=1"><img src="/fct/images/goout.gif" alt="Sponge" title="Sponge" border="0"/></a>', 
-       --	       b3s_http_url (_url, sid)));
 
      }
    else if (__tag (_object) = 189)
@@ -930,6 +974,11 @@ again:
    else if (__tag (_object) = 182)
      {
        declare vlbl any;
+       if (b3s_o_is_img (prop))
+	 {
+	   __box_flags_set (_object, 1);
+	   goto again;
+	 }
        http (sprintf ('<span %s>', rdfa));
        if (strstr (_object, 'http://') is not null)
 	 {
@@ -944,7 +993,7 @@ again:
        else
          http_value (vlbl);
        http ('</span>');
-       --lang := '';
+       lang := '';
      }
    else if (__tag (_object) = 211)
      {
@@ -990,7 +1039,7 @@ again:
 
    if (lang is not NULL and lang <> '')
      {
-       http (sprintf (' <small>(%s)</small>', lang));
+       http (sprintf ('(%s)', lang));
      }
 
    http ('</span></li>');
@@ -1283,12 +1332,32 @@ create procedure b3s_get_entity_graph (in entity_uri varchar, in sponge_request 
 	  G not in (select RGGM_MEMBER_IID from DB.DBA.RDF_GRAPH_GROUP_MEMBER 
                     where RGGM_GROUP_IID = iri_to_id('http://www.openlinksw.com/schemas/virtrdf#PrivateGraphs')));
       if (num_containing_graphs > 1)
+      {
+	if (connection_get ('b3s_dbg'))
+	  dbg_printf ('%s: > 1 public graph contains <%s> as a subject URI. Returning null for containing graph', current_proc_name(), entity_uri);
 	return null;
+      }
       else
-	 return (select top 1 id_to_iri(G) from DB.DBA.RDF_QUAD where 
+      {
+	entity_graph := (select top 1 id_to_iri(G) from DB.DBA.RDF_QUAD where 
           S = iri_to_id (entity_uri) and 
 	  G not in (select RGGM_MEMBER_IID from DB.DBA.RDF_GRAPH_GROUP_MEMBER 
                     where RGGM_GROUP_IID = iri_to_id('http://www.openlinksw.com/schemas/virtrdf#PrivateGraphs')));
+	-- Assume client is attempting to view an empty graph
+	if (entity_graph is not null)
+	{
+	  if (connection_get ('b3s_dbg'))
+	    dbg_printf ('%s: Graph containing <%s> is: %s', current_proc_name(), entity_uri, entity_graph);
+	  ;
+	}
+	else
+	{
+	  entity_graph := entity_uri;
+	  if (connection_get ('b3s_dbg'))
+	    dbg_printf ('%s: Graph <%s> is presumed empty', current_proc_name(), entity_graph);
+	}
+	return entity_graph;
+      }
     }
   }
 
@@ -1299,9 +1368,15 @@ create procedure b3s_get_entity_graph (in entity_uri varchar, in sponge_request 
 	  G not in (select RGGM_MEMBER_IID from DB.DBA.RDF_GRAPH_GROUP_MEMBER 
                     where RGGM_GROUP_IID = iri_to_id('http://www.openlinksw.com/schemas/virtrdf#PrivateGraphs')));
   if (entity_graph is not null)
+  {
+    if (connection_get ('b3s_dbg'))
+      dbg_printf ('%s: World graph containing <%s> is: %s', current_proc_name(), entity_uri, entity_graph);
     return entity_graph;
+  }
 
   -- Assume the original containing graph has been cleared. Deduce it.
+  if (connection_get ('b3s_dbg'))
+    dbg_printf ('%s: Assuming the original containing graph has been cleared. Deducing it.', current_proc_name());
 
   if (arr[2] like '/proxy-iri/%')
     return RDF_SPONGE_PROXY_IRI_GET_GRAPH (entity_uri);
@@ -1358,6 +1433,7 @@ create procedure b3s_get_entity_graph (in entity_uri varchar, in sponge_request 
 create procedure b3s_get_user_graph_permissions (
   in graph varchar,
   in pageUrl varchar,
+  in sponge_request int,
   in val_vad_present int,
   inout val_serviceId varchar,
   inout val_auth_method int,
@@ -1381,7 +1457,7 @@ create procedure b3s_get_user_graph_permissions (
   -- Call FCT.DBA.check_auth_and_acls() even if graph is null, as this routine also retrieves the
   -- user's authentication details and sets the val_serviceId.
   if (val_vad_present)
-    user_permissions := FCT.DBA.check_auth_and_acls (val_serviceId, val_auth_method, graph, pageUrl);
+    user_permissions := FCT.DBA.check_auth_and_acls (val_serviceId, val_auth_method, graph, pageUrl, sponge_request);
   else if (graph is not null)
     user_permissions := DB.DBA.RDF_GRAPH_USER_PERMS_GET (graph, http_nobody_uid());
 
@@ -1432,7 +1508,9 @@ create procedure FCT.DBA.check_auth_and_acls (
   out serviceId varchar,
   out auth_method int,
   in graph varchar,
-  in parentPage varchar)
+  in parentPage varchar,
+  in sponge_request int := 0
+  )
 {
   declare val_sid, val_sidRealm, val_uname, val_webidGraph varchar;
   declare val_isRealUser integer;
@@ -1492,9 +1570,16 @@ create procedure FCT.DBA.check_auth_and_acls (
         certificate=>val_cert
       ));
     user_generic_sparql_permissions := VAL.DBA.sparql_access_modes_to_bitmask (acl);
-    if (user_generic_sparql_permissions = 0) {
-      http_rewrite ();
+    if (connection_get ('b3s_dbg'))
+      dbg_printf ('%s: user_generic_sparql_permissions: %d', current_proc_name(), user_generic_sparql_permissions);
+    if (user_generic_sparql_permissions = 0  -- /sparql service denies read access
+        or
+	sponge_request and (bit_and (user_generic_sparql_permissions, 4) = 0))  -- /sparql service denies sponge access
+    {
+      if (connection_get ('b3s_dbg'))
+	dbg_printf ('No read or sponge permission on generic Sponge service - Forcing authentication');
 
+      http_rewrite ();
       connection_set ('__val_denied_service_id__', serviceId);
       connection_set ('__val_req_res__', 'urn:virtuoso:access:sparql');
       connection_set ('__val_req_acl_scope__', VAL.DBA.get_query_scope ());
@@ -1503,6 +1588,12 @@ create procedure FCT.DBA.check_auth_and_acls (
 
       if (isstring (http_param ('error.msg')))
         connection_set ('__val_err_msg__', http_param ('error.msg'));
+      else if (connection_get ('b3s_dbg'))
+      {
+	declare err_msg varchar;
+	err_msg := sprintf ('Current user has no %s permission on <urn:virtuoso:access:sparql>', (case user_generic_sparql_permissions  when 0 then 'read' else 'sponge' end));
+        connection_set ('__val_err_msg__', err_msg);
+      }
 
       if (serviceId is null)
         http_status_set(401);
@@ -1540,8 +1631,16 @@ create procedure FCT.DBA.check_auth_and_acls (
     }
     
     user_permissions_on_service := VAL.DBA.sparql_access_modes_to_bitmask (describe_service_acl);
-    if (user_permissions_on_service = 0) 
+    if (connection_get ('b3s_dbg'))
+      dbg_printf ('%s: user_permissions_on_service: %d', current_proc_name(), user_permissions_on_service);
+
+    if (user_permissions_on_service = 0  -- /describe service denies read access
+        or
+	sponge_request and (bit_and (user_permissions_on_service, 4) = 0))  -- /describe service denies sponge access
     {
+      if (connection_get ('b3s_dbg'))
+	dbg_printf ('No read or sponge permission on /describe service - Forcing authentication');
+
       -- Required by VAL authentication dialog for user to request access to the resource they've been denied access to
       if (VAL.DBA.get_resource_owner (resource=>'urn:virtuoso:access:sponger:describe', scope=>'urn:virtuoso:val:scopes:sponger:describe') is null)
 	VAL.DBA.set_resource_ownership ( 'urn:virtuoso:val:scopes:sponger:describe', 'urn:virtuoso:access:sponger:describe', VAL.DBA.user_personal_uri ('dba'));
@@ -1550,11 +1649,18 @@ create procedure FCT.DBA.check_auth_and_acls (
       connection_set ('__val_denied_service_id__', serviceId);
       connection_set ('__val_req_res__', 'urn:virtuoso:access:sponger:describe');
       connection_set ('__val_req_acl_scope__', 'urn:virtuoso:val:scopes:sponger:describe');
-      connection_set ('__val_req_res_label__', '/describe service');
+      -- connection_set ('__val_req_res_label__', '/describe service');
+      connection_set ('__val_req_res_label__', 'Faceted Browsing Service');
       connection_set ('__val_returnto_url__', parentPage);
 
       if (isstring (http_param ('error.msg')))
 	connection_set ('__val_err_msg__', http_param ('error.msg'));
+      else if (connection_get ('b3s_dbg'))
+      {
+	declare err_msg varchar;
+	err_msg := sprintf ('Current user has no %s permission on /describe service', (case user_permissions_on_service  when 0 then 'read' else 'sponge' end));
+	connection_set ('__val_err_msg__', err_msg);
+      }
 
       if (serviceId is null)
         http_status_set(401);
@@ -1604,10 +1710,17 @@ create procedure FCT.DBA.check_auth_and_acls (
   --   define sql:gs-app-callback "VAL_SPARQL_PERMS" define sql:gs-app-uid "<id>"
   -- to enforce the graph permissions, (though if the user has insufficient permissions, the query won't be executed).
   user_permissions_on_graph := DB.DBA.SPARQL_GS_APP_CALLBACK_VAL_SPARQL_PERMS (iri_to_id(graph), coalesce (serviceId, 'nobody'));
-
   permissions := bit_and (user_generic_sparql_permissions, bit_and (user_permissions_on_service, user_permissions_on_graph));
+  if (connection_get ('b3s_dbg'))
+  {
+    dbg_printf ('%s: user_permissions_on_graph: %d', current_proc_name(), user_permissions_on_graph);
+    dbg_printf ('%s: composite permissions: %d', current_proc_name(), permissions);
+  }
 
-  if (bit_and (permissions, 1) = 0) {
+  if (bit_and (permissions, 1) = 0  -- No read permission on graph (/sparql and /describe perms already checked above)
+      or
+      sponge_request and (bit_and (permissions, 4) = 0))  -- No sponge permission on graph (/sparql and /describe perms already checked above)
+  {
     http_rewrite ();
 
     connection_set ('__val_denied_service_id__', serviceId);
@@ -1617,6 +1730,12 @@ create procedure FCT.DBA.check_auth_and_acls (
 
     if (isstring (http_param ('error.msg')))
       connection_set ('__val_err_msg__', http_param ('error.msg'));
+    else if (connection_get ('b3s_dbg'))
+    {
+      declare err_msg varchar;
+      err_msg := sprintf ('Current user has no %s permission on target graph', (case bit_and (permissions, 1)  when 0 then 'read' else 'sponge' end));
+      connection_set ('__val_err_msg__', err_msg);
+    }
 
     if (serviceId is null)
       http_status_set(401);
