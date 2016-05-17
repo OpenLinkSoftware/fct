@@ -8,12 +8,6 @@ AM_PATH_PYTHON([2.5])
 
 
 # --------------------------------------------------------------
-# Pull the ODS-UI.js submodule if available
-# --------------------------------------------------------------
-git submodule update --init 2> /dev/null
-
-
-# --------------------------------------------------------------
 # Check for vadpacker as distributed with Virtuoso
 # Allow a manual override
 # --------------------------------------------------------------
