@@ -1322,39 +1322,45 @@ create procedure b3s_get_entity_graph (in entity_uri varchar, in sponge_request 
   if (not (arr[2] like '/about/id%' or arr[2] like '/proxy-iri/%'))
   {
     if (sponge_request)
+    {
+      if (connection_get ('b3s_dbg'))
+	dbg_printf ('%s: Entity graph is <%s>', current_proc_name(), entity_uri);
       return entity_uri; -- the entity description is sponged to a graph with the same URI
+    }
     else
     {
       declare num_containing_graphs int;
-      num_containing_graphs := (
-	select count(distinct G) from DB.DBA.RDF_QUAD where 
-          S = iri_to_id (entity_uri) and 
-	  G not in (select RGGM_MEMBER_IID from DB.DBA.RDF_GRAPH_GROUP_MEMBER 
-                    where RGGM_GROUP_IID = iri_to_id('http://www.openlinksw.com/schemas/virtrdf#PrivateGraphs')));
+      --  num_containing_graphs := (
+      --  select count(distinct G) from DB.DBA.RDF_QUAD where 
+      --      S = iri_to_id (entity_uri) and 
+      --      G not in (select RGGM_MEMBER_IID from DB.DBA.RDF_GRAPH_GROUP_MEMBER 
+      --	  where RGGM_GROUP_IID = iri_to_id('http://www.openlinksw.com/schemas/virtrdf#PrivateGraphs')));
+      num_containing_graphs := (select count(distinct G) from DB.DBA.RDF_QUAD where S = iri_to_id (entity_uri));
       if (num_containing_graphs > 1)
       {
 	if (connection_get ('b3s_dbg'))
-	  dbg_printf ('%s: > 1 public graph contains <%s> as a subject URI. Returning null for containing graph', current_proc_name(), entity_uri);
+	  dbg_printf ('%s: > 1 graph contains <%s> as a subject URI. Returning null for containing graph', current_proc_name(), entity_uri);
 	return null;
       }
       else
       {
-	entity_graph := (select top 1 id_to_iri(G) from DB.DBA.RDF_QUAD where 
-          S = iri_to_id (entity_uri) and 
-	  G not in (select RGGM_MEMBER_IID from DB.DBA.RDF_GRAPH_GROUP_MEMBER 
-                    where RGGM_GROUP_IID = iri_to_id('http://www.openlinksw.com/schemas/virtrdf#PrivateGraphs')));
+        -- entity_graph := (select top 1 id_to_iri(G) from DB.DBA.RDF_QUAD where 
+        --     S = iri_to_id (entity_uri) and 
+        --     G not in (select RGGM_MEMBER_IID from DB.DBA.RDF_GRAPH_GROUP_MEMBER 
+        --               where RGGM_GROUP_IID = iri_to_id('http://www.openlinksw.com/schemas/virtrdf#PrivateGraphs')));
+	entity_graph := (select top 1 id_to_iri(G) from DB.DBA.RDF_QUAD where S = iri_to_id (entity_uri));
 	-- Assume client is attempting to view an empty graph
 	if (entity_graph is not null)
 	{
 	  if (connection_get ('b3s_dbg'))
-	    dbg_printf ('%s: Graph containing <%s> is: %s', current_proc_name(), entity_uri, entity_graph);
+	    dbg_printf ('%s: Graph containing <%s> is <%s>', current_proc_name(), entity_uri, entity_graph);
 	  ;
 	}
 	else
 	{
 	  entity_graph := entity_uri;
 	  if (connection_get ('b3s_dbg'))
-	    dbg_printf ('%s: Graph <%s> is presumed empty', current_proc_name(), entity_graph);
+	    dbg_printf ('%s: <%s> is assumed to be a graph URI', current_proc_name(), entity_graph);
 	}
 	return entity_graph;
       }
@@ -1363,23 +1369,29 @@ create procedure b3s_get_entity_graph (in entity_uri varchar, in sponge_request 
 
   -- Handle /about/id/* and /proxy-iri/* style entity URIs
 
-  entity_graph := (select top 1 id_to_iri(G) from DB.DBA.RDF_QUAD where 
-	  S = iri_to_id (entity_uri) and
-	  G not in (select RGGM_MEMBER_IID from DB.DBA.RDF_GRAPH_GROUP_MEMBER 
-                    where RGGM_GROUP_IID = iri_to_id('http://www.openlinksw.com/schemas/virtrdf#PrivateGraphs')));
+  --  entity_graph := (select top 1 id_to_iri(G) from DB.DBA.RDF_QUAD where 
+  --	  S = iri_to_id (entity_uri) and
+  --	  G not in (select RGGM_MEMBER_IID from DB.DBA.RDF_GRAPH_GROUP_MEMBER 
+  --                where RGGM_GROUP_IID = iri_to_id('http://www.openlinksw.com/schemas/virtrdf#PrivateGraphs')));
+  entity_graph := (select top 1 id_to_iri(G) from DB.DBA.RDF_QUAD where S = iri_to_id (entity_uri));
   if (entity_graph is not null)
   {
     if (connection_get ('b3s_dbg'))
-      dbg_printf ('%s: World graph containing <%s> is: %s', current_proc_name(), entity_uri, entity_graph);
+      dbg_printf ('%s: Graph containing <%s> is <%s>', current_proc_name(), entity_uri, entity_graph);
     return entity_graph;
   }
 
   -- Assume the original containing graph has been cleared. Deduce it.
   if (connection_get ('b3s_dbg'))
-    dbg_printf ('%s: Assuming the original containing graph has been cleared. Deducing it.', current_proc_name());
+    dbg_printf ('%s: Assuming original containing graph has been cleared. Deducing it.', current_proc_name());
 
   if (arr[2] like '/proxy-iri/%')
-    return RDF_SPONGE_PROXY_IRI_GET_GRAPH (entity_uri);
+  {
+    entity_graph := RDF_SPONGE_PROXY_IRI_GET_GRAPH (entity_uri);
+    if (connection_get ('b3s_dbg'))
+      dbg_printf ('%s: Entity graph is <%s>', current_proc_name(), entity_graph);
+    return entity_graph;
+  }
 
   entity_graph := entity_uri;
   -- Strip off fragment - entity_uri could be a child entity with a hash URI
@@ -1425,6 +1437,8 @@ create procedure b3s_get_entity_graph (in entity_uri varchar, in sponge_request 
     entity_graph := DB.DBA.vspx_uri_compose (arr);
   }
 
+  if (connection_get ('b3s_dbg'))
+    dbg_printf ('%s: Entity graph is <%s>', current_proc_name(), entity_graph);
   return entity_graph;
 }
 ;
