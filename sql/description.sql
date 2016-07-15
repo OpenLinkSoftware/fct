@@ -1309,7 +1309,7 @@ create procedure b3s_gs_check_needed ()
 -- * If we're not handling a sponge request and the given entity is present in multiple graphs:
 --     * null is returned for the entity graph
 --     * we then make no attempt to determine the user's permissions on these graphs prior to the select to
---       fetch the results for display. It's assumed that RDF_GRAPH_USER_PERMS_ACK() will filter the results
+--       fetch the results for display. It's assumed that VAL's graph security callback will filter the results
 --       from any graphs for which the user doesn't have read permission.
 create procedure b3s_get_entity_graph (in entity_uri varchar, in sponge_request int)
 {
@@ -1324,43 +1324,64 @@ create procedure b3s_get_entity_graph (in entity_uri varchar, in sponge_request 
     if (sponge_request)
     {
       if (connection_get ('b3s_dbg'))
-	dbg_printf ('%s: Entity graph is <%s>', current_proc_name(), entity_uri);
+	dbg_printf ('%s: Entity graph being sponged is <%s>', current_proc_name(), entity_uri);
       return entity_uri; -- the entity description is sponged to a graph with the same URI
     }
     else
     {
       declare num_containing_graphs int;
-      --  num_containing_graphs := (
-      --  select count(distinct G) from DB.DBA.RDF_QUAD where 
-      --      S = iri_to_id (entity_uri) and 
-      --      G not in (select RGGM_MEMBER_IID from DB.DBA.RDF_GRAPH_GROUP_MEMBER 
-      --	  where RGGM_GROUP_IID = iri_to_id('http://www.openlinksw.com/schemas/virtrdf#PrivateGraphs')));
+
+      -- Short-circuit the remainder of this block.
+      -- In doing so, in the case of num_containing_graphs == 1, we are opting to let the 
+      -- VAL graph security callback filter out contributions from this graph to the result set,
+      -- rather than displaying an authentication dialog if the user has no read permissions on the graph.
+      -- See b3s_get_user_graph_permissions().
+      -- 
+      -- The remainer of the block is retained in case we want to make these alternative behaviours configurable.
+      return null;
+
       num_containing_graphs := (select count(distinct G) from DB.DBA.RDF_QUAD where S = iri_to_id (entity_uri));
       if (num_containing_graphs > 1)
       {
 	if (connection_get ('b3s_dbg'))
-	  dbg_printf ('%s: > 1 graph contains <%s> as a subject URI. Returning null for containing graph', current_proc_name(), entity_uri);
+	  dbg_printf ('%s: > 1 graph contains <%s> as a subject. Returning null for containing graph', current_proc_name(), entity_uri);
 	return null;
       }
       else
       {
-        -- entity_graph := (select top 1 id_to_iri(G) from DB.DBA.RDF_QUAD where 
-        --     S = iri_to_id (entity_uri) and 
-        --     G not in (select RGGM_MEMBER_IID from DB.DBA.RDF_GRAPH_GROUP_MEMBER 
-        --               where RGGM_GROUP_IID = iri_to_id('http://www.openlinksw.com/schemas/virtrdf#PrivateGraphs')));
 	entity_graph := (select top 1 id_to_iri(G) from DB.DBA.RDF_QUAD where S = iri_to_id (entity_uri));
-	-- Assume client is attempting to view an empty graph
 	if (entity_graph is not null)
 	{
 	  if (connection_get ('b3s_dbg'))
-	    dbg_printf ('%s: Graph containing <%s> is <%s>', current_proc_name(), entity_uri, entity_graph);
+	    dbg_printf ('%s: Graph containing <%s> as a subject is <%s>', current_proc_name(), entity_uri, entity_graph);
 	  ;
 	}
 	else
 	{
-	  entity_graph := entity_uri;
-	  if (connection_get ('b3s_dbg'))
-	    dbg_printf ('%s: <%s> is assumed to be a graph URI', current_proc_name(), entity_graph);
+	  num_containing_graphs := (select count(distinct G) from DB.DBA.RDF_QUAD where O = iri_to_id (entity_uri));
+	  if (num_containing_graphs > 1)
+	  {
+	    if (connection_get ('b3s_dbg'))
+	      dbg_printf ('%s: > 1 graph contains <%s> as an object. Returning null for containing graph', current_proc_name(), entity_uri);
+	    return null;
+	  }
+	  else
+	  {
+	    entity_graph := (select top 1 id_to_iri(G) from DB.DBA.RDF_QUAD where O = iri_to_id (entity_uri));
+	    if (entity_graph is not null)
+	    {
+	      if (connection_get ('b3s_dbg'))
+		dbg_printf ('%s: Graph containing <%s> as an object is <%s>', current_proc_name(), entity_uri, entity_graph);
+	      ;
+	    }
+	    else
+	    {
+	      -- Assume client is attempting to view an empty graph
+	      entity_graph := entity_uri;
+	      if (connection_get ('b3s_dbg'))
+		dbg_printf ('%s: <%s> is assumed to be a graph URI', current_proc_name(), entity_graph);
+	    }
+	  }
 	}
 	return entity_graph;
       }

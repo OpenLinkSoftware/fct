@@ -61,7 +61,7 @@
   declare gs_user_id, gs_check_needed integer;
   declare gs_check_cond varchar;
   declare sponge_request, val_vad_present, pacl_vad_present, graph_perms, graph_perms_allow_sponge int;
-  declare val_serviceId varchar;
+  declare val_serviceId, val_perms_clause varchar;
   declare val_auth_method integer;
   declare host varchar;
   declare pageUrl, err varchar;
@@ -73,6 +73,7 @@
   if (registry_get ('fct_auto_sponge') = '1')
     auto_sponge_on_empty_graph := 1;
   val_serviceId := null;
+  val_perms_clause := '';
   err := null;
   val_vad_present := 0;
   if (VAD_CHECK_VERSION ('VAL') is not null)
@@ -253,6 +254,10 @@ again:
   graph_perms_allow_sponge := sponge_request;
   view_mode := 'full';
   graph_perms := b3s_get_user_graph_permissions (_G, pageUrl, sponge_request, val_vad_present, val_serviceId, val_auth_method, graph_perms_allow_sponge, view_mode); 
+
+  if (val_vad_present)
+    val_perms_clause := sprintf ('define sql:gs-app-callback "VAL_SPARQL_PERMS" define sql:gs-app-uid "%s" define get:enforce-acls "yes" ', coalesce (val_serviceId, 'nobody'));
+
   b3s_dbg_out (dbg_out, 'effective user graph permissions: ' || sprintf('%d', graph_perms));
   if (view_mode = 'none')
   {
@@ -380,7 +385,7 @@ post_process_err_with_log4v:
   e_type := e_type_a[0];
   e_type_label := e_type_a[1];
   
-  qry_str := sprintf ('sparql %s prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> prefix dc: <http://purl.org/dc/elements/1.1/> select ?o (lang(?o)) %s where { <%s> rdfs:comment ?o }', inf, _F, _S);
+  qry_str := sprintf ('sparql %s %s prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> prefix dc: <http://purl.org/dc/elements/1.1/> select ?o (lang(?o)) %s where { <%s> rdfs:comment ?o }', inf, val_perms_clause, _F, _S);
 
 --    dbg_obj_print (qry_str);
 
@@ -655,7 +660,7 @@ if (_subject <> '') {
 
       if (length (_F) or 1 = sys_stat ('cl_run_local_only'))
       { 
-      dt1 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT LONG VARCHAR, 0 as FLAG int from (sparql %s define output:valmode "LONG" select distinct ?p ?o %s where { <%s> ?p ?o }  order by 1) sp1', inf, _F, _S);
+      dt1 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT LONG VARCHAR, 0 as FLAG int from (sparql %s define output:valmode "LONG" %s select distinct ?p ?o %s where { <%s> ?p ?o }  order by 1) sp1', inf, val_perms_clause, _F, _S);
       }
       else
       {
@@ -663,7 +668,7 @@ if (_subject <> '') {
       dt1 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT LONG VARCHAR, 0 as FLAG int from (SELECT DISTINCT p, o FROM DB.DBA.RDF_QUAD %s where s = __i2idn (\'%s\' , 1) %s ORDER BY 1 ASC OPTION (QUIETCAST %s)) sp1',
         tbinf, _S, gs_check_cond, tbsas);
       }
-      dt2 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT LONG VARCHAR, 1 as FLAG int from (sparql %s define output:valmode "LONG" select distinct ?p ?o %s where { ?o ?p <%s> } order by 1) sp2', inf, _F, _S);
+      dt2 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT LONG VARCHAR, 1 as FLAG int from (sparql %s define output:valmode "LONG" %s select distinct ?p ?o %s where { ?o ?p <%s> } order by 1) sp2', inf, val_perms_clause, _F, _S);
 
       --topof := '';
       qry_str := sprintf ('select %s PRED, OBJECT, FLAG from (%s UNION ALL %s) un0', topof, dt1, dt2);
@@ -673,7 +678,7 @@ if (_subject <> '') {
         { 
 	  if (length (_F) or 1 = sys_stat ('cl_run_local_only'))
             {
-	      dt1 := sprintf ('select count(*) as cnt from (sparql %s define output:valmode "LONG" select distinct ?p ?o %s where { <%s> ?p ?o }  order by 1) sp1', inf, _F, _S);
+	      dt1 := sprintf ('select count(*) as cnt from (sparql %s define output:valmode "LONG" %s select distinct ?p ?o %s where { <%s> ?p ?o }  order by 1) sp1', inf, val_perms_clause, _F, _S);
 	    }
           else
 	    {
@@ -681,7 +686,7 @@ if (_subject <> '') {
               dt1 := sprintf ('select count(*) as cnt from (SELECT DISTINCT p, o FROM DB.DBA.RDF_QUAD %s where s = __i2idn (\'%s\' , 1) %s ORDER BY 1 ASC OPTION (QUIETCAST %s)) sp1',
                 tbinf, _S, gs_check_cond, tbsas);
 	    }
-	  dt2 := sprintf ('select count(*) as cnt from (sparql %s define output:valmode "LONG" select distinct ?p ?o %s where { ?o ?p <%s> } order by 1) sp2', inf, _F, _S);
+	  dt2 := sprintf ('select count(*) as cnt from (sparql %s define output:valmode "LONG" %s select distinct ?p ?o %s where { ?o ?p <%s> } order by 1) sp2', inf, val_perms_clause, _F, _S);
 	  count_str := sprintf ('select sum (cnt) from (%s UNION ALL %s) un0', dt1, dt2);
           if (dist = 0)
             count_str := replace (count_str, 'distinct', '');
