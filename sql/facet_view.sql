@@ -1393,7 +1393,7 @@ http ('
 
    demo_xsl_uri := registry_get ('sparql_demo_xsl_uri');
 
-   if (0 = demo_xsl_uri) demo_xsl_uri := 'http://' || uriqa_str || '/fct/isparql_describe.xsl';
+   if (0 = demo_xsl_uri) demo_xsl_uri := 'http://' || uriqa_str || '/fct/xslt/isparql_describe.xsl';
 
 http('
 <script type="text/javascript">
