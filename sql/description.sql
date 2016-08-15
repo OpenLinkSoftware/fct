@@ -300,6 +300,7 @@ b3s_get_types (in _s varchar,
 	  for (i := 0;i < length(data); i := i + 1) 
             {
 --                dbg_printf ('data[%d][0]: %s', i,data[i][0]);
+                if (__box_flags (data[i][0]))
 		t_a := vector_concat (t_a, 
                                       vector (vector (data[i][0], 
                                       b3s_uri_curie (data[i][0]),
@@ -334,6 +335,7 @@ b3s_get_all_types (in _s varchar,
 	  for (i := 0;i < length(data); i := i + 1) 
             {
 --                dbg_printf ('data[%d][0]: %s', i,data[i][0]);
+                if (__box_flags (data[i][0]))
 		t_a := vector_concat (t_a, 
                                       vector (vector (data[i][0], 
                                       b3s_uri_curie (data[i][0]),
