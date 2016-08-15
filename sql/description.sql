@@ -168,7 +168,7 @@ b3s_e_type (in subj varchar)
 	{
 	  for (i := 0; i < length (data); i := i + 1) 
             {
-              if (data[i][0] is not null)
+              if (data[i][0] is not null and __box_flags (data[i][0]) = 1)
   	        return data[i][0];
             }
 	}
