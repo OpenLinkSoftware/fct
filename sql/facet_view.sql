@@ -24,7 +24,7 @@
 -- Facets web page
 
 registry_set ('_fct_xslt_', 
-              case when registry_get('_fct_url_') = 0 then 'file://fct/' else registry_get('_fct_url_') end);
+              case when registry_get('_fct_url_') = 0 then 'file://fct/' else registry_get('_fct_url_') end || 'xslt/');
 
 
 create procedure
