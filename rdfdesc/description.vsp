@@ -69,6 +69,7 @@
   declare auto_sponge_on_empty_graph int;
   declare log4v_vad_present, log4v_err_handling_in_progress int;
   declare log4v_app_id any;
+  declare q_txt any;
 
   if (registry_get ('fct_auto_sponge') = '1')
     auto_sponge_on_empty_graph := 1;
@@ -300,12 +301,21 @@ post_process_err_with_log4v:
     if (get_keyword ('sp', params) = '1')
     {
       if (val_vad_present)
-      {
-	DB.DBA.EXEC_AS (sprintf ('sparql define get:error-recovery "signal" define input:storage "" define get:soft "add" define get:enforce-acls "yes" define sql:gs-app-callback "VAL_SPARQL_PERMS" define sql:gs-app-uid "%s" SELECT * from <%s> where { ?x ?y ?z . }', 
-	    val_serviceId, _G), 'dba', 1);
-      }
+        {
+          q_txt := string_output ();
+          http ('sparql define get:error-recovery "signal" define input:storage "" define get:soft "add" define get:enforce-acls "yes" define sql:gs-app-callback "VAL_SPARQL_PERMS" define sql:gs-app-uid "' || val_serviceId || '" SELECT * from ', q_txt);
+          http_sparql_object (__box_flags_tweak (_G, 1), q_txt);
+          http (' where { ?x ?y ?z . }', q_txt);
+          DB.DBA.EXEC_AS (string_output_string (q_txt), 'dba', 1);
+        }
       else
-	DB.DBA.EXEC_AS (sprintf ('sparql define get:error-recovery "signal" define input:storage "" define get:soft "add" SELECT * from <%s> where { ?x ?y ?z . }', _G), 'SPARQL', 1);
+        {
+          q_txt := string_output ();
+          http ('sparql define get:error-recovery "signal" define input:storage "" define get:soft "add" SELECT * from ', q_txt);
+          http_sparql_object (__box_flags_tweak (_G, 1), q_txt);
+          http (' where { ?x ?y ?z . }', q_txt);
+	  DB.DBA.EXEC_AS (string_output_string (q_txt), 'SPARQL', 1);
+        }
       DB.DBA.VT_INC_INDEX_DB_DBA_RDF_OBJ ();
       sp_done := 1;
     }
@@ -330,9 +340,13 @@ post_process_err_with_log4v:
         refr := atoi (get_keyword ('sr', params, '0'));		
 
       if (val_vad_present)
-	DB.DBA.EXEC_AS (sprintf ('sparql define get:error-recovery "signal" define input:storage "" define get:refresh "%d" define get:soft "%s" define get:enforce-acls "yes" define sql:gs-app-callback "VAL_SPARQL_PERMS" define sql:gs-app-uid "%s" %s SELECT * from <%s> where { ?x ?y ?z . }', refr, sp_mode, val_serviceId, sp_accept, _G), 'dba', 1);
+        { --!!!
+	  DB.DBA.EXEC_AS (sprintf ('sparql define get:error-recovery "signal" define input:storage "" define get:refresh "%d" define get:soft "%s" define get:enforce-acls "yes" define sql:gs-app-callback "VAL_SPARQL_PERMS" define sql:gs-app-uid "%s" %s SELECT * from <%s> where { ?x ?y ?z . }', refr, sp_mode, val_serviceId, sp_accept, _G), 'dba', 1);
+        }
       else
-	DB.DBA.EXEC_AS (sprintf ('sparql define get:error-recovery "signal" define input:storage "" define get:refresh "%d" define get:soft "%s" %s SELECT * from <%s> where { ?x ?y ?z . }', refr, sp_mode, sp_accept, _G), 'SPARQL', 1);
+        {
+	  DB.DBA.EXEC_AS (sprintf ('sparql define get:error-recovery "signal" define input:storage "" define get:refresh "%d" define get:soft "%s" %s SELECT * from <%s> where { ?x ?y ?z . }', refr, sp_mode, sp_accept, _G), 'SPARQL', 1);
+        }
       DB.DBA.VT_INC_INDEX_DB_DBA_RDF_OBJ ();
       sp_done := 1;
     }
