@@ -56,6 +56,7 @@
     DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/search.sql', 0, 'report', 1);
     DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/sum.sql', 0, 'report', 1);
     DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/val_scopes.sql', 0, 'report', 1);
+    DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/fct_endpoints.sql', 0, 'report', 1);
     if (sys_stat ('cl_run_local_only') = 1) 
       DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/complete_single.sql', 0, 'report', 1);
     else { 
