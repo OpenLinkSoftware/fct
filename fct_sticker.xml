@@ -91,6 +91,10 @@
     <file type="$TYPE$" source_uri="js/*.js" target_uri="fct/" />
     <file type="$TYPE$" source_uri="images/*" target_uri="fct/" />
     <file type="$TYPE$" source_uri="oat/toolkit/*.js" target_uri="fct/" />
+    <file type="$TYPE$" source_uri="oat/styles/*" target_uri="fct/" />
+    <file type="$TYPE$" source_uri="oat/xslt/*" target_uri="fct/" />
+    <file type="$TYPE$" source_uri="oat/images/*" target_uri="fct/" />
+    <file type="$TYPE$" source_uri="oat/images/markers/*" target_uri="fct/" />
     <file type="$TYPE$" source_uri="rdfdesc/*.vsp" target_uri="fct/" />
     <file type="$TYPE$" source_uri="css/*.css" target_uri="fct/" />
     <file type="$TYPE$" source_uri="fonts/*" target_uri="fct/" />
