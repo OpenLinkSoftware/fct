@@ -891,9 +891,15 @@ create procedure
 b3s_http_print_r (in _object any, in sid varchar, in prop any, in langs any, in rel int := 1, in acc any := null, in _from varchar := null, in flag int := 0)
 {
    declare lang, rdfs_type, rdfa, visible any;
+   declare robotsrel varchar;
 
    if (_object is null) 
      return;
+
+   robotsrel := registry_get('fct_robots_rel');
+   if(robotsrel is null or robotsrel='' or robotsrel=0) {
+    robotsrel:=' rel="nofollow" ';
+   }
 
    if (__tag (_object) = 230)
      {
@@ -940,13 +946,45 @@ again:
        http (sprintf ('<!-- %d -->', length (_url)));
 
        rdfa := b3s_rel_print (prop, rel, 0);
-       if (prop = 'http://bblfish.net/work/atom-owl/2006-06-06/#content' and _object like '%#content%')
-	 {
-	   declare src any;
-	   whenever not found goto usual_iri;
-	   select id_to_iri (O) into src from DB.DBA.RDF_QUAD where 
-	   	S = iri_to_id (_object, 0) and P = iri_to_id ('http://bblfish.net/work/atom-owl/2006-06-06/#src', 0);
-	   http (sprintf ('<div id="x_content"><iframe src="%s" width="100%%" height="100%%" frameborder="0" sandbox=""><p>Your browser does not support iframes.</p></iframe></div><br/>', src));
+       if (prop = 'http://bblfish.net/work/atom-owl/2006-06-06/#content' and _url like '%#content%') {
+          declare src, abody, mt any;
+          -- whenever not found goto usual_iri;
+           mt := null;
+          mt := (select top 1 __ro2sq(o) from DB.DBA.RDF_QUAD where S = iri_to_id (_object, 0) and P = iri_to_id ('http://bblfish.net/work/atom-owl/2006-06-06/#type', 0) );
+           if (rdf_box_data(mt) not like 'text/%') {
+            goto usual_iri;
+           }
+           src := ( select top 1 coalesce(id_to_iri(O), NULL) from DB.DBA.RDF_QUAD where S = iri_to_id (_object, 0) and P = iri_to_id ('http://bblfish.net/work/atom-owl/2006-06-06/#src', 0) );
+           abody:='';
+           if(src is not NULL and length(src)>5) {
+             abody := sprintf('<iframe src="%s" width="100%%" height="100%%" frameborder="0" sandbox="sandbox"><p>Your browser does not support iframes.</p></iframe></div><br/>', src);
+           } else {
+               if(mt like '%html%') {
+                 abody := (select top 1 __rdf_sqlval_of_obj(O) from RDF_QUAD
+                     where S=iri_to_id(_url)
+                     and P=iri_to_id('http://bblfish.net/work/atom-owl/2006-06-06/#body'));
+                }
+            }
+           if(abody is not null) {
+             abody := cast(abody as varchar);
+             if(length(abody)>5) {
+		declare lbl, vlbl any;
+		lbl := '';
+		if ((registry_get ('fct_desc_value_labels') = '1' or registry_get ('fct_desc_value_labels') = 0) and (__tag (_object) = 243 or (isstring (_object) and __box_flags (_object) = 1)))
+		  lbl := b3s_label (_url, langs, 1);
+		if ((not isstring(lbl)) or length (lbl) = 0)
+		  lbl := b3s_uri_curie(_url);
+		http (sprintf ('<a %s class="uri" %s href="%s">', robotsrel, rdfa, b3s_http_url (_url, sid, _from)));
+		vlbl := charset_recode (lbl, 'UTF-8', '_WIDE_');
+		http_value (case when vlbl <> 0 then vlbl else lbl end);
+		http (sprintf ('</a>'));
+		if (b3s_o_is_out (prop))
+		  http (sprintf ('&nbsp;<a href="%s"><img src="/fct/images/fct-linkout-16-blk.png" border="0"/></a>', _url));
+                http(sprintf('<div id="x_content" class="content embedded">%s</div>', cast(abody as varchar)));
+             }
+           } else {
+                goto usual_iri;
+           }
 	 }
        else if (http_mime_type (_url) like 'image/%' or http_mime_type (_url) = 'application/x-openlink-photo' or b3s_o_is_img (prop))
 	 {
@@ -968,7 +1006,7 @@ again:
 	     lbl := b3s_uri_curie(_url);
 	   -- XXX: must encode as wide label to print correctly  
 	   --http (sprintf ('<a class="uri" %s href="%s">%V</a>', rdfa, b3s_http_url (_url, sid, _from), lbl));
-	   http (sprintf ('<a class="uri" %s href="%s">', rdfa, b3s_http_url (_url, sid, _from)));
+	   http (sprintf ('<a %s class="uri" %s href="%s">', robotsrel, rdfa, b3s_http_url (_url, sid, _from)));
 	   vlbl := charset_recode (lbl, 'UTF-8', '_WIDE_');
 	   http_value (case when vlbl <> 0 then vlbl else lbl end);
 	   http (sprintf ('</a>'));
