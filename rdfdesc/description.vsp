@@ -201,6 +201,13 @@ again:
     page := atoi (get_keyword ('gp', params, '1')) - 1;
   else 
     page := atoi (get_keyword ('p', params, '1')) - 1;
+
+  -- Sanity checks
+  if (page is not null) {
+    if (page < 0) page := 0;
+    if (page > _last) page := _last;
+  }
+
   --topof := '';
   b3s_dbg_out (dbg_out, 'sid     : ' || sid);
   b3s_dbg_out (dbg_out, 'gr      : ' || gr);
@@ -726,8 +733,8 @@ if (_subject <> '') {
 	    cnt2 := 0;
 
           _last := cnt1 + cnt2;
-	  if (_last = 0)
-	   _last := n_per_page;
+	  --if (_last = 0)
+	  --_last := n_per_page;
 	  _last := _last / n_per_page;
         }
 
