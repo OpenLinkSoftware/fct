@@ -15,7 +15,7 @@
 --  This file is part of the OpenLink Software Virtuoso Open-Source (VOS)
 --  project.
 --
---  Copyright (C) 1998-2016 OpenLink Software
+--  Copyright (C) 1998-2018 OpenLink Software
 --
 --  This project is free software; you can redistribute it and/or modify it
 --  under the terms of the GNU General Public License as published by the
@@ -61,7 +61,7 @@
   declare gs_user_id, gs_check_needed integer;
   declare gs_check_cond varchar;
   declare sponge_request, val_vad_present, pacl_vad_present, graph_perms, graph_perms_allow_sponge int;
-  declare val_serviceId varchar;
+  declare val_serviceId, val_perms_clause varchar;
   declare val_auth_method integer;
   declare host varchar;
   declare pageUrl, err varchar;
@@ -69,10 +69,12 @@
   declare auto_sponge_on_empty_graph int;
   declare log4v_vad_present, log4v_err_handling_in_progress int;
   declare log4v_app_id any;
+  declare q_txt any;
 
   if (registry_get ('fct_auto_sponge') = '1')
     auto_sponge_on_empty_graph := 1;
   val_serviceId := null;
+  val_perms_clause := '';
   err := null;
   val_vad_present := 0;
   if (VAD_CHECK_VERSION ('VAL') is not null)
@@ -199,14 +201,21 @@ again:
     page := atoi (get_keyword ('gp', params, '1')) - 1;
   else 
     page := atoi (get_keyword ('p', params, '1')) - 1;
+
+  -- Sanity checks
+  if (page is not null) {
+    if (page < 0) page := 0;
+    if (page > _last) page := _last;
+  }
+
   --topof := '';
   b3s_dbg_out (dbg_out, 'sid     : ' || sid);
   b3s_dbg_out (dbg_out, 'gr      : ' || gr);
 
   arr := rfc1808_parse_uri (gr);
 
-  if (gr[0] <> '#'[0] and arr[0] = '' and arr[1] = '' and arr[2] <> '')
-    gr := 'http://' || gr;
+--   if (gr[0] <> '#'[0] and arr[0] = '' and arr[1] = '' and arr[2] <> '')
+--     gr := 'http://' || gr;
 
   arr := rfc1808_parse_uri (gr);
   arr [5] := '';
@@ -253,6 +262,10 @@ again:
   graph_perms_allow_sponge := sponge_request;
   view_mode := 'full';
   graph_perms := b3s_get_user_graph_permissions (_G, pageUrl, sponge_request, val_vad_present, val_serviceId, val_auth_method, graph_perms_allow_sponge, view_mode); 
+
+  if (val_vad_present)
+    val_perms_clause := sprintf ('define sql:gs-app-callback "VAL_SPARQL_PERMS" define sql:gs-app-uid "%s" define get:enforce-acls "yes" ', coalesce (val_serviceId, 'nobody'));
+
   b3s_dbg_out (dbg_out, 'effective user graph permissions: ' || sprintf('%d', graph_perms));
   if (view_mode = 'none')
   {
@@ -295,12 +308,21 @@ post_process_err_with_log4v:
     if (get_keyword ('sp', params) = '1')
     {
       if (val_vad_present)
-      {
-	DB.DBA.EXEC_AS (sprintf ('sparql define get:error-recovery "signal" define input:storage "" define get:soft "add" define get:enforce-acls "yes" define sql:gs-app-callback "VAL_SPARQL_PERMS" define sql:gs-app-uid "%s" SELECT * from <%s> where { ?x ?y ?z . }', 
-	    val_serviceId, _G), 'dba', 1);
-      }
+        {
+          q_txt := string_output ();
+          http ('sparql define get:error-recovery "signal" define input:storage "" define get:soft "add" define get:enforce-acls "yes" define sql:gs-app-callback "VAL_SPARQL_PERMS" define sql:gs-app-uid "' || val_serviceId || '" SELECT * from ', q_txt);
+          http_sparql_object (__box_flags_tweak (_G, 1), q_txt);
+          http (' where { ?x ?y ?z . }', q_txt);
+          DB.DBA.EXEC_AS (string_output_string (q_txt), 'dba', 1);
+        }
       else
-	DB.DBA.EXEC_AS (sprintf ('sparql define get:error-recovery "signal" define input:storage "" define get:soft "add" SELECT * from <%s> where { ?x ?y ?z . }', _G), 'SPARQL', 1);
+        {
+          q_txt := string_output ();
+          http ('sparql define get:error-recovery "signal" define input:storage "" define get:soft "add" SELECT * from ', q_txt);
+          http_sparql_object (__box_flags_tweak (_G, 1), q_txt);
+          http (' where { ?x ?y ?z . }', q_txt);
+	  DB.DBA.EXEC_AS (string_output_string (q_txt), 'SPARQL', 1);
+        }
       DB.DBA.VT_INC_INDEX_DB_DBA_RDF_OBJ ();
       sp_done := 1;
     }
@@ -325,9 +347,13 @@ post_process_err_with_log4v:
         refr := atoi (get_keyword ('sr', params, '0'));		
 
       if (val_vad_present)
-	DB.DBA.EXEC_AS (sprintf ('sparql define get:error-recovery "signal" define input:storage "" define get:refresh "%d" define get:soft "%s" define get:enforce-acls "yes" define sql:gs-app-callback "VAL_SPARQL_PERMS" define sql:gs-app-uid "%s" %s SELECT * from <%s> where { ?x ?y ?z . }', refr, sp_mode, val_serviceId, sp_accept, _G), 'dba', 1);
+        { --!!!
+	  DB.DBA.EXEC_AS (sprintf ('sparql define get:error-recovery "signal" define input:storage "" define get:refresh "%d" define get:soft "%s" define get:enforce-acls "yes" define sql:gs-app-callback "VAL_SPARQL_PERMS" define sql:gs-app-uid "%s" %s SELECT * from <%s> where { ?x ?y ?z . }', refr, sp_mode, val_serviceId, sp_accept, _G), 'dba', 1);
+        }
       else
-	DB.DBA.EXEC_AS (sprintf ('sparql define get:error-recovery "signal" define input:storage "" define get:refresh "%d" define get:soft "%s" %s SELECT * from <%s> where { ?x ?y ?z . }', refr, sp_mode, sp_accept, _G), 'SPARQL', 1);
+        {
+	  DB.DBA.EXEC_AS (sprintf ('sparql define get:error-recovery "signal" define input:storage "" define get:refresh "%d" define get:soft "%s" %s SELECT * from <%s> where { ?x ?y ?z . }', refr, sp_mode, sp_accept, _G), 'SPARQL', 1);
+        }
       DB.DBA.VT_INC_INDEX_DB_DBA_RDF_OBJ ();
       sp_done := 1;
     }
@@ -380,7 +406,7 @@ post_process_err_with_log4v:
   e_type := e_type_a[0];
   e_type_label := e_type_a[1];
   
-  qry_str := sprintf ('sparql %s prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> prefix dc: <http://purl.org/dc/elements/1.1/> select ?o (lang(?o)) %s where { <%s> rdfs:comment ?o }', inf, _F, _S);
+  qry_str := sprintf ('sparql %s %s prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> prefix dc: <http://purl.org/dc/elements/1.1/> select ?o (lang(?o)) %s where { <%s> rdfs:comment ?o }', inf, val_perms_clause, _F, _S);
 
 --    dbg_obj_print (qry_str);
 
@@ -393,10 +419,11 @@ post_process_err_with_log4v:
   rdf_link := sprintf ('/sparql?query=%U', __box_flags_tweak (sprintf ('define sql:describe-mode "CBD" %s DESCRIBE <%s>', b3s_render_inf_clause(), _S), 2)); 
   __box_flags_set (rdf_link, 2);
 
-  declare __res_desc, qs, qv, best_variant, accept varchar;
+  declare __res_desc, qs, qv, best_variant, accept, protocol varchar;
   declare best_q, curr float;
   declare inx int;
 
+  protocol := 'http'; if (is_https_ctx()) protocol := 'https';
   accept := http_request_header_full (lines, 'Accept', 'text/html');
   if (accept = '*/*')
     accept := 'text/html';
@@ -423,12 +450,12 @@ post_process_err_with_log4v:
       http_rewrite ();
       http_status_set (406);
       http_header ('Alternates: ');
-      http_header (http_header_get () || sprintf ('{ "http://%{WSHost}s/describe/?url=%U" 0.5 {type text/html}}', gr));
+      http_header (http_header_get () || sprintf ('{ "%s://%{WSHost}s/describe/?url=%U" 0.5 {type text/html}}', protocol, gr));
       inx := 0;
       foreach (varchar q in qs) do
         {
 	  if (q  not in ('text/html', 'application/xhtml+xml'))
-	    http_header (http_header_get () || sprintf (', { "http://%{WSHost}s%s&format=%U" %.2f {type %s}}', rdf_link, q, qv[inx], q));
+	    http_header (http_header_get () || sprintf (', { "%s://%{WSHost}s%s&format=%U" %.2f {type %s}}', protocol, rdf_link, q, qv[inx], q));
           inx := inx + 1;
 	}
       http_header (http_header_get () || '\r\n');
@@ -438,7 +465,7 @@ post_process_err_with_log4v:
     {
       http_rewrite ();
       http_status_set (303);
-      http_header (sprintf ('TCN: choice\r\nVary: negotiate,accept\r\nLocation: http://%{WSHost}s%s&format=%U\r\n', rdf_link, best_variant));
+      http_header (sprintf ('TCN: choice\r\nVary: negotiate,accept\r\nLocation: %s://%{WSHost}s%s&format=%U\r\n', protocol, rdf_link, best_variant));
       return; 
     }
   __res_desc := b3s_uri_curie(page_resource_uri);
@@ -477,29 +504,29 @@ post_process_err_with_log4v:
     }
 ?>
 <head>
-    <base href="http<?V case is_https_ctx () when 1 then 's' else '' end ?>://<?V host ?>/fct/rdfdesc/" />
+    <base href="/fct/rdfdesc/" />
     <title>About: <?vsp if (length (label)) http_value (label); else http_value (b3s_uri_curie (page_resource_uri));?></title>
     <!--link rel="alternate" type="application/rdf+xml" href="<?=rdf_link?>" title="RDF" /-->
 
     <?vsp 
 	declare main_ss varchar;
         main_ss := registry_get ('fct_main_ss');
-        if (not isstring (main_ss)) main_ss := 'styles/default.css';
+        if (not isstring (main_ss)) main_ss := '/fct/css/default.css';
     ?>
     <link rel="stylesheet" type="text/css" href="<?=main_ss?>"  charset="utf-8" />
 
-    <link rel="stylesheet" type="text/css" href="styles/highlighter.css" charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="/fct/css/highlighter.css" charset="utf-8" />
     <script type="text/javascript" >
       var featureList=["tab","ajax"];
     </script>
-    <script type="text/javascript" src="s/jquery-1.7.2.js"></script>
+    <script type="text/javascript" src="/fct/js/jquery-1.12.3.min.js"></script>
     <script type="text/javascript" src="/fct/oat/toolkit/loader.js"></script>
-    <script type="text/javascript" src="s/description.js"></script>
-    <link rel="stylesheet" type="text/css" href="styles/jquery-ui-1.8.20.custom.css" />
-    <script type="text/javascript" src="s/jquery-ui-1.8.20.custom.min.js"></script>
+    <script type="text/javascript" src="/fct/js/description.js"></script>
+    <script type="text/javascript" src="/fct/js/jquery-ui-1.11.4.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/fct/css/jquery-ui-1.11.4.min.css" />
 <?vsp fct_links_mup (_S, rdf_link); ?>
 </head>
-<body>
+<body about="<?V page_resource_uri ?>">
   <div id="PG">
     <div id="HD">
     <?vsp fct_desc_page_head (); ?>
@@ -655,7 +682,7 @@ if (_subject <> '') {
 
       if (length (_F) or 1 = sys_stat ('cl_run_local_only'))
       { 
-      dt1 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT LONG VARCHAR, 0 as FLAG int from (sparql %s define output:valmode "LONG" select distinct ?p ?o %s where { <%s> ?p ?o }  order by 1) sp1', inf, _F, _S);
+      dt1 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT LONG VARCHAR, 0 as FLAG int from (sparql %s define output:valmode "LONG" %s select distinct ?p ?o %s where { <%s> ?p ?o }  order by 1) sp1', inf, val_perms_clause, _F, _S);
       }
       else
       {
@@ -663,7 +690,7 @@ if (_subject <> '') {
       dt1 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT LONG VARCHAR, 0 as FLAG int from (SELECT DISTINCT p, o FROM DB.DBA.RDF_QUAD %s where s = __i2idn (\'%s\' , 1) %s ORDER BY 1 ASC OPTION (QUIETCAST %s)) sp1',
         tbinf, _S, gs_check_cond, tbsas);
       }
-      dt2 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT LONG VARCHAR, 1 as FLAG int from (sparql %s define output:valmode "LONG" select distinct ?p ?o %s where { ?o ?p <%s> } order by 1) sp2', inf, _F, _S);
+      dt2 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT LONG VARCHAR, 1 as FLAG int from (sparql %s define output:valmode "LONG" %s select distinct ?p ?o %s where { ?o ?p <%s> } order by 1) sp2', inf, val_perms_clause, _F, _S);
 
       --topof := '';
       qry_str := sprintf ('select %s PRED, OBJECT, FLAG from (%s UNION ALL %s) un0', topof, dt1, dt2);
@@ -673,7 +700,7 @@ if (_subject <> '') {
         { 
 	  if (length (_F) or 1 = sys_stat ('cl_run_local_only'))
             {
-	      dt1 := sprintf ('select count(*) as cnt from (sparql %s define output:valmode "LONG" select distinct ?p ?o %s where { <%s> ?p ?o }  order by 1) sp1', inf, _F, _S);
+	      dt1 := sprintf ('select count(*) as cnt from (sparql %s define output:valmode "LONG" %s select distinct ?p ?o %s where { <%s> ?p ?o }  order by 1) sp1', inf, val_perms_clause, _F, _S);
 	    }
           else
 	    {
@@ -681,17 +708,33 @@ if (_subject <> '') {
               dt1 := sprintf ('select count(*) as cnt from (SELECT DISTINCT p, o FROM DB.DBA.RDF_QUAD %s where s = __i2idn (\'%s\' , 1) %s ORDER BY 1 ASC OPTION (QUIETCAST %s)) sp1',
                 tbinf, _S, gs_check_cond, tbsas);
 	    }
-	  dt2 := sprintf ('select count(*) as cnt from (sparql %s define output:valmode "LONG" select distinct ?p ?o %s where { ?o ?p <%s> } order by 1) sp2', inf, _F, _S);
-	  count_str := sprintf ('select sum (cnt) from (%s UNION ALL %s) un0', dt1, dt2);
+	  dt2 := sprintf ('select count(*) as cnt from (sparql %s define output:valmode "LONG" %s select distinct ?p ?o %s where { ?o ?p <%s> } order by 1) sp2', inf, val_perms_clause, _F, _S);
+
+	  declare cnt1, cnt2 integer;
+
+	  count_str := dt1;
           if (dist = 0)
             count_str := replace (count_str, 'distinct', '');
           count_str := replace (count_str, 'order by 1', '');
-	  -- dbg_obj_princ ('count_str = ', count_str);
 	  exec (count_str, null, null, vector (), 0, meta, data);
 	  if (length (data) and length (data[0]))
-	    _last := data[0][0]; -- sum is supposed to have always number
-          else
-	    _last := n_per_page;
+	    cnt1 := data[0][0]; -- sum is supposed to have always number
+	  else
+	    cnt1 := 0;
+
+	  count_str := dt2;
+          if (dist = 0)
+            count_str := replace (count_str, 'distinct', '');
+          count_str := replace (count_str, 'order by 1', '');
+	  exec (count_str, null, null, vector (), 0, meta, data);
+	  if (length (data) and length (data[0]))
+	    cnt2 := data[0][0]; -- sum is supposed to have always number
+	  else
+	    cnt2 := 0;
+
+          _last := cnt1 + cnt2;
+	  --if (_last = 0)
+	  --_last := n_per_page;
 	  _last := _last / n_per_page;
         }
 
@@ -719,7 +762,7 @@ if (_subject <> '') {
 	       b3s_http_print_l (PRED, odd_position, flag, sid, langs);
 	       curr_pred := pred;
 	     }
-           vis := b3s_http_print_r (page_resource_uri, OBJECT, sid, PRED, langs, 1, all_langs, _from, FLAG);
+           vis := b3s_http_print_r (OBJECT, sid, PRED, langs, 1, all_langs, _from, FLAG);
 	   nxt1:;
 	   inx := inx + 1;
 	   skip:;	
@@ -738,8 +781,7 @@ if (_subject <> '') {
 	  -- The view dataset is empty.
 	  -- Rather than display an empty result set, force automatic sponging.
 
-	  declare spongeUrl, protocol varchar;
-	  protocol := 'http'; if (is_https_ctx()) protocol := 'https';
+	  declare spongeUrl varchar;
 	  spongeUrl := sprintf ('%s://%s/describe/?url=%U&sponger:get=add&sr=clean', protocol, host, gr);
 
 	  if (val_vad_present and not graph_perms_allow_sponge)
@@ -830,8 +872,8 @@ if (_subject <> '') {
 	      <button type="submit" value="" name="last" <?vsp if (dis_next) { http ('disabled="disabled"'); } ?>>Last &#9656;&#9656;</button>
 	       &nbsp;&nbsp;&nbsp;
 	       Page <?V page + 1 ?> of <?V _last + 1 ?>  &nbsp;&nbsp;&nbsp;
-	       <input type="text" value="<?V page + 1 ?>" size="5" name="gp" /> &nbsp; 
-	       <button type="submit" value="" name="go">Go</button>
+	       <input type="text" value="<?V page + 1 ?>" size="5" name="gp" <?vsp if (page <= 0 AND dis_next) { http('disabled="disabled"'); }?> /> &nbsp; 
+	       <button type="submit" value="" name="go" <?vsp if (page <= 0 AND dis_next) { http('disabled="disabled"'); }?> >Go</button>
 	<?vsp } } ?>
 	</div>
 	</form>
@@ -907,13 +949,13 @@ if (_subject <> '') {
         <a href="http://dbpedia.org/sparql"><img alt="W3C Semantic Web Technology" src="/fct/images/sw-sparql-blue.png" style="border-width:0"/></a>
         <a href="<?=rdf_link?>" title="RDF data"><img src="/fct/images/sw-rdf-blue.png" alt="[RDF Data]" style="border-width:0"/></a>
 
-	<!--span 
+	<span about=""
 	resource="http://www.w3.org/TR/rdfa-syntax"
 	rel="dc:conformsTo" xmlns:dc="http://purl.org/dc/terms/">
-	<a href="http://validator.w3.org/check?uri=referer"><img
-	    src="http://www.w3.org/Icons/valid-xhtml-rdfa"
+	<a href="//validator.w3.org/check?uri=referer"><img
+	    src="//www.w3.org/Icons/valid-xhtml-rdfa"
 	    alt="Valid XHTML + RDFa" height="27" /></a>
-	</span-->
+	</span>
 	<br />
 	<?vsp fct_virt_info (); ?><br /> 
 	<?vsp

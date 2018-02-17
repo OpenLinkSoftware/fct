@@ -12,7 +12,7 @@
   declare val_serviceId, pageUrl, query_str varchar;
   declare val_auth_method integer;
   main_ss := registry_get ('fct_main_ss');
-  if (not isstring (main_ss)) main_ss := 'styles/default.css';
+  if (not isstring (main_ss)) main_ss := '/fct/css/default.css';
 
   val_vad_present := 0;
   if (VAD_CHECK_VERSION ('VAL') is not null)
@@ -50,11 +50,11 @@
 <script type="text/javascript" >
     var featureList=["map", "combolist", "ajax", "tab", "json", "location"];
 </script>
-<script type="text/javascript" src="rdfdesc/s/jquery-1.7.2.js"></script>
-<script type="text/javascript" src="oat/toolkit/loader.js"></script>
-<script type="text/javascript" src="facet.js"></script>
-<script type="text/javascript" src="rdfdesc/s/jquery-ui-1.8.20.custom.min.js"></script>
-<link rel="stylesheet" type="text/css" href="rdfdesc/styles/jquery-ui-1.8.20.custom.css" />
+<script type="text/javascript" src="/fct/js/jquery-1.12.3.min.js"></script>
+<script type="text/javascript" src="/fct/oat/toolkit/loader.js"></script>
+<script type="text/javascript" src="/fct/js/facet.js"></script>
+<script type="text/javascript" src="/fct/js/jquery-ui-1.11.4.min.js"></script>
+<link rel="stylesheet" type="text/css" href="/fct/css/jquery-ui-1.11.4.min.css" />
 
 <?vsp 
   declare sid, _S, ses_parms varchar;
@@ -125,7 +125,7 @@
 --  This file is part of the OpenLink Software Virtuoso Open-Source (VOS)
 --  project.
 --
---  Copyright (C) 1998-2016 OpenLink Software
+--  Copyright (C) 1998-2018 OpenLink Software
 --
 --  This project is free software; you can redistribute it and/or modify it
 --  under the terms of the GNU General Public License as published by the
