@@ -23,6 +23,11 @@
          result ('ERROR', 'The Faceted Browser package requires server version $NEED_VERSION$ or greater'); 
          signal ('FATAL', 'The Faceted Browser package requires server version $NEED_VERSION$ or greater'); 
       } 
+    if (__proc_exists ('DB.DBA.SPONGER_DOCUMENT_EXPIRATION') is null)
+      {
+         result ('ERROR', 'The Faceted Browser  package requires server version 07.20.3226, 08.01.3301 or greater');
+         signal ('FATAL', 'The Faceted Browser  package requires server version 07.20.3226, 08.01.3301 or greater');
+      }
   ]]></sql>
   <sql purpose="post-install">
     ; 

@@ -21,7 +21,7 @@ FCT_FILES	= \
 	www/*.vsp
 
 VERSION=`./gen_version.sh`
-NEED_VERSION=06.00.3117
+NEED_VERSION=07.20.3226
 
 vad_DATA = fct_dav.vad
 
