@@ -356,7 +356,7 @@ post_process_err_with_log4v:
     if (sp_done)
       {
         http_status_set (302);
-	http_header (sprintf ('Location: /describe/?url=%U%s\r\n', _G, ses_parms));
+	http_header (sprintf ('Location: /describe/?url=%U%s\r\n', page_resource_uri, ses_parms));
         return;
       }
   }
