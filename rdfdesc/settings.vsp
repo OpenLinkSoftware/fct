@@ -25,7 +25,7 @@
     gr := 'http://' || gr;
 
   page_resource_uri := gr;
-  page_resource_uri := replace (page_resource_uri, '%23', '#');
+  --page_resource_uri := replace (page_resource_uri, '%23', '#');
    
   -- The var "pageUrl" is also used in the fct_val_login_status.vsp include below
   pageUrl := FCT.DBA.build_page_url_on_current_host ('/fct/rdfdesc/settings.vsp', sprintf ('g=%U', page_resource_uri));
