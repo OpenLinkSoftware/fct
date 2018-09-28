@@ -415,22 +415,42 @@ b3s_render_inf_opts ()
 ;
 
 create procedure
-b3s_sas_selected ()
+b3s_render_invfp_opts () 
 {
-  if (connection_get ('sas') = 'yes') 
-    return ' checked="selected" ';
-  else 
-    return ''; 
+  declare invfp varchar;
+  invfp := coalesce (connection_get ('invfp'), 'IFP_OFF');
+  http ('
+	           <option value="IFP_OFF" ');	http_value ( case when invfp = 'IFP_OFF'	then 'selected="true"' else '' end ); http ('>Disabled (fastest)</option>
+	           <option value="IFP_S" ');	http_value ( case when invfp = 'IFP_S'		then 'selected="true"' else '' end ); http ('>Apply to subjects only</option>
+	           <option value="IFP_O" ');	http_value ( case when invfp = 'IFP_O'		then 'selected="true"' else '' end ); http ('>Apply to objects only</option>
+	           <option value="IFP" ');	http_value ( case when invfp = 'IFP'		then 'selected="true"' else '' end ); http ('>Apply to both subjects and objects</option>
+	           ');
+}
+;
+
+create procedure
+b3s_render_sas_opts () 
+{
+  declare sas varchar;
+  sas := coalesce (connection_get ('sas'), 'SAME_AS_OFF');
+  http ('
+	           <option value="SAME_AS_OFF" ');	http_value ( case when sas = 'SAME_AS_OFF'	then 'selected="true"' else '' end ); http ('>Disabled (fastest)</option>
+	           <option value="SAME_AS_S" ');	http_value ( case when sas = 'SAME_AS_S'	then 'selected="true"' else '' end ); http ('>Apply to subjects only</option>
+	           <option value="SAME_AS_O" ');	http_value ( case when sas = 'SAME_AS_O'	then 'selected="true"' else '' end ); http ('>Apply to objects only</option>
+	           <option value="SAME_AS_S_O" ');	http_value ( case when sas = 'SAME_AS_S_O'	then 'selected="true"' else '' end ); http ('>Apply to both subjects and objects (good enough for typical cases)</option>
+	           <option value="SAME_AS" ');		http_value ( case when sas = 'SAME_AS'		then 'selected="true"' else '' end ); http ('>Apply to subjects, objects and predicates (overkill, not recommended on big dataset, quickly runs out of memory limit)</option>
+	           <option value="SAME_AS_P" ');	http_value ( case when sas = 'SAME_AS_P'	then 'selected="true"' else '' end ); http ('>Apply to predicates only (might be useful only for some special reports)</option>
+	           ');
 }
 ;
  
 create procedure 
 b3s_parse_inf (in sid varchar, inout params any)
 {
-  declare _sas, _inf varchar;
+  declare _inf, _invfp, _sas varchar;
   declare grs any;
-
-  _sas := _inf := null; 
+  dbg_obj_princ ('b3s_parse_inf (', sid, params, ')');
+  _sas := _inf := _invfp := null; 
 
   if (sid is not null)
     { 
@@ -438,6 +458,7 @@ b3s_parse_inf (in sid varchar, inout params any)
         {
 	  declare i varchar;
           connection_set('inf', fct_inf_val (fct_state));
+          connection_set('invfp', fct_invfp_val (fct_state));
           connection_set('sas', fct_sas_val (fct_state));
 	  i := cast (xpath_eval ('/query/@s-term', fct_state) as varchar);
 	  if (length (i))
@@ -448,23 +469,22 @@ b3s_parse_inf (in sid varchar, inout params any)
 -- URL params override
 
   _inf := get_keyword ('inf', params);
-
   if (_inf is not null)
     {
       if (exists (select 1 from SYS_RDF_SCHEMA where rs_name = _inf))
         connection_set ('inf', _inf);
       else connection_set ('inf', null);
     }
-
+  _invfp := get_keyword ('invfp', params);
+  if (_invfp in ('IFP', 'IFP_O', 'IFP_OFF', 'IFP_S'))
+    connection_set ('invfp', _invfp);
+  else 
+    connection_set ('invfp', null);
   _sas := get_keyword ('sas', params);
-
-  if (_sas is not null)
-    {
-      if (_sas = '1' or _sas = 'yes')
-        connection_set ('sas', 'yes');
-      else 
-        connection_set ('sas', null);
-    }
+  if (_sas in ('SAME_AS', 'SAME_AS_O', 'SAME_AS_OFF', 'SAME_AS_P', 'SAME_AS_S', 'SAME_AS_S_O'))
+    connection_set ('sas', _sas);
+  else 
+    connection_set ('sas', null);
   vectorbld_init (grs);
   for (declare i int, i := 0; i < length (params); i := i + 2)
     {
@@ -492,41 +512,44 @@ b3s_parse_inf (in sid varchar, inout params any)
 ;
 
 create procedure
-b3s_render_inf_clause ()
+b3s_render_inf_invfp_sas_clauses ()
 {
-  declare _inf, _sas varchar;
-
+  declare _inf, _invfp, _sas varchar;
   _inf := connection_get ('inf');
+  _invfp := connection_get ('invfp');
   _sas := connection_get ('sas');
-
   if (_inf is not null) 
-    _inf := sprintf ('define input:inference ''%s'' ', _inf);
+    _inf := 'define input:inference ''' || _inf || ''' ';
   else 
     _inf := '';
-
-  if (_sas is not null)
-    _sas := sprintf ('define input:same-as "yes" ');
+  if (_invfp is not null)
+    _invfp := 'define input:ifp "' || _invfp || '" ';
   else 
     _sas := '';
-
-  return (_inf || _sas); 
+  if (_sas is not null)
+    _sas := 'define input:same-as "' || _sas || '" ';
+  else 
+    _sas := '';
+  return (_inf || _invfp || _sas);
 }
 ;
 
 create procedure
 b3s_render_ses_params (in with_graph int := 1) 
 {
-  declare i,s,ifp,sid varchar;
+  declare inf,sas,invfp,sid varchar;
   declare grs any;
   declare ses any;
   ses := string_output ();
-  i := connection_get ('inf');
-  s := connection_get ('sas');
+  inf := connection_get ('inf');
+  invfp := connection_get ('invfp');
+  sas := connection_get ('sas');
   sid := connection_get ('sid');
   grs := connection_get ('graphs', null);
 
-  if (i is not null) http (sprintf ('&inf=%U', i), ses);
-  if (s is not null) http (sprintf ('&sas=%V', s), ses);
+  if (inf is not null) http (sprintf ('&inf=%U', inf), ses);
+  if (invfp is not null) http (sprintf ('&invfp=%V', invfp), ses);
+  if (sas is not null) http (sprintf ('&sas=%V', sas), ses);
   if (sid is not null) http (sprintf ('&sid=%V', sid), ses);
   if (grs is not null and with_graph)
     {

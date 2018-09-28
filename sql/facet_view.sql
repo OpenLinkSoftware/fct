@@ -1546,7 +1546,7 @@ fct_create_ses ()
 
   sid := sequence_next ('fct_seq');
   new_tree := xtree_doc('<?xml version="1.0" encoding="UTF-8"?>\n' ||
-                        '<query inference="" same-as="" view3="" s-term="" c-term="" agg=""/>');
+                        '<query inference="" invfp="IFP_OFF" same-as="SAME_AS_OFF" view3="" s-term="" c-term="" agg=""/>');
 
   insert into fct_state (fct_sid, fct_state)
          values (sid, new_tree);
@@ -1699,21 +1699,24 @@ if (isstring (http_param ('dbg_out')))
 create procedure
 fct_set_inf (in tree any, in sid int)
 {
-  declare inf, sas, view3, tlogy, s_term, c_term varchar;
+  declare inf, invfp, sas, view3, tlogy, s_term, c_term varchar;
   inf := http_param ('inference');
+  invfp := http_param ('invfp');
+  if (invfp = 0) invfp := 'IFP_OFF';
   sas := http_param ('same-as');
-  if (sas = 0) sas := '';
+  if (sas = 0) sas := 'SAME_AS_OFF';
   view3 := http_param ('view3');
   if (view3 = 0) view3 := '';
   tlogy := http_param ('tlogy');
 
   if (0 = sas or 0 = inf or 0 = tlogy)
     {
-      declare selected_inf, selected_sas, selected_view3, sel_c_term, sel_s_term  varchar;
+      declare selected_inf, selected_invfp, selected_sas, selected_view3, sel_c_term, sel_s_term  varchar;
 
      again:
 
       selected_inf   := cast (xpath_eval ('/query/@inference', tree) as varchar);
+      selected_invfp   := cast (xpath_eval ('/query/@invfp',       tree) as varchar);
       selected_sas   := cast (xpath_eval ('/query/@same-as',   tree) as varchar);
       selected_view3 := cast (xpath_eval ('/query/@view3',     tree) as varchar);
       sel_c_term     := cast (xpath_eval ('/query/@c-term',    tree) as varchar);
@@ -1736,11 +1739,23 @@ fct_set_inf (in tree any, in sid int)
 		   '); } http ('
 	         </select>
                  <br>
-                 <input type="checkbox" 
-                        name="same-as" 
-                        value="yes" 
-                        id="same-as" '); http_value ( case when selected_sas = 'yes' then 'checked="true"' end  ); http ('> 
-                 <label class="rt_ckb" for="same-as">Same As</label><br>
+	         <label class="left_txt" for="same_as">Inverse Functional Properties (if they are described by rule set)</label>
+                 <select name="invfp" id="invfp">
+	           <option value="IFP_OFF" ');	http_value ( case when selected_invfp = 'IFP_OFF'	then 'selected="true"' else '' end ); http ('>Disabled (fastest)</option>
+	           <option value="IFP_S" ');	http_value ( case when selected_invfp = 'IFP_S'	then 'selected="true"' else '' end ); http ('>Apply to subjects only</option>
+	           <option value="IFP_O" ');	http_value ( case when selected_invfp= 'IFP_O'	then 'selected="true"' else '' end ); http ('>Apply to objects only</option>
+	           <option value="IFP" ');	http_value ( case when selected_invfp = 'IFP'	then 'selected="true"' else '' end ); http ('>Apply to both subjects and objects</option>
+	       	 </select>
+                 <br>
+	         <label class="left_txt" for="same_as">&quot;Same As&quot</label>
+                 <select name="same-as" id="same-as">
+	           <option value="SAME_AS_OFF" ');	http_value ( case when selected_sas = 'SAME_AS_OFF'	then 'selected="true"' else '' end ); http ('>Disabled (fastest)</option>
+	           <option value="SAME_AS_S" ');	http_value ( case when selected_sas = 'SAME_AS_S'	then 'selected="true"' else '' end ); http ('>Apply to subjects only</option>
+	           <option value="SAME_AS_O" ');	http_value ( case when selected_sas = 'SAME_AS_O'	then 'selected="true"' else '' end ); http ('>Apply to objects only</option>
+	           <option value="SAME_AS_S_O" ');	http_value ( case when selected_sas = 'SAME_AS_S_O'	then 'selected="true"' else '' end ); http ('>Apply to both subjects and objects (good enough for typical cases)</option>
+	           <option value="SAME_AS" ');		http_value ( case when selected_sas = 'SAME_AS'		then 'selected="true"' else '' end ); http ('>Apply to subjects, objects and predicates (overkill, not recommended on big dataset, quickly runs out of memory limit)</option>
+	           <option value="SAME_AS_P" ');	http_value ( case when selected_sas = 'SAME_AS_P'	then 'selected="true"' else '' end ); http ('>Apply to predicates only (might be useful only for some special reports)</option>
+	       	 </select>
                </div>
                <div class="fm_sect">
 	         <h3>User Interface</h3>
@@ -1770,7 +1785,7 @@ fct_set_inf (in tree any, in sid int)
      return;
     }
 
-  if (isstring (sas) and isstring (inf) and isstring (tlogy))
+  if (isstring (sas) and isstring (invfp) and isstring (inf) and isstring (tlogy))
     {
 
       if (inf <> '' and not exists (select 1 from sys_rdf_schema where rs_name = inf))
@@ -1785,6 +1800,7 @@ fct_set_inf (in tree any, in sid int)
 
       tree := XMLUpdate (tree,
                          '/query/@inference', inf,
+                         '/query/@invfp',     invfp,
                          '/query/@same-as',   sas,
                          '/query/@view3',     view3,
                          '/query/@s-term',    s_term,

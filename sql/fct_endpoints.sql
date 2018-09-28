@@ -88,7 +88,7 @@ create procedure FCT_ADD_DEFAULT_VDIRS()
         overwrite=>1
         );
 
-    -- http://{cname}/fct/search(?q,view:type,c-term,s-term,same-as,inference,offet,limit,graph)
+    -- http://{cname}/fct/search(?q,view:type,c-term,s-term,invfp,same-as,inference,offet,limit,graph)
     DB.DBA.ADD_DEFAULT_VHOST (
         lpath=>'/fct/search',
         ppath=>'/SOAP/Http/fct_search',

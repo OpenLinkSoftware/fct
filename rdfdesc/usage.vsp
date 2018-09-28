@@ -72,14 +72,14 @@
   if (not isstring(_addthis_key)) _addthis_key := '0';
   if ('1' = _addthis_key) _addthis_key := 'xa-4ce13e0065cdadc0';
 
-  -- side-effect sets connection vars 'inf' and 'sas' - val or null
+  -- side-effect sets connection vars 'inf', 'invfp' and 'sas' - val or null
 
   b3s_parse_inf (sid, params);
   grs := connection_get ('graphs');
   if ({?'set_graphs'} is not null or {?'clear_graphs'} is not null)
     fct_set_graphs (sid, grs);
 
-  inf := b3s_render_inf_clause ();
+  inf := b3s_render_inf_invfp_sas_clauses ();
   inf_rule := connection_get ('inf');
 
   if (inf_rule is null) { inf_rule := 'b3sifp'; }
@@ -123,7 +123,7 @@
   exec (string_output_string (q_txt), null, null, vector (), 0, meta, data);
   _subject := b3s_label_get (data, langs);
 
-  rdf_link := sprintf ('/sparql?query=%U', sprintf ('define sql:describe-mode "CBD" %s DESCRIBE <%s>', b3s_render_inf_clause(), _S)); 
+  rdf_link := sprintf ('/sparql?query=%U', sprintf ('define sql:describe-mode "CBD" %s DESCRIBE <%s>', b3s_render_inf_invfp_sas_clauses(), _S)); 
 
   declare __res_desc varchar;
   __res_desc := b3s_uri_curie(page_resource_uri);
