@@ -1555,6 +1555,28 @@ fct_create_ses ()
 }
 ;
 
+--- Erasing obsolete sessions
+delete from fct_state as t where not isstring (xpath_eval ('/query/@invfp', t.fct_state))
+;
+
+create function fct_server_supports_invfp()
+{
+  declare reg any;
+  declare stat, msg varchar;
+  reg := registry_get ('fct_server_supports_invfp');
+  if (isstring (reg)) return cast (reg as integer);
+  stat := '00000';
+  exec ('select 1 from sys_users option (IFP_OFF)', stat, msg);
+  if (stat = '00000')
+    {
+      registry_set ('fct_server_supports_invfp', '1');
+      return 1;
+    }
+  registry_set ('fct_server_supports_invfp', '0');
+  return 0;
+}
+;
+
 create procedure 
 fct_new ()
 {
@@ -1738,13 +1760,17 @@ fct_set_inf (in tree any, in sid int)
                      </option>
 		   '); } http ('
 	         </select>
-                 <br>
+                 <br>');
+  -- dbg_obj_princ ('fct_set_inf () got selected_invfp=', selected_invfp, ', selected_sas=', selected_sas);
+  if (fct_server_supports_invfp())
+    {
+      http ('
 	         <label class="left_txt" for="same_as">Inverse Functional Properties (if they are described by rule set)</label>
                  <select name="invfp" id="invfp">
 	           <option value="IFP_OFF" ');	http_value ( case when selected_invfp = 'IFP_OFF'	then 'selected="true"' else '' end ); http ('>Disabled (fastest)</option>
-	           <option value="IFP_S" ');	http_value ( case when selected_invfp = 'IFP_S'	then 'selected="true"' else '' end ); http ('>Apply to subjects only</option>
-	           <option value="IFP_O" ');	http_value ( case when selected_invfp= 'IFP_O'	then 'selected="true"' else '' end ); http ('>Apply to objects only</option>
-	           <option value="IFP" ');	http_value ( case when selected_invfp = 'IFP'	then 'selected="true"' else '' end ); http ('>Apply to both subjects and objects</option>
+	           <option value="IFP_S" ');	http_value ( case when selected_invfp = 'IFP_S'		then 'selected="true"' else '' end ); http ('>Apply to subjects only</option>
+	           <option value="IFP_O" ');	http_value ( case when selected_invfp = 'IFP_O'		then 'selected="true"' else '' end ); http ('>Apply to objects only</option>
+	           <option value="IFP" ');	http_value ( case when selected_invfp = 'IFP'		then 'selected="true"' else '' end ); http ('>Apply to both subjects and objects</option>
 	       	 </select>
                  <br>
 	         <label class="left_txt" for="same_as">&quot;Same As&quot</label>
@@ -1755,7 +1781,18 @@ fct_set_inf (in tree any, in sid int)
 	           <option value="SAME_AS_S_O" ');	http_value ( case when selected_sas = 'SAME_AS_S_O'	then 'selected="true"' else '' end ); http ('>Apply to both subjects and objects (good enough for typical cases)</option>
 	           <option value="SAME_AS" ');		http_value ( case when selected_sas = 'SAME_AS'		then 'selected="true"' else '' end ); http ('>Apply to subjects, objects and predicates (overkill, not recommended on big dataset, quickly runs out of memory limit)</option>
 	           <option value="SAME_AS_P" ');	http_value ( case when selected_sas = 'SAME_AS_P'	then 'selected="true"' else '' end ); http ('>Apply to predicates only (might be useful only for some special reports)</option>
-	       	 </select>
+	       	 </select>');
+    }
+  else
+    {
+      http ('
+	         <label class="left_txt" for="same_as">&quot;Same As&quot</label>
+                 <select name="same-as" id="same-as">
+	           <option value="SAME_AS_OFF" ');	http_value ( case when selected_sas = 'SAME_AS_OFF'	then 'selected="true"' else '' end ); http ('>Disabled (fastest)</option>
+	           <option value="SAME_AS" ');		http_value ( case when selected_sas = 'SAME_AS'		then 'selected="true"' else '' end ); http ('>Apply to subjects, objects and predicates (overkill, not recommended on big dataset, quickly runs out of memory limit)</option>
+	       	 </select>');
+    }
+      http ('
                </div>
                <div class="fm_sect">
 	         <h3>User Interface</h3>
@@ -2344,7 +2381,7 @@ fct_vsp ()
 
   sid := http_param ('sid');
 
-  if (0 <> sid) { 
+  if (isstring (sid)) { 
     sid := atoi (sid); 
   }
   else {

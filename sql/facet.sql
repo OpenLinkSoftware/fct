@@ -518,12 +518,14 @@ create procedure
 fct_invfp_val (in tree any)
 {
   declare i varchar;
-
-  i := cast (xpath_eval ('/query/@invfp', tree) as varchar);
-
-  if (i is null or '' = i)
-    return null;
-  return i;
+  if (fct_server_supports_invfp())
+    {
+      i := cast (xpath_eval ('/query/@invfp', tree) as varchar);
+      if (i is null or '' = i)
+        return null;
+      return i;
+    }
+  return null;
 }
 ;
 
@@ -547,7 +549,7 @@ fct_sas_val (in tree any)
 
   i := cast (xpath_eval ('/query/@same-as', tree) as varchar);
 
-  if (i is null or '' = i)
+  if (i is null or '' = i or (not (fct_server_supports_invfp()) and i <> 'SAME_AS'))
     return null;
   return i;
 }
