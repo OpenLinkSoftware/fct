@@ -241,7 +241,7 @@ div.subj_nav div.nav {
 div.subj_nav div.nav ul { list-style-type: none; padding: 0; margin-left: 10px;}
 div.subj_nav div.nav h3 { text-align: left; margin-left: 10px; }
 
-table.description { text-align: left; margin: 10px; float: left;clear: left;}
+table.description { text-align: left; margin: 10px; float: left;clear: left; font-size: 9pt;}
 table.description td { vertical-align: top;}
 table.description td.property { white-space: nowrap;}
 table.description ul.obj { 
