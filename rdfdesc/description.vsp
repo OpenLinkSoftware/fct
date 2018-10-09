@@ -558,15 +558,15 @@ post_process_err_with_log4v:
         <div id="settings_popup" style="display: none">
           <ul>
             <li>
-              <label for="inf_sel">Inference Rule:</label>
+              <label for="inf_sel">Rule:</label>
               <select id="inf_sel" onchange="javascript:inf_cb();"><?vsp b3s_render_inf_opts (); ?></select><br/>
             </li>
             <li>
-              <label for="invfp_sel">Inference of Inverse Functional Properties:</label>
+              <label for="invfp_sel">Inverse Functional Properties:</label>
               <select id="invfp_sel" onchange="javascript:invfp_cb();"><?vsp b3s_render_invfp_opts (); ?></select>
             </li>
             <li>
-              <label for="sas_sel">Inference of &quot;Same As&quot;:</label>
+              <label for="sas_sel">&quot;Same As&quot;:</label>
               <select id="sas_sel" onchange="javascript:sas_cb();"><?vsp b3s_render_sas_opts (); ?></select>
             </li>
           </ul>

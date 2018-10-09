@@ -1749,7 +1749,7 @@ fct_set_inf (in tree any, in sid int)
              <div class="title"><h2>Options</h2></div>
              <form action="/fct/facet.vsp?cmd=set_inf&sid='); http_value ( sid ); http ('" method=post>
 	       <div class="fm_sect">
-                 <h3>Inference</h3>
+                 <h2>Inference</h2>
                  <label class="left_txt" for="opt_inference">Rule</label>
                  <select name="inference">
 	           <option value="">none</option>
@@ -1765,7 +1765,7 @@ fct_set_inf (in tree any, in sid int)
   if (fct_server_supports_invfp())
     {
       http ('
-	         <label class="left_txt" for="same_as">Inverse Functional Properties (if they are described by rule set)</label>
+	         <label class="left_txt" for="invfp">Inverse Functional Properties</label>
                  <select name="invfp" id="invfp">
 	           <option value="IFP_OFF" ');	http_value ( case when selected_invfp = 'IFP_OFF'	then 'selected="true"' else '' end ); http ('>Disabled (fastest)</option>
 	           <option value="IFP_S" ');	http_value ( case when selected_invfp = 'IFP_S'		then 'selected="true"' else '' end ); http ('>Apply to subjects only</option>
@@ -1773,14 +1773,14 @@ fct_set_inf (in tree any, in sid int)
 	           <option value="IFP" ');	http_value ( case when selected_invfp = 'IFP'		then 'selected="true"' else '' end ); http ('>Apply to both subjects and objects</option>
 	       	 </select>
                  <br>
-	         <label class="left_txt" for="same_as">&quot;Same As&quot</label>
+	         <label class="left_txt" for="same-as">&quot;Same As&quot</label>
                  <select name="same-as" id="same-as">
 	           <option value="SAME_AS_OFF" ');	http_value ( case when selected_sas = 'SAME_AS_OFF'	then 'selected="true"' else '' end ); http ('>Disabled (fastest)</option>
 	           <option value="SAME_AS_S" ');	http_value ( case when selected_sas = 'SAME_AS_S'	then 'selected="true"' else '' end ); http ('>Apply to subjects only</option>
 	           <option value="SAME_AS_O" ');	http_value ( case when selected_sas = 'SAME_AS_O'	then 'selected="true"' else '' end ); http ('>Apply to objects only</option>
-	           <option value="SAME_AS_S_O" ');	http_value ( case when selected_sas = 'SAME_AS_S_O'	then 'selected="true"' else '' end ); http ('>Apply to both subjects and objects (good enough for typical cases)</option>
-	           <option value="SAME_AS" ');		http_value ( case when selected_sas = 'SAME_AS'		then 'selected="true"' else '' end ); http ('>Apply to subjects, objects and predicates (overkill, not recommended on big dataset, quickly runs out of memory limit)</option>
-	           <option value="SAME_AS_P" ');	http_value ( case when selected_sas = 'SAME_AS_P'	then 'selected="true"' else '' end ); http ('>Apply to predicates only (might be useful only for some special reports)</option>
+	           <option value="SAME_AS_S_O" ');	http_value ( case when selected_sas = 'SAME_AS_S_O'	then 'selected="true"' else '' end ); http ('>Apply to both subjects and objects (recommended)</option>
+	           <option value="SAME_AS" ');		http_value ( case when selected_sas = 'SAME_AS'		then 'selected="true"' else '' end ); http ('>Apply to subjects, objects and predicates (not recommended on big datasets)</option>
+	           <option value="SAME_AS_P" ');	http_value ( case when selected_sas = 'SAME_AS_P'	then 'selected="true"' else '' end ); http ('>Apply to predicates only (special use cases only)</option>
 	       	 </select>');
     }
   else
@@ -1789,13 +1789,14 @@ fct_set_inf (in tree any, in sid int)
 	         <label class="left_txt" for="same_as">&quot;Same As&quot</label>
                  <select name="same-as" id="same-as">
 	           <option value="SAME_AS_OFF" ');	http_value ( case when selected_sas = 'SAME_AS_OFF'	then 'selected="true"' else '' end ); http ('>Disabled (fastest)</option>
-	           <option value="SAME_AS" ');		http_value ( case when selected_sas = 'SAME_AS'		then 'selected="true"' else '' end ); http ('>Apply to subjects, objects and predicates (overkill, not recommended on big dataset, quickly runs out of memory limit)</option>
+	           <option value="SAME_AS" ');		http_value ( case when selected_sas = 'SAME_AS'		then 'selected="true"' else '' end ); http ('>Apply to subjects, objects and predicates (not recommended on big datasets)</option>
 	       	 </select>');
     }
       http ('
                </div>
                <div class="fm_sect">
-	         <h3>User Interface</h3>
+		 <br/>
+	         <h2>User Interface</h2>
 	         <label class="left_txt" for="tlogy">Terminology</label>
                  <select name="tlogy">
 	           <option value="eav" '); http_value ( case when sel_s_term = 'e' then 'selected="true"' else '' end ); http ('>Entity-Attribute-Value</option>

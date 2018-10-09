@@ -99,17 +99,17 @@
         <h2>Inference</h2>
         <table> <!-- yeah I know but life's just too short. -->
           <tr>
-            <td><label for="inf_sel">Inference Rule:</label></td>
+            <td><label for="inf_sel" class="left_txt">Rule:</label></td>
             <td><select id="inf_sel" onchange="javascript:inf_cb();"><?vsp b3s_render_inf_opts (); ?></select></td>
           </tr>
 <?vsp if (fct_server_supports_invfp()) { ?>
           <tr>
-            <td><label for="invfp_sel">Inference of Inverse Functional Properties:</label></td>
+            <td><label for="invfp_sel" class="left_txt">Inverse Functional Properties:</label></td>
             <td><select id="invfp_sel" onchange="javascript:invfp_cb();"><?vsp b3s_render_invfp_opts (); ?></select></td>
           </tr>
 <?vsp } ?>
           <tr>
-            <td><label for="sas_sel">Inference of &quot;Same As&quot;:</label></td>
+            <td><label for="sas_sel" class="left_txt">&quot;Same As&quot;:</label></td>
             <td><select id="sas_sel" onchange="javascript:sas_cb();"><?vsp b3s_render_sas_opts (); ?></select></td>
           </tr>
         </table>

@@ -443,9 +443,9 @@ b3s_render_sas_opts ()
 	           <option value="SAME_AS_OFF" ');	http_value ( case when sas = 'SAME_AS_OFF'	then 'selected="true"' else '' end ); http ('>Disabled (fastest)</option>
 	           <option value="SAME_AS_S" ');	http_value ( case when sas = 'SAME_AS_S'	then 'selected="true"' else '' end ); http ('>Apply to subjects only</option>
 	           <option value="SAME_AS_O" ');	http_value ( case when sas = 'SAME_AS_O'	then 'selected="true"' else '' end ); http ('>Apply to objects only</option>
-	           <option value="SAME_AS_S_O" ');	http_value ( case when sas = 'SAME_AS_S_O'	then 'selected="true"' else '' end ); http ('>Apply to both subjects and objects (good enough for typical cases)</option>
-	           <option value="SAME_AS" ');		http_value ( case when sas = 'SAME_AS'		then 'selected="true"' else '' end ); http ('>Apply to subjects, objects and predicates (overkill, not recommended on big dataset, quickly runs out of memory limit)</option>
-	           <option value="SAME_AS_P" ');	http_value ( case when sas = 'SAME_AS_P'	then 'selected="true"' else '' end ); http ('>Apply to predicates only (might be useful only for some special reports)</option>
+	           <option value="SAME_AS_S_O" ');	http_value ( case when sas = 'SAME_AS_S_O'	then 'selected="true"' else '' end ); http ('>Apply to both subjects and objects (recommended)</option>
+	           <option value="SAME_AS" ');		http_value ( case when sas = 'SAME_AS'		then 'selected="true"' else '' end ); http ('>Apply to subjects, objects and predicates (not recommended on big datasets)</option>
+	           <option value="SAME_AS_P" ');	http_value ( case when sas = 'SAME_AS_P'	then 'selected="true"' else '' end ); http ('>Apply to predicates only (special use cases only)</option>
 	           ');
     }
   else
@@ -455,7 +455,7 @@ b3s_render_sas_opts ()
       -- dbg_obj_princ ('b3s_render_sas_opts () got sas=', sas, ' old server');
       http ('
 	           <option value="SAME_AS_OFF" ');	http_value ( case when sas = 'SAME_AS_OFF'	then 'selected="true"' else '' end ); http ('>Disabled (fastest)</option>
-	           <option value="SAME_AS" ');		http_value ( case when sas = 'SAME_AS'		then 'selected="true"' else '' end ); http ('>Apply to subjects, objects and predicates (overkill, not recommended on big dataset, quickly runs out of memory limit)</option>
+	           <option value="SAME_AS" ');		http_value ( case when sas = 'SAME_AS'		then 'selected="true"' else '' end ); http ('>Apply to subjects, objects and predicates (not recommended on big datasets)</option>
 	           ');
     }
 }
