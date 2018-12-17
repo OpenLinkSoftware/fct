@@ -241,7 +241,7 @@ div.subj_nav div.nav {
 div.subj_nav div.nav ul { list-style-type: none; padding: 0; margin-left: 10px;}
 div.subj_nav div.nav h3 { text-align: left; margin-left: 10px; }
 
-table.description { text-align: left; margin: 10px; float: left;clear: left;}
+table.description { text-align: left; margin: 10px; float: left;clear: left; font-size: 9pt;}
 table.description td { vertical-align: top;}
 table.description td.property { white-space: nowrap;}
 table.description ul.obj { 
@@ -396,7 +396,7 @@ div.thr_ctr { display: inline; width: 16px; border: 0; padding: 0;margin: 0;}
 .dlg .fm_sect { margin: 0 10px 15px 10px; border-top: 1px solid #333}
 .dlg .fm_sect:first-child { border: 0; margin-top: 20px;}
 .dlg .fm_sect h3 { font-size: 9pt; margin: 0}
-.dlg label.left_txt { float: left; clear: left; width: 120px;}
+.dlg label.left_txt { margin-top: 0.8em; display: block; }
 .dlg .ctl_expln { margin-left: 120px; font-size: 8pt; font-style: oblique}
  
 #opts_ctr {

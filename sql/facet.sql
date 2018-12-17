@@ -515,13 +515,41 @@ fct_inf_clause (in tree any)
 ;
 
 create procedure 
+fct_invfp_val (in tree any)
+{
+  declare i varchar;
+  if (fct_server_supports_invfp())
+    {
+      i := cast (xpath_eval ('/query/@invfp', tree) as varchar);
+      if (i is null or '' = i)
+        return null;
+      return i;
+    }
+  return null;
+}
+;
+
+create procedure
+fct_invfp_clause (in tree any)
+{
+  declare i varchar;
+
+  i := fct_invfp_val (tree);
+
+  if (i is not null)
+    return sprintf (' define input:ifp "%s" ', i);
+  return '';
+}
+;
+
+create procedure 
 fct_sas_val (in tree any)
 {
   declare i varchar;
 
   i := cast (xpath_eval ('/query/@same-as', tree) as varchar);
 
-  if (i is null or '' = i)
+  if (i is null or '' = i or (not (fct_server_supports_invfp()) and i <> 'SAME_AS'))
     return null;
   return i;
 }
@@ -799,7 +827,7 @@ fct_view (in tree any, in this_s int, in txt any, in pre any, in post any, in fu
   offs := xpath_eval ('./@offset', tree, 1);
   lim  := xpath_eval ('./@limit', tree, 1);
 
-  http (sprintf (' %s %s %s %s ', fct_graph_clause (tree), fct_named_graph_clause (tree), fct_inf_clause (tree), fct_sas_clause (tree)), pre);
+  http (sprintf (' %s %s %s %s ', fct_graph_clause (tree), fct_named_graph_clause (tree), fct_inf_clause (tree), fct_invfp_clause (tree), fct_sas_clause (tree)), pre);
 
   mode := fct_get_mode (tree, './@type');
 

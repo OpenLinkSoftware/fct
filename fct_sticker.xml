@@ -82,6 +82,7 @@
   </sql>
   <sql purpose='pre-uninstall'>
     <![CDATA[
+    registry_remove ('fct_server_supports_invfp');
     ]]>
   </sql>
 </ddls>

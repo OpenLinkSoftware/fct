@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+9<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN" "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
 <html 
     xmlns="http://www.w3.org/1999/xhtml" 
@@ -43,7 +43,7 @@
 
   declare _G, _S, odd_position any;
   declare page_resource_uri, proxy_iri, rdf_link, label, vlbl, _subject any;
-  declare white_page, arr, data, meta, h1, h2, inx, gr, refr, sid, inf, sas, langs, best_q, grs any;
+  declare white_page, arr, data, meta, h1, h2, inx, gr, refr, sid, inf, invfp, sas, langs, best_q, grs any;
   declare urilookup integer;
   declare dbg_enable varchar;
   declare qry_str varchar;
@@ -56,7 +56,7 @@
   declare vis, printed, _skip, _last int;
   declare all_lang any;
   declare curr_pred any;
-  declare dt1, dt2, count_str, tbinf, tbsas, ua, doc, sp_mode, sp_accept, view_mode varchar;
+  declare dt1, dt2, count_str, tbinf, tbinvfp, tbsas, ua, doc, sp_mode, sp_accept, view_mode varchar;
   declare c_iri_a any;
   declare gs_user_id, gs_check_needed integer;
   declare gs_check_cond varchar;
@@ -134,19 +134,22 @@ again:
   sid := connection_get ('sid');
 
   b3s_parse_inf (sid, params);
-  inf := b3s_render_inf_clause ();
+  inf := b3s_render_inf_invfp_sas_clauses ();
   tbinf := connection_get ('inf');
+  tbinvfp := connection_get ('invfp');
   tbsas := connection_get ('sas');
   if (tbinf is not null)
     tbinf := sprintf ('TABLE OPTION (WITH \'%s\')', tbinf);
   else
     tbinf := '';
-
+  if (tbinvfp is not null)
+    tbinvfp := ', ' || tbinvfp;
+  else
+    tbinvfp := '';
   if (tbsas is not null)
-    tbsas := '';
+    tbsas := ', ' || tbsas;
   else
     tbsas := '';
-  
   
   --
   -- Get AddthisKey from registry
@@ -411,7 +414,7 @@ post_process_err_with_log4v:
 
   _subject := b3s_label_get (data, langs);
 
-  rdf_link := sprintf ('/sparql?query=%U', __box_flags_tweak (sprintf ('define sql:describe-mode "CBD" %s DESCRIBE <%s>', b3s_render_inf_clause(), _S), 2)); 
+  rdf_link := sprintf ('/sparql?query=%U', __box_flags_tweak (sprintf ('define sql:describe-mode "CBD" %s DESCRIBE <%s>', b3s_render_inf_invfp_sas_clauses(), _S), 2)); 
   __box_flags_set (rdf_link, 2);
 
   declare __res_desc, qs, qv, best_variant, accept, protocol varchar;
@@ -486,6 +489,10 @@ post_process_err_with_log4v:
     {
       plink_href := concat (plink_href, sprintf ('&inf=%U', connection_get ('inf')));
     }
+  if (connection_get ('invfp') is not null)
+    {
+      plink_href := concat (plink_href, sprintf ('&invfp=%U', connection_get ('invfp')));
+    }
   if (connection_get ('sas') is not null)
     {
       plink_href := concat (plink_href, sprintf ('&sas=%U', connection_get ('sas')));
@@ -551,12 +558,16 @@ post_process_err_with_log4v:
         <div id="settings_popup" style="display: none">
           <ul>
             <li>
-              <input id="sas_ckb" type="checkbox" <?= b3s_sas_selected() ?> onchange="javascript:sas_cb();"/> 
-              <label for="sas_ckb">owl:sameAs</label>
+              <label for="inf_sel">Rule:</label>
+              <select id="inf_sel" onchange="javascript:inf_cb();"><?vsp b3s_render_inf_opts (); ?></select><br/>
             </li>
             <li>
-              <label for="inf_sel">Inference Rule:</label>
-              <select id="inf_sel" onchange="javascript:inf_cb();"><?vsp b3s_render_inf_opts (); ?></select><br/>
+              <label for="invfp_sel">Inverse Functional Properties:</label>
+              <select id="invfp_sel" onchange="javascript:invfp_cb();"><?vsp b3s_render_invfp_opts (); ?></select>
+            </li>
+            <li>
+              <label for="sas_sel">&quot;Same As&quot;:</label>
+              <select id="sas_sel" onchange="javascript:sas_cb();"><?vsp b3s_render_sas_opts (); ?></select>
             </li>
           </ul>
         </div> <!-- settings-popup -->
@@ -682,8 +693,8 @@ if (_subject <> '') {
       else
       {
         gs_check_cond := case gs_check_needed when 0 then '' else sprintf (' AND DB.DBA.RDF_GRAPH_USER_PERMS_ACK (G, %d, 1)', gs_user_id) end;
-      dt1 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT any, 0 as FLAG int from (SELECT DISTINCT p, o FROM DB.DBA.RDF_QUAD %s where s = __i2idn (\'%s\' , 1) %s ORDER BY 1 ASC OPTION (QUIETCAST %s)) sp1',
-        tbinf, _S, gs_check_cond, tbsas);
+      dt1 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT any, 0 as FLAG int from (SELECT DISTINCT p, o FROM DB.DBA.RDF_QUAD %s where s = __i2idn (\'%s\' , 1) %s ORDER BY 1 ASC OPTION (QUIETCAST%s%s)) sp1',
+        tbinf, _S, gs_check_cond, tbinf, tbsas);
       }
       dt2 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT any, 1 as FLAG int from (sparql %s define output:valmode "AUTO" %s select distinct ?p ?o %s where { ?o ?p <%s> } order by 1) sp2', inf, val_perms_clause, _F, _S);
 
@@ -700,8 +711,8 @@ if (_subject <> '') {
           else
 	    {
               gs_check_cond := case gs_check_needed when 0 then '' else sprintf (' AND DB.DBA.RDF_GRAPH_USER_PERMS_ACK (G, %d, 1)', gs_user_id) end;
-              dt1 := sprintf ('select count(*) as cnt from (SELECT DISTINCT p, o FROM DB.DBA.RDF_QUAD %s where s = __i2idn (\'%s\' , 1) %s ORDER BY 1 ASC OPTION (QUIETCAST %s)) sp1',
-                tbinf, _S, gs_check_cond, tbsas);
+              dt1 := sprintf ('select count(*) as cnt from (SELECT DISTINCT p, o FROM DB.DBA.RDF_QUAD %s where s = __i2idn (\'%s\' , 1) %s ORDER BY 1 ASC OPTION (QUIETCAST%s%s)) sp1',
+                tbinf, _S, gs_check_cond, tbinf, tbsas);
 	    }
 	  dt2 := sprintf ('select count(*) as cnt from (sparql %s define output:valmode "AUTO" %s select distinct ?p ?o %s where { ?o ?p <%s> } order by 1) sp2', inf, val_perms_clause, _F, _S);
 
@@ -840,6 +851,9 @@ if (_subject <> '') {
 	      <input type="hidden" name="distinct" value="<?V dist ?>" />
 	      <?vsp if (connection_get ('inf') is not null) { ?>
 	      <input type="hidden" name="inf" value="<?V connection_get ('inf') ?>" />
+	      <?vsp } ?>
+	      <?vsp if (connection_get ('invfp') is not null) { ?>
+	      <input type="hidden" name="invfp" value="<?V connection_get ('invfp') ?>" />
 	      <?vsp } ?>
 	      <?vsp if (connection_get ('sas') is not null) { ?>
 	      <input type="hidden" name="sas" value="<?V connection_get ('sas') ?>" />

@@ -122,7 +122,7 @@ create procedure fct_http_param (in n any, in def any := '')
 create procedure fct_search () __soap_http 'text/html'
 {
   declare cnt, tp, ret, timeout, xt, xslt, maxt, tmp, lines, accept any;
-  declare inf, sas, st, ct, qr, vt, lim, offs any;
+  declare inf, invfp, sas, st, ct, qr, vt, lim, offs any;
 
   lines := http_request_header ();
   accept := http_request_header_full (lines, 'Accept', '*/*');
@@ -134,6 +134,7 @@ create procedure fct_search () __soap_http 'text/html'
       resignal;
     };
   inf := fct_http_param ('inference');  
+  invfp := fct_http_param ('invfp');
   sas := fct_http_param ('same-as');
   st := fct_http_param ('s-term');
   ct := fct_http_param ('c-term');
@@ -146,8 +147,8 @@ create procedure fct_search () __soap_http 'text/html'
   if (vt = 'values') vt := 'properties-in';
   lim := atoi (fct_http_param ('limit', '20'));
   offs := atoi (fct_http_param ('offset', '0'));
-  cnt := sprintf ('<query inference="%s" same-as="%s" s-term="%s" c-term="%s"><text>%V</text><view type="%s" limit="%d" offset="%d" /></query>', 
-     inf, sas, st, ct, qr, vt, lim, offs);
+  cnt := sprintf ('<query inference="%s" invfp="%s" same-as="%s" s-term="%s" c-term="%s"><text>%V</text><view type="%s" limit="%d" offset="%d" /></query>', 
+     inf, invfp, sas, st, ct, qr, vt, lim, offs);
   if (accept = 'text/html' or accept = '*/*' or accept = 'application/xhtml+xml')
     {
       declare full_path, p_full_path, long_url, pars any;

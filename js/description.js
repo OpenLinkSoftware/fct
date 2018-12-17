@@ -114,8 +114,16 @@ function inf_cb ()
     var loc = window.location;
     var href = loc.protocol+'//'+loc.host+loc.pathname;
     var parms = OAT.Dom.uriParams();
-
     parms['inf'] = $v('inf_sel');
+    window.location = href+uri_parms_string(parms);
+}
+
+function invfp_cb () 
+{
+    var loc = window.location;
+    var href = loc.protocol+'//'+loc.host+loc.pathname;
+    var parms = OAT.Dom.uriParams();
+    parms['invfp'] = $v('invfp_sel');
     window.location = href+uri_parms_string(parms);
 }
 
@@ -124,9 +132,7 @@ function sas_cb ()
     var loc = window.location;
     var href = loc.protocol+'//'+loc.host+loc.pathname;
     var parms = OAT.Dom.uriParams();
-
-    if ($('sas_ckb').checked) parms['sas'] = 'yes';
-    else parms['sas'] = 'no';
+    parms['sas'] = $v('sas_sel');
     window.location = href+uri_parms_string(parms);
 }
 

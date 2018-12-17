@@ -1546,12 +1546,34 @@ fct_create_ses ()
 
   sid := sequence_next ('fct_seq');
   new_tree := xtree_doc('<?xml version="1.0" encoding="UTF-8"?>\n' ||
-                        '<query inference="" same-as="" view3="" s-term="" c-term="" agg=""/>');
+                        '<query inference="" invfp="IFP_OFF" same-as="SAME_AS_OFF" view3="" s-term="" c-term="" agg=""/>');
 
   insert into fct_state (fct_sid, fct_state)
          values (sid, new_tree);
 
   return vector (sid, new_tree);
+}
+;
+
+--- Erasing obsolete sessions
+delete from fct_state as t where not isstring (xpath_eval ('/query/@invfp', t.fct_state))
+;
+
+create function fct_server_supports_invfp()
+{
+  declare reg any;
+  declare stat, msg varchar;
+  reg := registry_get ('fct_server_supports_invfp');
+  if (isstring (reg)) return cast (reg as integer);
+  stat := '00000';
+  exec ('select 1 from sys_users option (IFP_OFF)', stat, msg);
+  if (stat = '00000')
+    {
+      registry_set ('fct_server_supports_invfp', '1');
+      return 1;
+    }
+  registry_set ('fct_server_supports_invfp', '0');
+  return 0;
 }
 ;
 
@@ -1699,21 +1721,24 @@ if (isstring (http_param ('dbg_out')))
 create procedure
 fct_set_inf (in tree any, in sid int)
 {
-  declare inf, sas, view3, tlogy, s_term, c_term varchar;
+  declare inf, invfp, sas, view3, tlogy, s_term, c_term varchar;
   inf := http_param ('inference');
+  invfp := http_param ('invfp');
+  if (invfp = 0) invfp := 'IFP_OFF';
   sas := http_param ('same-as');
-  if (sas = 0) sas := '';
+  if (sas = 0) sas := 'SAME_AS_OFF';
   view3 := http_param ('view3');
   if (view3 = 0) view3 := '';
   tlogy := http_param ('tlogy');
 
   if (0 = sas or 0 = inf or 0 = tlogy)
     {
-      declare selected_inf, selected_sas, selected_view3, sel_c_term, sel_s_term  varchar;
+      declare selected_inf, selected_invfp, selected_sas, selected_view3, sel_c_term, sel_s_term  varchar;
 
      again:
 
       selected_inf   := cast (xpath_eval ('/query/@inference', tree) as varchar);
+      selected_invfp   := cast (xpath_eval ('/query/@invfp',       tree) as varchar);
       selected_sas   := cast (xpath_eval ('/query/@same-as',   tree) as varchar);
       selected_view3 := cast (xpath_eval ('/query/@view3',     tree) as varchar);
       sel_c_term     := cast (xpath_eval ('/query/@c-term',    tree) as varchar);
@@ -1724,7 +1749,7 @@ fct_set_inf (in tree any, in sid int)
              <div class="title"><h2>Options</h2></div>
              <form action="/fct/facet.vsp?cmd=set_inf&sid='); http_value ( sid ); http ('" method=post>
 	       <div class="fm_sect">
-                 <h3>Inference</h3>
+                 <h2>Inference</h2>
                  <label class="left_txt" for="opt_inference">Rule</label>
                  <select name="inference">
 	           <option value="">none</option>
@@ -1735,15 +1760,43 @@ fct_set_inf (in tree any, in sid int)
                      </option>
 		   '); } http ('
 	         </select>
+                 <br>');
+  -- dbg_obj_princ ('fct_set_inf () got selected_invfp=', selected_invfp, ', selected_sas=', selected_sas);
+  if (fct_server_supports_invfp())
+    {
+      http ('
+	         <label class="left_txt" for="invfp">Inverse Functional Properties</label>
+                 <select name="invfp" id="invfp">
+	           <option value="IFP_OFF" ');	http_value ( case when selected_invfp = 'IFP_OFF'	then 'selected="true"' else '' end ); http ('>Disabled (fastest)</option>
+	           <option value="IFP_S" ');	http_value ( case when selected_invfp = 'IFP_S'		then 'selected="true"' else '' end ); http ('>Apply to subjects only</option>
+	           <option value="IFP_O" ');	http_value ( case when selected_invfp = 'IFP_O'		then 'selected="true"' else '' end ); http ('>Apply to objects only</option>
+	           <option value="IFP" ');	http_value ( case when selected_invfp = 'IFP'		then 'selected="true"' else '' end ); http ('>Apply to both subjects and objects</option>
+	       	 </select>
                  <br>
-                 <input type="checkbox" 
-                        name="same-as" 
-                        value="yes" 
-                        id="same-as" '); http_value ( case when selected_sas = 'yes' then 'checked="true"' end  ); http ('> 
-                 <label class="rt_ckb" for="same-as">Same As</label><br>
+	         <label class="left_txt" for="same-as">&quot;Same As&quot</label>
+                 <select name="same-as" id="same-as">
+	           <option value="SAME_AS_OFF" ');	http_value ( case when selected_sas = 'SAME_AS_OFF'	then 'selected="true"' else '' end ); http ('>Disabled (fastest)</option>
+	           <option value="SAME_AS_S" ');	http_value ( case when selected_sas = 'SAME_AS_S'	then 'selected="true"' else '' end ); http ('>Apply to subjects only</option>
+	           <option value="SAME_AS_O" ');	http_value ( case when selected_sas = 'SAME_AS_O'	then 'selected="true"' else '' end ); http ('>Apply to objects only</option>
+	           <option value="SAME_AS_S_O" ');	http_value ( case when selected_sas = 'SAME_AS_S_O'	then 'selected="true"' else '' end ); http ('>Apply to both subjects and objects (recommended)</option>
+	           <option value="SAME_AS" ');		http_value ( case when selected_sas = 'SAME_AS'		then 'selected="true"' else '' end ); http ('>Apply to subjects, objects and predicates (not recommended on big datasets)</option>
+	           <option value="SAME_AS_P" ');	http_value ( case when selected_sas = 'SAME_AS_P'	then 'selected="true"' else '' end ); http ('>Apply to predicates only (special use cases only)</option>
+	       	 </select>');
+    }
+  else
+    {
+      http ('
+	         <label class="left_txt" for="same_as">&quot;Same As&quot</label>
+                 <select name="same-as" id="same-as">
+	           <option value="SAME_AS_OFF" ');	http_value ( case when selected_sas = 'SAME_AS_OFF'	then 'selected="true"' else '' end ); http ('>Disabled (fastest)</option>
+	           <option value="SAME_AS" ');		http_value ( case when selected_sas = 'SAME_AS'		then 'selected="true"' else '' end ); http ('>Apply to subjects, objects and predicates (not recommended on big datasets)</option>
+	       	 </select>');
+    }
+      http ('
                </div>
                <div class="fm_sect">
-	         <h3>User Interface</h3>
+		 <br/>
+	         <h2>User Interface</h2>
 	         <label class="left_txt" for="tlogy">Terminology</label>
                  <select name="tlogy">
 	           <option value="eav" '); http_value ( case when sel_s_term = 'e' then 'selected="true"' else '' end ); http ('>Entity-Attribute-Value</option>
@@ -1770,7 +1823,7 @@ fct_set_inf (in tree any, in sid int)
      return;
     }
 
-  if (isstring (sas) and isstring (inf) and isstring (tlogy))
+  if (isstring (sas) and isstring (invfp) and isstring (inf) and isstring (tlogy))
     {
 
       if (inf <> '' and not exists (select 1 from sys_rdf_schema where rs_name = inf))
@@ -1785,6 +1838,7 @@ fct_set_inf (in tree any, in sid int)
 
       tree := XMLUpdate (tree,
                          '/query/@inference', inf,
+                         '/query/@invfp',     invfp,
                          '/query/@same-as',   sas,
                          '/query/@view3',     view3,
                          '/query/@s-term',    s_term,
@@ -2328,7 +2382,7 @@ fct_vsp ()
 
   sid := http_param ('sid');
 
-  if (0 <> sid) { 
+  if (isstring (sid)) { 
     sid := atoi (sid); 
   }
   else {
