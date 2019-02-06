@@ -21,7 +21,7 @@
 --
 
 create procedure
-ext_http_proxy_1 (in "url" varchar := null,
+DB.DBA.EXT_HTTP_PROXY_1 (in "url" varchar := null,
                 in exec varchar := null,
                 in header varchar := null,
                 in "force" varchar := null,
@@ -226,6 +226,6 @@ end_loop:;
 ;
 
 --!AFTER
-grant execute on ext_http_proxy_1 to PROXY
+grant execute on DB.DBA.EXT_HTTP_PROXY_1 to PROXY
 ;
 
