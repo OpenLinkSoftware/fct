@@ -28,7 +28,7 @@ create procedure fct_init ()
     {
       WS.WS.host_meta_add ('FCT.service', '<Link rel="http://openlinksw.com/virtuoso/fct/service" href="http://%{WSHost}s/fct/service"/>');
       WS.WS.host_meta_add ('FCT.browser', '<Link rel="http://openlinksw.com/virtuoso/fct/browser" href="http://%{WSHost}s/fct/"/>');
-      WS.WS.host_meta_add ('FCT.describe', 
+      WS.WS.host_meta_add ('FCT.describe',
       	'<Link rel="http://openlinksw.com/virtuoso/fct/resource-descriptor" template="http://%{WSHost}s/describe/?url={uri}"/>');
     }
 }
@@ -47,7 +47,7 @@ create procedure fct_svc_log (in qr varchar, in lines varchar)
 }
 ;
 
-create procedure 
+create procedure
 fct_svc_exec (in tree any, in timeout int, in accept varchar, in lines any)
 {
   declare start_time int;
@@ -81,7 +81,7 @@ fct_svc_exec (in tree any, in timeout int, in accept varchar, in lines any)
       if (not isarray (res) or 0 = length (res) or not isarray (res[0]) or 0 = length (res[0]))
 	res := xtree_doc ('<result/>');
       else
-        res := res[0][0];	
+        res := res[0][0];
 
       ret := xmlelement ("facets", xmlelement ("sparql", qr), xmlelement ("time", msec_time () - start_time),
 			   xmlelement ("complete", case when sqls = 'S1TAT' then 'no' else 'yes' end),
@@ -133,7 +133,7 @@ create procedure fct_search () __soap_http 'text/html'
       http_status_set (500);
       resignal;
     };
-  inf := fct_http_param ('inference');  
+  inf := fct_http_param ('inference');
   invfp := fct_http_param ('invfp');
   sas := fct_http_param ('same-as');
   st := fct_http_param ('s-term');
@@ -147,7 +147,7 @@ create procedure fct_search () __soap_http 'text/html'
   if (vt = 'values') vt := 'properties-in';
   lim := atoi (fct_http_param ('limit', '20'));
   offs := atoi (fct_http_param ('offset', '0'));
-  cnt := sprintf ('<query inference="%s" invfp="%s" same-as="%s" s-term="%s" c-term="%s"><text>%V</text><view type="%s" limit="%d" offset="%d" /></query>', 
+  cnt := sprintf ('<query inference="%s" invfp="%s" same-as="%s" s-term="%s" c-term="%s"><text>%V</text><view type="%s" limit="%d" offset="%d" /></query>',
      inf, invfp, sas, st, ct, qr, vt, lim, offs);
   if (accept = 'text/html' or accept = '*/*' or accept = 'application/xhtml+xml')
     {
@@ -165,7 +165,7 @@ create procedure fct_search () __soap_http 'text/html'
       WS.WS.GET (vector ('DAV', 'VAD', 'fct', 'facet.vsp'), pars, lines);
       --http_header (sprintf ('Location: /fct/facet.vsp?qxml=%U\r\n', cnt));
     }
-  else  
+  else
     {
       http_status_set (303);
       http_header (sprintf ('Location: /sparql?query=%U&format=%U&timeout=%s\r\n', fct_query (xtree_doc (cnt)), accept, registry_get ('fct_timeout_max')));
