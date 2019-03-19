@@ -68,7 +68,7 @@ create procedure b3s_page_get_type (in val any)
 ;
 
 --
--- make a vector of languages and their quality 
+-- make a vector of languages and their quality
 --
 create procedure b3s_get_lang_acc (in lines any)
 {
@@ -128,18 +128,18 @@ b3s_handle_ses (inout _path any, inout _lines any, inout _params any)
 {
    declare sid, refr varchar;
 
-   sid := get_keyword ('sid', _params); 
+   sid := get_keyword ('sid', _params);
 
    if (sid is null) {
      refr := http_request_header (http_request_header (), 'Referer', null, null);
 
      if (refr is not null)
        {
-         declare ht, pars any; 
+         declare ht, pars any;
          ht := WS.WS.PARSE_URI (refr);
          pars := ht[4];
          pars := split_and_decode (pars);
-         if (pars is not null) 
+         if (pars is not null)
            sid := get_keyword ('sid', pars);
        }
    }
@@ -148,7 +148,7 @@ b3s_handle_ses (inout _path any, inout _lines any, inout _params any)
 ;
 
 -- XXX should probably find the most specific if more than one class and inference rule is set
-create procedure 
+create procedure
 b3s_e_type (in subj varchar)
 {
   declare stat, msg any;
@@ -170,7 +170,7 @@ b3s_e_type (in subj varchar)
 
       if (length (data))
 	{
-	  for (i := 0; i < length (data); i := i + 1) 
+	  for (i := 0; i < length (data); i := i + 1)
             {
               if (data[i][0] is not null and __box_flags (data[i][0]) = 1)
   	        return data[i][0];
@@ -181,10 +181,10 @@ b3s_e_type (in subj varchar)
 }
 ;
 
-create procedure 
-b3s_type (in subj varchar, 
-          in _from varchar, 
-          out url varchar, 
+create procedure
+b3s_type (in subj varchar,
+          in _from varchar,
+          out url varchar,
           out c_iri varchar)
 {
   declare stat, msg any;
@@ -196,7 +196,7 @@ b3s_type (in subj varchar,
   c_iri := 'http://www.w3.org/2002/07/owl#Thing';
 
   if (length (subj))
-    {	
+    {
       declare q_txt any;
       q_txt := string_output ();
       http ('sparql select ?l ?tp ' || _from || ' where { ', q_txt);
@@ -205,7 +205,7 @@ b3s_type (in subj varchar,
       exec (string_output_string (q_txt), stat, msg, vector (), 100, meta, data);
       if (length (data))
 	{
-	  for (i := 0; i < length (data); i := i + 1) 
+	  for (i := 0; i < length (data); i := i + 1)
             {
               if (data[i][0] is not null)
   	        ll := data[i][0];
@@ -238,14 +238,14 @@ create procedure b3s_choose_e_type (inout type_a any)
 -- Detect if viewing an explicit or implicit class
 --
 
-create procedure b3s_find_class_type (in _s varchar, in _f varchar, inout types_a any) 
+create procedure b3s_find_class_type (in _s varchar, in _f varchar, inout types_a any)
 {
   declare i int;
 
-  for (i := 0; i < length (types_a); i := i + 1) 
+  for (i := 0; i < length (types_a); i := i + 1)
     {
-      if (types_a[i][0] in ('http://www.w3.org/2002/07/owl#Class', 
-                       'http://www.w3.org/2000/01/rdf-schema#Class')) 
+      if (types_a[i][0] in ('http://www.w3.org/2002/07/owl#Class',
+                       'http://www.w3.org/2000/01/rdf-schema#Class'))
 	return 1;
     }
 
@@ -310,7 +310,7 @@ b3s_get_types (in _s varchar,
   http (' a ?tp . filter (isIRI(?tp)) } }', q_txt);
   exec (string_output_string (q_txt), stat, msg, vector (), 100, meta, data);
   len := length(data);
-  for (i := 0;i < length(data); i := i + 1) 
+  for (i := 0;i < length(data); i := i + 1)
     {
       declare tp any;
       tp := data[i][0];
@@ -335,7 +335,7 @@ b3s_get_types (in _s varchar,
 skip_virt_graphs:
   vectorbld_final (t_a);
   return (t_a);
-}                 
+}
 ;
 
 create function
@@ -344,12 +344,12 @@ b3s_get_all_types (in _s varchar,
                in langs any)
         {
   return b3s_get_types (_s, _from, langs);
-}                 
+}
 ;
 
-create procedure 
-b3s_render_iri_select (inout types_a any, 
-                       in ins_str varchar := '', 
+create procedure
+b3s_render_iri_select (inout types_a any,
+                       in ins_str varchar := '',
                        in sel int := -1)
 {
   declare i int;
@@ -360,14 +360,14 @@ b3s_render_iri_select (inout types_a any,
 
       http (sprintf ('<select %s>', ins_str));
 
-      for (i := 0; i < length(types_a); i := i + 1) 
-        { 
-          http (sprintf ('<option value="%s" title="%s" %s>%s</option>', 
+      for (i := 0; i < length(types_a); i := i + 1)
+        {
+          http (sprintf ('<option value="%s" title="%s" %s>%s</option>',
                          types_a[i][0],
                          types_a[i][0],
                          case when i = sel then 'selected="selected"' else '' end,
                          case when types_a[i][2] <> '' then types_a[i][2] else types_a[i][1] end));
-        } 
+        }
       http ('</select>');
     }
   return i;
@@ -381,40 +381,40 @@ b3s_render_fct_link ()
   sid := connection_get ('sid');
 
   if (sid is not null)
-    return ('/fct/facet.vsp?sid='||sid||'&cmd=refresh');  
+    return ('/fct/facet.vsp?sid='||sid||'&cmd=refresh');
   else
     return '';
 }
 ;
 
 create procedure
-b3s_render_inf_opts () 
+b3s_render_inf_opts ()
 {
   declare inf varchar;
   declare f int;
   f := 0;
   inf := connection_get ('inf');
 
-  for select distinct RS_NAME as RS_NAME from SYS_RDF_SCHEMA do 
+  for select distinct RS_NAME as RS_NAME from SYS_RDF_SCHEMA do
     {
-      if (RS_NAME = inf) 
+      if (RS_NAME = inf)
         {
           http (sprintf ('<option value="%s" selected="selected">%s</option>', RS_NAME, RS_NAME));
           f := 1;
         }
-      else 
+      else
         http (sprintf ('<option value="%s">%s</option>', RS_NAME, RS_NAME));
     }
 
   if (f = 0)
     http ('<option value="**none**" selected="selected">None</option>');
-  else 
+  else
     http ('<option value="**none**">None</option>');
 }
 ;
 
 create procedure
-b3s_render_invfp_opts () 
+b3s_render_invfp_opts ()
 {
   if (fct_server_supports_invfp())
     {
@@ -432,7 +432,7 @@ b3s_render_invfp_opts ()
 ;
 
 create procedure
-b3s_render_sas_opts () 
+b3s_render_sas_opts ()
 {
   if (fct_server_supports_invfp())
     {
@@ -460,17 +460,17 @@ b3s_render_sas_opts ()
     }
 }
 ;
- 
-create procedure 
+
+create procedure
 b3s_parse_inf (in sid varchar, inout params any)
 {
   declare _inf, _invfp, _sas varchar;
   declare grs any;
   -- dbg_obj_princ ('b3s_parse_inf (', sid, params, ')');
-  _sas := _inf := _invfp := null; 
+  _sas := _inf := _invfp := null;
 
   if (sid is not null)
-    { 
+    {
       for select top 1 fct_state from fct_state where fct_sid = sid do
         {
 	  declare i varchar;
@@ -552,24 +552,24 @@ b3s_render_inf_invfp_sas_clauses ()
   _inf := connection_get ('inf');
   _invfp := connection_get ('invfp');
   _sas := connection_get ('sas');
-  if (_inf is not null) 
+  if (_inf is not null)
     _inf := 'define input:inference ''' || _inf || ''' ';
-  else 
+  else
     _inf := '';
   if (fct_server_supports_invfp() and _invfp is not null)
     _invfp := 'define input:ifp "' || _invfp || '" ';
-  else 
+  else
     _invfp := '';
   if (_sas is not null and (fct_server_supports_invfp() or _sas = 'SAME_AS'))
     _sas := 'define input:same-as "' || _sas || '" ';
-  else 
+  else
     _sas := '';
   return (_inf || _invfp || _sas);
 }
 ;
 
 create procedure
-b3s_render_ses_params (in with_graph int := 1) 
+b3s_render_ses_params (in with_graph int := 1, in with_ses int := 1)
 {
   declare inf,sas,invfp,sid varchar;
   declare grs any;
@@ -584,7 +584,7 @@ b3s_render_ses_params (in with_graph int := 1)
   if (inf is not null) http (sprintf ('&inf=%U', inf), ses);
   if (invfp is not null) http (sprintf ('&invfp=%V', invfp), ses);
   if (sas is not null) http (sprintf ('&sas=%V', sas), ses);
-  if (sid is not null) http (sprintf ('&sid=%V', sid), ses);
+  if (with_ses and sid is not null) http (sprintf ('&sid=%V', sid), ses);
   if (grs is not null and with_graph)
     {
       foreach (any x in grs) do
@@ -594,7 +594,7 @@ b3s_render_ses_params (in with_graph int := 1)
 }
 ;
 
-create procedure 
+create procedure
 b3s_dbg_out (inout ses any, in str any)
 {
   if (connection_get ('b3s_dbg'))
@@ -602,10 +602,10 @@ b3s_dbg_out (inout ses any, in str any)
 }
 ;
 
-create procedure 
+create procedure
 b3s_render_dbg_out (inout ses any)
 {
-  if (connection_get ('b3s_dbg')) 
+  if (connection_get ('b3s_dbg'))
     {
       http('<div id="dbg_output"><pre>');
       http_value (ses);
@@ -677,14 +677,14 @@ create procedure b3s_label_get (inout data any, in langs any)
      {
        if (__tag of rdf_box = __tag (label)  and rdf_box_is_complete (label))
 	 label := rdf_box_data (label);
-       else  
+       else
 	 label := __rdf_strsqlval (label);
      }
    if (not isstring (label))
      label := cast (label as varchar);
-   --label := regexp_replace (label, '<[^>]+>', '', 1, null);  
+   --label := regexp_replace (label, '<[^>]+>', '', 1, null);
   if (label is null)
-    label := ''; 
+    label := '';
   if (0 and sys_stat ('cl_run_local_only'))
     {
       label := xpath_eval ('string(.)', xtree_doc (label, 2));
@@ -696,7 +696,7 @@ create procedure b3s_label_get (inout data any, in langs any)
 }
 ;
 
-create procedure 
+create procedure
 b3s_rel_print (in val any, in rel any, in flag int := 0)
 {
   declare delim, delim1, delim2, delim3 integer;
@@ -734,7 +734,7 @@ b3s_rel_print (in val any, in rel any, in flag int := 0)
 ;
 
 
-create procedure 
+create procedure
 b3s_uri_curie (in uri varchar)
 {
   declare delim integer;
@@ -779,7 +779,7 @@ create procedure b3s_prop_label (in uri any)
   if (length (ll) = 0)
     ll := b3s_uri_curie (uri);
   if (isstring (ll) and ll like 'opl%:isDescribedUsing')
-    ll := 'Described Using Terms From';  
+    ll := 'Described Using Terms From';
   return ll;
 }
 ;
@@ -788,7 +788,7 @@ create procedure
 b3s_trunc_uri (in s varchar, in maxlen int := 80)
 {
   declare _s varchar;
-  declare _h int; 
+  declare _h int;
 
   _s := trim(s);
 
@@ -800,7 +800,7 @@ b3s_trunc_uri (in s varchar, in maxlen int := 80)
 }
 ;
 
-create procedure 
+create procedure
 b3s_http_url (in url varchar, in sid varchar := null, in _from varchar := null, in with_graph int := 1)
 {
   declare host, pref, more, i, wurl varchar;
@@ -827,7 +827,7 @@ create procedure b3s_u2w (in u any)
 }
 ;
 
-create procedure 
+create procedure
 b3s_http_print_l (in p_text any, inout odd_position int, in r int := 0, in sid varchar := null, in langs any := null)
 {
    declare short_p, p_prefix, int_redirect, url any;
@@ -845,9 +845,9 @@ b3s_http_print_l (in p_text any, inout odd_position int, in r int := 0, in sid v
 
    if (r) http ('is ');
 
-   http (sprintf ('<a class="uri" href="%s" title="%s">%s</a>\n', 
-                  url, 
-                  p_prefix, 
+   http (sprintf ('<a class="uri" href="%s" title="%s">%s</a>\n',
+                  url,
+                  p_prefix,
                   b3s_trunc_uri (p_prefix, 40)));
 
    if (r) http (' of');
@@ -867,18 +867,18 @@ create procedure b3s_label (in _S any, in langs any, in lbl_order_pref_id int :=
       declare ret any;
       ret := rdf_resolve_labels_s (adler32 (langs), vector (__i2id (_S)));
       ret := coalesce (ret[0], '');
-      ret := __ro2sq (ret); 
+      ret := __ro2sq (ret);
       if (__tag (ret) = 246)
 	ret := __rdf_strsqlval (ret);
-      if (isnumeric (ret)) 
+      if (isnumeric (ret))
         return (cast (ret as varchar));
-      return ret;	
+      return ret;
     }
   stat := '00000';
   --exec (sprintf ('sparql define input:inference "facets" '||
   --'select ?o (lang(?o)) where { <%s> virtrdf:label ?o }', _S), stat, msg, vector (), 0, meta, data);
-  exec (sprintf ('select __ro2sq (O), DB.DBA.RDF_LANGUAGE_OF_OBJ (__ro2sq (O)) , cast (b3s_lbl_order (P, %d) as int) from RDF_QUAD table option (with ''facets'') 
-	where S = __i2id (?) and P = __i2id (''http://www.openlinksw.com/schemas/virtrdf#label'', 0) and not is_bnode_iri_id (O) order by 3 option (same_as)', lbl_order_pref_id), 
+  exec (sprintf ('select __ro2sq (O), DB.DBA.RDF_LANGUAGE_OF_OBJ (__ro2sq (O)) , cast (b3s_lbl_order (P, %d) as int) from RDF_QUAD table option (with ''facets'')
+	where S = __i2id (?) and P = __i2id (''http://www.openlinksw.com/schemas/virtrdf#label'', 0) and not is_bnode_iri_id (O) order by 3 option (same_as)', lbl_order_pref_id),
 	stat, msg, vector (_S), 0, meta, data);
   if (stat <> '00000')
     return '';
@@ -902,7 +902,7 @@ create procedure b3s_label (in _S any, in langs any, in lbl_order_pref_id int :=
       best_str := __rdf_strsqlval (best_str);
     }
 
-  if (isnumeric (best_str)) 
+  if (isnumeric (best_str))
     return (cast (best_str as varchar));
 
   return best_str;
@@ -944,13 +944,13 @@ create procedure b3s_o_is_img (in x any)
 }
 ;
 
-create procedure 
+create procedure
 b3s_http_print_r (in _object any, in sid varchar, in prop any, in langs any, in rel int := 1, in acc any := null, in _from varchar := null, in flag int := 0)
 {
    declare lang, rdfs_type, rdfa, visible any;
    declare robotsrel varchar;
 
-   if (_object is null) 
+   if (_object is null)
      return;
 
    robotsrel := registry_get('fct_robots_rel');
@@ -998,7 +998,7 @@ again:
 	 _url := _object;
 
        if (not length (_url))
-         return;	 
+         return;
 
        http (sprintf ('<!-- %d -->', length (_url)));
 
@@ -1061,7 +1061,7 @@ again:
 	     lbl := b3s_label (_url, langs, 1);
 	   if ((not isstring(lbl)) or length (lbl) = 0)
 	     lbl := b3s_uri_curie(_url);
-	   -- XXX: must encode as wide label to print correctly  
+	   -- XXX: must encode as wide label to print correctly
 	   --http (sprintf ('<a class="uri" %s href="%s">%V</a>', rdfa, b3s_http_url (_url, sid, _from), lbl));
 	   http (sprintf ('<a %s class="uri" %s href="%s">', robotsrel, rdfa, b3s_http_url (_url, sid, _from)));
 	   vlbl := charset_recode (lbl, 'UTF-8', '_WIDE_');
@@ -1216,7 +1216,7 @@ create procedure fct_links_hdr (in subj any, in desc_link any)
   vec := fct_links_formats ();
   foreach (any elm in vec) do
     {
-      links := links || 
+      links := links ||
       sprintf ('<%s&output=%U>; rel="alternate"; type="%s"; title="Structured Descriptor Document (%s format)",', desc_link, elm[0], elm[0], elm[1]);
     }
   links := links || sprintf ('<%s>; rel="http://xmlns.com/foaf/0.1/primaryTopic",', subj);
@@ -1246,10 +1246,10 @@ create procedure fct_links_mup (in subj any, in desc_link any)
 ;
 
 create procedure
-fct_make_selector (in subj any, in sid integer) 
+fct_make_selector (in subj any, in sid integer)
 {
   return null;
-}	
+}
 ;
 
 create procedure fct_make_qr_code (in data_to_qrcode any, in src_width int := 120, in src_height int := 120, in qr_scale int := 3)
@@ -1361,7 +1361,7 @@ grant execute on DB.DBA.SPARQL_DESC_DICT_LOD_PHYSICAL to "SPARQL_SELECT";
 grant execute on DB.DBA.SPARQL_DESC_DICT_LOD to "SPARQL_SELECT";
 
 create procedure b3s_lbl_order (in p any, in lbl_order_pref_id int := 0)
-{    
+{
   declare r int;
   r := vector (
   'http://www.w3.org/2000/01/rdf-schema#label',
@@ -1518,11 +1518,11 @@ create procedure b3s_get_entity_graph (in entity_uri varchar, in sponge_request 
       declare num_containing_graphs int;
 
       -- Short-circuit the remainder of this block.
-      -- In doing so, in the case of num_containing_graphs == 1, we are opting to let the 
+      -- In doing so, in the case of num_containing_graphs == 1, we are opting to let the
       -- VAL graph security callback filter out contributions from this graph to the result set,
       -- rather than displaying an authentication dialog if the user has no read permissions on the graph.
       -- See b3s_get_user_graph_permissions().
-      -- 
+      --
       -- The remainer of the block is retained in case we want to make these alternative behaviours configurable.
       return null;
 
@@ -1576,9 +1576,9 @@ create procedure b3s_get_entity_graph (in entity_uri varchar, in sponge_request 
 
   -- Handle /about/id/* and /proxy-iri/* style entity URIs
 
-  --  entity_graph := (select top 1 id_to_iri(G) from DB.DBA.RDF_QUAD where 
+  --  entity_graph := (select top 1 id_to_iri(G) from DB.DBA.RDF_QUAD where
   --	  S = iri_to_id (entity_uri) and
-  --	  G not in (select RGGM_MEMBER_IID from DB.DBA.RDF_GRAPH_GROUP_MEMBER 
+  --	  G not in (select RGGM_MEMBER_IID from DB.DBA.RDF_GRAPH_GROUP_MEMBER
   --                where RGGM_GROUP_IID = iri_to_id('http://www.openlinksw.com/schemas/virtrdf#PrivateGraphs')));
   entity_graph := (select top 1 id_to_iri(G) from DB.DBA.RDF_QUAD where S = iri_to_id (entity_uri));
   if (entity_graph is not null)
@@ -1602,7 +1602,7 @@ create procedure b3s_get_entity_graph (in entity_uri varchar, in sponge_request 
 
   entity_graph := entity_uri;
   -- Strip off fragment - entity_uri could be a child entity with a hash URI
-  arr[5] := ''; 
+  arr[5] := '';
 
   pa := split_and_decode (arr[2], 0, '\0\0/');
   if (length (pa) > 5 and pa[3] = 'entity' and pa[4] <> '' and pa [5] <> '')
@@ -1611,12 +1611,12 @@ create procedure b3s_get_entity_graph (in entity_uri varchar, in sponge_request 
     sch := pa[4];
     nhost := pa [5];
     tmp := '/about/id/entity/' || sch || '/' || nhost;
-    npath := subseq (arr[2], length (tmp));    
+    npath := subseq (arr[2], length (tmp));
     arr[0] := sch;
     arr[1] := nhost;
     arr[2] := npath;
-    
-    if (lower(arr[0]) in ('acct', 'mailto')) 
+
+    if (lower(arr[0]) in ('acct', 'mailto'))
     {
       arr [2] := arr[1];
       arr [1] := '';
@@ -1630,17 +1630,17 @@ create procedure b3s_get_entity_graph (in entity_uri varchar, in sponge_request 
     sch := pa[3];
     nhost := pa [4];
     tmp := '/about/id/' || sch || '/' || nhost;
-    npath := subseq (arr[2], length (tmp));    
+    npath := subseq (arr[2], length (tmp));
     arr[0] := sch;
     arr[1] := nhost;
     arr[2] := npath;
-    
+
     if (sch in ('acct', 'mailto'))
     {
       arr[2] := arr[1];
       arr[1] := '';
     }
-	    
+
     entity_graph := DB.DBA.vspx_uri_compose (arr);
   }
 
@@ -1671,8 +1671,8 @@ create procedure b3s_get_user_graph_permissions (
   -- graph == null indicates that the subject entity URI being viewed is contained in multiple graphs.
   -- Don't attempt to check permissions here if this is the case, as here we only check permissions
   -- on a single graph
-  -- FIX ME: 
-  -- See use of RDF_GRAPH_USER_PERMS_ACK [1] by dt1 and dt2 in description.vsp. 
+  -- FIX ME:
+  -- See use of RDF_GRAPH_USER_PERMS_ACK [1] by dt1 and dt2 in description.vsp.
   -- Filtering of results from multiple graphs should be done at this point [1]
 
   -- Call FCT.DBA.check_auth_and_acls() even if graph is null, as this routine also retrieves the
@@ -1713,10 +1713,10 @@ create procedure fct_set_graphs (in sid any, in graphs any)
   foreach (any g in graphs) do
     {
       http (sprintf ('<graph name="%V" />', g), s);
-    } 
+    }
   http ('</graphs>', s);
   newx := xslt (registry_get ('_fct_xslt_') || 'fct_set_graphs.xsl', xt, vector ('graphs', xtree_doc (s)));
-  update fct_state set fct_state = newx where fct_sid = sid; 
+  update fct_state set fct_state = newx where fct_sid = sid;
   commit work;
 }
 ;
@@ -1769,7 +1769,7 @@ create procedure FCT.DBA.check_auth_and_acls (
   }
 
   user_generic_sparql_permissions := 7; -- Permissions on resource <urn:virtuoso:access:sparql>
-  user_permissions_on_service := 7; -- Permissions on resource <urn:virtuoso:access:sponger:describe>, i.e. /describe service 
+  user_permissions_on_service := 7; -- Permissions on resource <urn:virtuoso:access:sponger:describe>, i.e. /describe service
   user_permissions_on_graph := 7; -- Permissions on target graph
 
   -- ================================
@@ -1850,7 +1850,7 @@ create procedure FCT.DBA.check_auth_and_acls (
       dbg_printf ('%s: Checking if VAL service ID <%s> has access to /describe service', current_proc_name(), serviceId);
       -- dbg_obj_princ('describe_service_acl: ', describe_service_acl);
     }
-    
+
     user_permissions_on_service := VAL.DBA.sparql_access_modes_to_bitmask (describe_service_acl);
     if (connection_get ('b3s_dbg'))
       dbg_printf ('%s: user_permissions_on_service: %d', current_proc_name(), user_permissions_on_service);
@@ -1899,7 +1899,7 @@ create procedure FCT.DBA.check_auth_and_acls (
   -- Get user permissions on target graph
   -- ====================================
 
-  if (graph is null) 
+  if (graph is null)
   {
     -- => We don't know the graph, or we're handling an entity contained in several graphs
     -- Just perform the authentication details retrieval above, don't attempt to retrieve permissions
