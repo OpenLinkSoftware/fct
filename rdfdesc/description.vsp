@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN" "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
-<html 
-    xmlns="http://www.w3.org/1999/xhtml" 
-    xml:lang="en" 
+<html
+    xmlns="http://www.w3.org/1999/xhtml"
+    xml:lang="en"
     version="XHTML+RDFa 1.0"
     xmlns:addthis="http://www.addthis.com/help/api-spec"
     xmlns:fb="http://www.facebook.com/2008/fbml"
@@ -85,7 +85,7 @@
   if (VAD_CHECK_VERSION ('Log4Virtuoso') is not null)
   {
     log4v_vad_present := 1;
-    log4v_app_id := registry_get ('sponger_log4v_app_id'); 
+    log4v_app_id := registry_get ('sponger_log4v_app_id');
     if (log4v_app_id = 0)
       log4v_app_id := 'urn:virtuoso:log4v:app:describe' ;
   }
@@ -94,8 +94,8 @@
 
   declare exit handler for sqlstate '40001' {
     rollback work;
-    if (deadl < 5) 
-      goto again;	
+    if (deadl < 5)
+      goto again;
     resignal;
   };
   -- XXX: disabled
@@ -110,7 +110,7 @@ again:
   n_per_page := 100;
   dis_next := 0;
   dbg_enable := get_keyword ('dbg', params);
-  if (dbg_enable = '1') 
+  if (dbg_enable = '1')
     {
         dbg_printf ('Enabling b3s session debug.\n');
         connection_set ('b3s_dbg', 1);
@@ -119,7 +119,7 @@ again:
   else connection_set ('b3s_dbg',0);
 
   dist := atoi (get_keyword ('distinct', params, '1'));
-     
+
   connection_set ('ns_ctr', 1); /* for unknown xmlns to print in RDFa */
 
   white_page := 1;
@@ -150,7 +150,7 @@ again:
     tbsas := ', ' || tbsas;
   else
     tbsas := '';
-  
+
   --
   -- Get AddthisKey from registry
   --
@@ -192,17 +192,17 @@ again:
   page := null;
 
    _last := atoi (get_keyword ('lp', params, '0'));
-  if ({?'prev'} is not null)  
+  if ({?'prev'} is not null)
     page := atoi (get_keyword ('op', params, '0'));
-  else if ({?'first'} is not null)  
-    page := 0; 
-  else if ({?'last'} is not null)  
+  else if ({?'first'} is not null)
+    page := 0;
+  else if ({?'last'} is not null)
     page := _last;
-  else if ({?'next'} is not null) 
+  else if ({?'next'} is not null)
     page := atoi (get_keyword ('p', params, '0'));
-  else if ({?'go'} is not null) 
+  else if ({?'go'} is not null)
     page := atoi (get_keyword ('gp', params, '1')) - 1;
-  else 
+  else
     page := atoi (get_keyword ('p', params, '1')) - 1;
 
   -- Sanity checks
@@ -238,8 +238,8 @@ again:
   page_resource_uri := replace (page_resource_uri, ' ', '%20');
   page_resource_uri := replace (page_resource_uri, '"', '%22');
   __box_flags_set (page_resource_uri, 2);
-   
-  _S := page_resource_uri; 
+
+  _S := page_resource_uri;
   proxy_iri := page_resource_uri;
 
   b3s_dbg_out (dbg_out, 'page_resource_uri: ' || page_resource_uri);
@@ -256,15 +256,15 @@ again:
         http_status_set (403);
         http ('<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">');
         http (sprintf ('<html><body>Use of this service is not allowed for your current WebID: %V</body></html>', connection_get ('WebID', '<none>')));
-        return;  
-      } 
+        return;
+      }
 
   -- The var "pageUrl" is also used in the fct_val_login_status.vsp include below
   pageUrl := FCT.DBA.build_page_url_on_current_host ('/describe/', sprintf ('url=%U%s', gr, FCT.DBA.get_describe_request_params (params)));
 
   graph_perms_allow_sponge := sponge_request;
   view_mode := 'full';
-  graph_perms := b3s_get_user_graph_permissions (_G, pageUrl, sponge_request, val_vad_present, val_serviceId, val_auth_method, graph_perms_allow_sponge, view_mode); 
+  graph_perms := b3s_get_user_graph_permissions (_G, pageUrl, sponge_request, val_vad_present, val_serviceId, val_auth_method, graph_perms_allow_sponge, view_mode);
 
   if (val_vad_present)
     val_perms_clause := sprintf ('define sql:gs-app-callback "VAL_SPARQL_PERMS" define sql:gs-app-uid "%s" define get:enforce-acls "yes" ', coalesce (val_serviceId, 'nobody'));
@@ -292,12 +292,12 @@ again:
 	goto post_process_err_with_log4v;
       }
       rollback work;
-      goto errend; 
+      goto errend;
     };
 
 post_process_err_with_log4v:
-    -- Allow log4v to replace the current SQL state and error message with any customized values 
-    -- configured for the /about service. log4v will re-signal if the given SQL state or error 
+    -- Allow log4v to replace the current SQL state and error message with any customized values
+    -- configured for the /about service. log4v will re-signal if the given SQL state or error
     -- message are overwritten by process_error().
     if (log4v_err_handling_in_progress)
     {
@@ -341,8 +341,8 @@ post_process_err_with_log4v:
               DB.DBA.EXEC_AS (sprintf ('sparql clear graph <%s>', _G), 'dba');
             }
         }
-      else  
-        refr := atoi (get_keyword ('sr', params, '0'));		
+      else
+        refr := atoi (get_keyword ('sr', params, '0'));
 
       if (val_vad_present)
         { --!!!
@@ -376,12 +376,12 @@ post_process_err_with_log4v:
 
   if (iswidestring (label))
     vlbl := label;
-  else  
+  else
     vlbl := charset_recode (label, 'UTF-8', '_WIDE_');
   if (vlbl = 0)
     vlbl := charset_recode (label, current_charset (), '_WIDE_');
   if (vlbl = 0)
-    vlbl := label; 
+    vlbl := label;
 
   b3s_dbg_out (dbg_out, 'label: "' || vlbl || '"');
 
@@ -390,7 +390,7 @@ post_process_err_with_log4v:
   declare e_type_label varchar;
   declare e_type_a any;
 
---  dbg_printf ('_S:%s', _s); 
+--  dbg_printf ('_S:%s', _s);
 
   types_a := b3s_get_types (_S, _F, langs);
   types_b := b3s_get_all_types (_S, _F, langs);
@@ -403,18 +403,18 @@ post_process_err_with_log4v:
 
   e_type := e_type_a[0];
   e_type_label := e_type_a[1];
-  
+
   qry_str := sprintf ('sparql %s %s prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> prefix dc: <http://purl.org/dc/elements/1.1/> select ?o (lang(?o)) %s where { <%s> rdfs:comment ?o }', inf, val_perms_clause, _F, _S);
 
 --    dbg_obj_print (qry_str);
 
   b3s_dbg_out (dbg_out, 'qry: ' || qry_str);
-	
+
   exec (qry_str, null, null, vector (), 0, meta, data);
 
   _subject := b3s_label_get (data, langs);
 
-  rdf_link := sprintf ('/sparql?query=%U', __box_flags_tweak (sprintf ('define sql:describe-mode "CBD" %s DESCRIBE <%s>', b3s_render_inf_invfp_sas_clauses(), _S), 2)); 
+  rdf_link := sprintf ('/sparql?query=%U', __box_flags_tweak (sprintf ('define sql:describe-mode "CBD" %s DESCRIBE <%s>', b3s_render_inf_invfp_sas_clauses(), _S), 2));
   __box_flags_set (rdf_link, 2);
 
   declare __res_desc, qs, qv, best_variant, accept, protocol varchar;
@@ -440,7 +440,7 @@ post_process_err_with_log4v:
         {
 	  best_q := curr;
 	  best_variant := q;
-	} 
+	}
       inx := inx + 1;
     }
   if (best_variant is null)
@@ -457,20 +457,20 @@ post_process_err_with_log4v:
           inx := inx + 1;
 	}
       http_header (http_header_get () || '\r\n');
-      return; 
+      return;
     }
   if (best_variant is not null and best_variant not in ('text/html', 'application/xhtml+xml'))
     {
       http_rewrite ();
       http_status_set (303);
       http_header (sprintf ('TCN: choice\r\nVary: negotiate,accept\r\nLocation: %s://%{WSHost}s%s&format=%U\r\n', protocol, rdf_link, best_variant));
-      return; 
+      return;
     }
   __res_desc := b3s_uri_curie(page_resource_uri);
   fct_links_hdr (_S, rdf_link);
   if (not length (label))
     label := b3s_trunc_uri (page_resource_uri);
-  if (vlbl <> 0) label := vlbl; 
+  if (vlbl <> 0) label := vlbl;
   declare desc_resource_uri varchar;
   declare desc_qr varchar;
   desc_qr := sprintf ('define sql:describe-mode "SPO" DESCRIBE <%s>', page_resource_uri);
@@ -481,10 +481,10 @@ post_process_err_with_log4v:
 
   plink_href := sprintf ('/describe/?url=%U', b3s_u2w (page_resource_uri));
 
-  if (page is not null and page > 0) 
+  if (page is not null and page > 0)
     {
-      plink_href := concat (plink_href, sprintf ('&gp=%d&go=', page+1));
-    } 
+      plink_href := concat (plink_href, sprintf ('&gp=%d&go=&lp=%d', page+1, _last));
+    }
   if (connection_get ('inf') is not null)
     {
       plink_href := concat (plink_href, sprintf ('&inf=%U', connection_get ('inf')));
@@ -510,7 +510,7 @@ post_process_err_with_log4v:
     <title>About: <?vsp if (length (label)) http_value (label); else http_value (b3s_uri_curie (page_resource_uri));?></title>
     <!--link rel="alternate" type="application/rdf+xml" href="<?=rdf_link?>" title="RDF" /-->
 
-    <?vsp 
+    <?vsp
 	declare main_ss varchar;
         main_ss := registry_get ('fct_main_ss');
         if (not isstring (main_ss)) main_ss := '/fct/css/default.css';
@@ -590,15 +590,15 @@ post_process_err_with_log4v:
 &nbsp;<a class="desc_permalink" href="<?vsp http (fct_make_curie (sprintf ('%s&distinct=%d',  plink_href, equ (dist, 0)), lines)); ?>" title="This link enables you toggle between normalized and un-normalized views of data using by applying or note applying a DISTINCT operator"><?vsp if (dist) http ('Not'); ?>Distinct</a>
 &nbsp;<a class="desc_permalink" href="<?vsp http (fct_make_curie (sprintf ('%s&distinct=%d', plink_href, dist), lines)); ?>">Permalink</a>
     </h2>
-      <div class="ds_inf_info"> 
+      <div class="ds_inf_info">
 	    An Entity of Type : <a href="<?V e_type ?>"><?V e_type_label ?></a>,
 	    within Data Space : <a href="http://<?V host ?>"><?V host ?></a> associated with source <a href="usage.vsp?g=<?U _S ?><?V ses_parms ?>">document(s)</a><br/>
-<?vsp 
+<?vsp
 
   declare is_class int;
   is_class := b3s_find_class_type (_S, _F, types_a);
 
-  if (('http://www.w3.org/2002/07/owl#Thing' <> e_type and length (types_a)) or is_class) 
+  if (('http://www.w3.org/2002/07/owl#Thing' <> e_type and length (types_a)) or is_class)
     {
 ?>
       <form id="fct_form" action="/fct/facet.vsp" method="get">
@@ -609,9 +609,9 @@ post_process_err_with_log4v:
           {
 ?>
             <input type="hidden" name="iri" value="<?V _S ?>">
-<?vsp   
+<?vsp
           }
-        else 
+        else
           {
 ?>
             <label for="c_iri_sel">Type:</label>
@@ -620,7 +620,7 @@ post_process_err_with_log4v:
           }
 
         if (sid)
-          { 
+          {
 ?>
             <input type="hidden" name="sid" value="<?V sid ?>"/>
             <label for="cmd_sel">Command:</label>
@@ -641,7 +641,7 @@ post_process_err_with_log4v:
 ?>
       </div>
       </form>
-<?vsp    
+<?vsp
   }
   if (DB.DBA.VAD_CHECK_VERSION ('c_uri') is not null and __proc_exists ('QRcode encodeString8bit', 2) is not null and strcasestr (ua, 'Mobile') is null) {
 ?>
@@ -654,22 +654,22 @@ post_process_err_with_log4v:
 <?vsp } ?>
     </div>
   </div>
-<?vsp 
-if (_subject <> '') { 
+<?vsp
+if (_subject <> '') {
 ?>
   <p class="subj_desc"><?vsp http (sprintf ('%s', _subject)); ?></p>
-<?vsp 
-} else { 
+<?vsp
+} else {
 ?>
   <p class="subj_delim"></p>
-<?vsp 
-} 
+<?vsp
+}
 ?>
 <!--            <li><a href="/fct/facet.vsp?sid=<?V sid ?>&amp;cmd=set_class&amp;iri=<?V gr ?>">Choose <?V ''?> as Type</a></li>
                 <li><a href="/fct/facet.vsp?sid=<?V sid ?>&amp;cmd=open_property">Choose <?V ''?> as Property (p)</a></li>
                 <li><a href="">Choose <?V ''?> as Value (o)</a></li>-->
 <!-- proptable -->
-    <table class="description"> 
+    <table class="description">
 
 <?vsp
 
@@ -687,7 +687,7 @@ if (_subject <> '') {
       _skip := n_per_page * page;
 
       if (length (_F) or 1 = sys_stat ('cl_run_local_only'))
-      { 
+      {
       dt1 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT any, 0 as FLAG int from (sparql %s define output:valmode "AUTO" %s select distinct ?p ?o %s where { <%s> ?p ?o }  order by 1) sp1', inf, val_perms_clause, _F, _S);
       }
       else
@@ -703,7 +703,7 @@ if (_subject <> '') {
       if (dist = 0)
         qry_str := replace (qry_str, 'distinct', '');
       if (_last = 0)
-        { 
+        {
 	  if (length (_F) or 1 = sys_stat ('cl_run_local_only'))
             {
 	      dt1 := sprintf ('select count(*) as cnt from (sparql %s define output:valmode "AUTO" %s select distinct ?p ?o %s where { <%s> ?p ?o }  order by 1) sp1', inf, val_perms_clause, _F, _S);
@@ -745,18 +745,18 @@ if (_subject <> '') {
         }
 
       -- dbg_obj_princ ('qry_str = ', qry_str);
-      exec (qry_str, null, null, vector (), 0, null, null, h1); 
+      exec (qry_str, null, null, vector (), 0, null, null, h1);
       curr_pred := '';
       inx := 0;
       data := null;
-      while (0 = exec_next (h1, null, null, data))	
+      while (0 = exec_next (h1, null, null, data))
 	{
            declare PRED, OBJECT, FLAG any;
 	   --if (inx <= _skip)
 	   --  goto nxt1;
            if (length (data) < 3)
 	     goto skip;
-	   pred := data[0];  
+	   pred := data[0];
            object := data[1];
            FLAG := data[2];
 	   if (not length (PRED))
@@ -771,7 +771,7 @@ if (_subject <> '') {
            vis := b3s_http_print_r (OBJECT, sid, PRED, langs, 1, all_langs, _from, FLAG);
 	   nxt1:;
 	   inx := inx + 1;
-	   skip:;	
+	   skip:;
 	}
       exec_close (h1);
       if (curr_pred <> '') http ('</ul></td></tr>');
@@ -797,7 +797,7 @@ if (_subject <> '') {
 	    -- Force a re-sponge if authentication succeeds
 
 	    declare auth_dlg_msg varchar;
-	    auth_dlg_msg := 'No cached data is available. Authenticate to re-sponge.'; 
+	    auth_dlg_msg := 'No cached data is available. Authenticate to re-sponge.';
 
 	    http_rewrite ();
 	    connection_set ('__val_denied_service_id__', val_serviceId);
@@ -862,26 +862,26 @@ if (_subject <> '') {
 	      <?vsp if (sid is not null) { ?>
 	      <input type="hidden" name="sid" value="<?V sid ?>"/>
 	      <?vsp } ?>
-	      <?vsp if (connection_get ('graphs') is not null) { 
+	      <?vsp if (connection_get ('graphs') is not null) {
 	          foreach (any x in grs) do {
               ?>
 	      <input type="hidden" name="graph" value="<?V x ?>"/>
-	      <?vsp 
+	      <?vsp
 	      } } ?>
 	      <input type="hidden" name="lp" value="<?V _last ?>"/>
-	      <?vsp if (topof <> '' and _last > 0) {  if (1 or page > 0) { ?>   
+	      <?vsp if (topof <> '' and _last > 0) {  if (1 or page > 0) { ?>
 	      <button type="submit" value="" name="first" <?vsp if (page <= 0) { http ('disabled="disabled"'); } ?>>&#9666;&#9666; First</button>
 	      &nbsp;
 	      <input type="hidden" name="op" value="<?V page - 1 ?>"/>
 	      <button type="submit" value="" name="prev" <?vsp if (page <= 0) { http ('disabled="disabled"'); } ?>>&#9666; Prev</button>
 	      &nbsp;&nbsp;&nbsp;
-	<?vsp } if (1 or not dis_next) { ?>   
+	<?vsp } if (1 or not dis_next) { ?>
 	      <button type="submit" value="" name="next" <?vsp if (dis_next) { http ('disabled="disabled"'); } ?>>Next &#9656;</button>
 	       &nbsp;
 	      <button type="submit" value="" name="last" <?vsp if (dis_next) { http ('disabled="disabled"'); } ?>>Last &#9656;&#9656;</button>
 	       &nbsp;&nbsp;&nbsp;
 	       Page <?V page + 1 ?> of <?V _last + 1 ?>  &nbsp;&nbsp;&nbsp;
-	       <input type="text" value="<?V page + 1 ?>" size="5" name="gp" <?vsp if (page <= 0 AND dis_next) { http('disabled="disabled"'); }?> /> &nbsp; 
+	       <input type="text" value="<?V page + 1 ?>" size="5" name="gp" <?vsp if (page <= 0 AND dis_next) { http('disabled="disabled"'); }?> /> &nbsp;
 	       <button type="submit" value="" name="go" <?vsp if (page <= 0 AND dis_next) { http('disabled="disabled"'); }?> >Go</button>
 	<?vsp } } ?>
 	</div>
@@ -901,13 +901,13 @@ if (_subject <> '') {
 	<a class="addthis_button_google_plusone" id="g_plusone_id"></a>
 	<a class="addthis_counter addthis_pill_style"></a>
 	</div>
-    <script type="text/javascript"> 
+    <script type="text/javascript">
     /*<![CDATA[*/
 	var addthis_config = {"data_track_clickback":true, ui_cobrand:"Virtuoso"};
 	var addthis_share = { url_transforms : { clean: true, remove: ['sid'] } };
     /*]]>*/
     </script>
-    <script type="text/javascript"> 
+    <script type="text/javascript">
 	var fb_like_id = document.getElementById('fb_like_id');
 	if (fb_like_id) fb_like_id.setAttribute('fb:like:layout', 'button_count');
 	var g_plusone_id = document.getElementById('g_plusone_id');
@@ -919,38 +919,38 @@ if (_subject <> '') {
 <?vsp } ?>
       <div id="ft_t"><br/>
         Alternative Linked Data Documents:
-	<?vsp if (VAD_CHECK_VERSION ('html5pivotviewer') is not null) { ?>	
-	<a href="/HtmlPivotViewer/?url=<?vsp http_url (desc_resource_uri); ?>" title="PivotViewer page for exploring results and generating new queries (HTML5)" target="_blank">PivotViewer</a> 
+	<?vsp if (VAD_CHECK_VERSION ('html5pivotviewer') is not null) { ?>
+	<a href="/HtmlPivotViewer/?url=<?vsp http_url (desc_resource_uri); ?>" title="PivotViewer page for exploring results and generating new queries (HTML5)" target="_blank">PivotViewer</a>
 	|
-	<?vsp } else if (VAD_CHECK_VERSION ('PivotViewer') is not null) { ?>	
-	<a href="/PivotViewer/?url=<?vsp http_url (desc_resource_uri); ?>" title="PivotViewer page for exploring results and generating new queries (Silverlight)" target="_blank">PivotViewer</a> 
-	|
-	<?vsp } ?>
-	<?vsp if (VAD_CHECK_VERSION ('rdf_mappers') is not null) { ?>	
-	<a href="<?vsp http (rdfdesc_http_url (page_resource_uri)); ?>" target="_blank">Sponger</a> 
+	<?vsp } else if (VAD_CHECK_VERSION ('PivotViewer') is not null) { ?>
+	<a href="/PivotViewer/?url=<?vsp http_url (desc_resource_uri); ?>" title="PivotViewer page for exploring results and generating new queries (Silverlight)" target="_blank">PivotViewer</a>
 	|
 	<?vsp } ?>
-	<?vsp if (VAD_CHECK_VERSION ('iSPARQL') is not null) { ?>	
-	<a href="/isparql/view/?query=<?vsp http_url (desc_qr); ?>&amp;resultview=browser" title="Interactive Query By Example oriented SPARQL UI" target="_blank">iSPARQL</a> 
+	<?vsp if (VAD_CHECK_VERSION ('rdf_mappers') is not null) { ?>
+	<a href="<?vsp http (rdfdesc_http_url (page_resource_uri)); ?>" target="_blank">Sponger</a>
 	|
 	<?vsp } ?>
-	<a href="http://linkeddata.uriburner.com/ode/?uri=<?vsp http_url (page_resource_uri); ?>" title="Basic navigation and exploration" target="_blank">ODE</a> 
-	
-        &nbsp; &nbsp; Content Formats: &nbsp; 
-	<a href="<?=rdf_link?><?= sprintf ('&output=%U', 'text/cxml')?>"><img src="/fct/images/cxml_doc.png" class="dicon"/></a> 
-	<a href="<?=rdf_link?><?=sprintf ('&output=%U', 'text/csv')?>"><img src="/fct/images/csv_doc.png" class="dicon"/></a>  
-	&nbsp; &nbsp; RDF &nbsp; 
+	<?vsp if (VAD_CHECK_VERSION ('iSPARQL') is not null) { ?>
+	<a href="/isparql/view/?query=<?vsp http_url (desc_qr); ?>&amp;resultview=browser" title="Interactive Query By Example oriented SPARQL UI" target="_blank">iSPARQL</a>
+	|
+	<?vsp } ?>
+	<a href="http://linkeddata.uriburner.com/ode/?uri=<?vsp http_url (page_resource_uri); ?>" title="Basic navigation and exploration" target="_blank">ODE</a>
+
+        &nbsp; &nbsp; Content Formats: &nbsp;
+	<a href="<?=rdf_link?><?= sprintf ('&output=%U', 'text/cxml')?>"><img src="/fct/images/cxml_doc.png" class="dicon"/></a>
+	<a href="<?=rdf_link?><?=sprintf ('&output=%U', 'text/csv')?>"><img src="/fct/images/csv_doc.png" class="dicon"/></a>
+	&nbsp; &nbsp; RDF &nbsp;
 	<a href="<?=rdf_link?><?=sprintf ('&output=%U', 'text/plain') ?>"><img src="/fct/images/ntriples_doc.png" class="dicon"/></a>
 	<a href="<?=rdf_link?><?=sprintf ('&output=%U', 'text/turtle') ?>"><img src="/fct/images/n3turtle_doc.png" class="dicon"/></a>
-	<a href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/ld+json')?>"><img src="/fct/images/jsonld_doc.png" class="dicon"/></a> 
-	<a href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/rdf+json')?>"><img src="/fct/images/json_doc.png" class="dicon"/></a> 
-	<a href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/rdf+xml') ?>"><img src="/fct/images/xml_doc.png" class="dicon"/></a>  
-	&nbsp; &nbsp; ODATA &nbsp; 
-	<a href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/atom+xml')?>"><img src="/fct/images/atom_doc.png" class="dicon"/></a> 
+	<a href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/ld+json')?>"><img src="/fct/images/jsonld_doc.png" class="dicon"/></a>
+	<a href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/rdf+json')?>"><img src="/fct/images/json_doc.png" class="dicon"/></a>
+	<a href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/rdf+xml') ?>"><img src="/fct/images/xml_doc.png" class="dicon"/></a>
+	&nbsp; &nbsp; ODATA &nbsp;
+	<a href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/atom+xml')?>"><img src="/fct/images/atom_doc.png" class="dicon"/></a>
 	<a href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/odata+json')?>"><img src="/fct/images/json_doc.png" class="dicon"/></a>
-	&nbsp; &nbsp; Microdata &nbsp; 
+	&nbsp; &nbsp; Microdata &nbsp;
 	<a href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/microdata+json') ?>"><img src="/fct/images/json_doc.png" class="dicon"/></a>
-	<a href="<?=rdf_link?><?=sprintf ('&output=%U', 'text/html') ?>"><img src="/fct/images/html_doc.png" class="dicon"/></a>  
+	<a href="<?=rdf_link?><?=sprintf ('&output=%U', 'text/html') ?>"><img src="/fct/images/html_doc.png" class="dicon"/></a>
         &nbsp; &nbsp;<a href="/fct/facet_doc.html">About</a>&nbsp; &nbsp;
       </div> <!-- #ft_t -->
       <div id="ft_b">
@@ -966,18 +966,18 @@ if (_subject <> '') {
 	    alt="Valid XHTML + RDFa" height="27" /></a>
 	</span>
 	<br />
-	<?vsp fct_virt_info (); ?><br /> 
+	<?vsp fct_virt_info (); ?><br />
 	<?vsp
           declare license_text varchar;
           license_text := registry_get ('fct_license_text');
 
           if (license_text) {
             http(license_text);
-	  } 
+	  }
 
         ?>
 	Data on this page belongs to its respective rights holders.<br/>
-	Virtuoso Faceted Browser Copyright &copy; 2009-<?V "LEFT" (datestring (now ()), 4)?> OpenLink Software 
+	Virtuoso Faceted Browser Copyright &copy; 2009-<?V "LEFT" (datestring (now ()), 4)?> OpenLink Software
       </div> <!-- #ft_b -->
     </div> <!-- #FT -->
     </div> <!-- #PG -->
