@@ -70,6 +70,7 @@
   declare log4v_vad_present, log4v_err_handling_in_progress int;
   declare log4v_app_id any;
   declare q_txt any;
+  declare safetolink integer;
 
   if (registry_get ('fct_auto_sponge') = '1')
     auto_sponge_on_empty_graph := 1;
@@ -241,6 +242,11 @@ again:
 
   _S := page_resource_uri;
   proxy_iri := page_resource_uri;
+
+  safetolink:=0;
+  if(lower(rfc1808_parse_uri(page_resource_uri)[0]) in ('http','https','ftp')) {
+    safetolink:=1;
+  }
 
   b3s_dbg_out (dbg_out, 'page_resource_uri: ' || page_resource_uri);
   sp_mode := get_keyword ('sponger:get', params, 'add');
@@ -578,13 +584,17 @@ post_process_err_with_log4v:
     <div class="page_resource_info">
 
     <h2>About:
-    <a href="<?= case when page_resource_uri like
-        'nodeID://%' then b3s_http_url (page_resource_uri) else
-        page_resource_uri end ?>">
-    <?vsp if (length(label))
-      http_value(label);
-      else http_value(b3s_uri_curie(page_resource_uri));
-        ?>
+
+      <?vsp
+      if(safetolink>0) {
+        http(sprintf('<a href="%s">%s</a>\n',
+          case when page_resource_uri like 'nodeID://%' then b3s_http_url (page_resource_uri) else page_resource_uri end,
+          case when (length(label)) then http_value(label) else b3s_uri_curie(page_resource_uri) end));
+      } else {
+        http(case when (length(label)) then http_value(label) else b3s_uri_curie(page_resource_uri) end);
+      }
+      ?>
+    <a href="">
     </a>&nbsp;&nbsp;&nbsp;
     <a class="desc_permalink" href="<?= case when page_resource_uri like
         'nodeID://%' then b3s_http_url (page_resource_uri) else
