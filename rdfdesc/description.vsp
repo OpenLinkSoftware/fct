@@ -596,13 +596,15 @@ post_process_err_with_log4v:
       ?>
     <a href="">
     </a>&nbsp;&nbsp;&nbsp;
-    <a class="desc_permalink" href="<?= case when page_resource_uri like
-        'nodeID://%' then b3s_http_url (page_resource_uri) else
-        page_resource_uri end ?>">Goto
-    </a>&nbsp;
-    <a class="desc_sponge_link"
-        href="/describe/?url=<?U page_resource_uri ?>
-    <?= case when sid is
+    <?vsp
+      if(safetolink>0) {
+        http(sprintf('<a class="desc_permalink" href="%s">Goto</a>\n',
+          case when page_resource_uri like 'nodeID://%' then b3s_http_url (page_resource_uri) else page_resource_uri end
+        ));
+      }
+    ?>
+    &nbsp;
+    <a class="desc_sponge_link" href="/describe/?url=<?U page_resource_uri ?><?= case when sid is
         not null then '&sid=' || sid end ?>&amp;sponger:get=add"
         title="Click to generate local descriptor data for this entity"
         id="sp_link" rel="nofollow">Sponge
