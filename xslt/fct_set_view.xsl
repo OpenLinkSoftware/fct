@@ -56,6 +56,9 @@
 						  name () = 'property-of']))">
     <xsl:copy>
       <xsl:apply-templates select="@* | node()" />
+      <xsl:if test="local-name(.) = 'query'">
+	  <xsl:attribute name="limit"><xsl:value-of select="$limit"/></xsl:attribute>
+      </xsl:if>
 
       <xsl:if test="$op = 'view' and
 	            $pos = count (./ancestor::*[name () = 'query' or
