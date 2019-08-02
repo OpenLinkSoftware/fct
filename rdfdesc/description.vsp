@@ -70,6 +70,7 @@
   declare log4v_vad_present, log4v_err_handling_in_progress int;
   declare log4v_app_id any;
   declare q_txt any;
+  declare safetolink integer;
 
   if (registry_get ('fct_auto_sponge') = '1')
     auto_sponge_on_empty_graph := 1;
@@ -241,6 +242,11 @@ again:
 
   _S := page_resource_uri;
   proxy_iri := page_resource_uri;
+
+  safetolink:=0;
+  if(lower(rfc1808_parse_uri(page_resource_uri)[0]) in ('http','https','ftp')) {
+    safetolink:=1;
+  }
 
   b3s_dbg_out (dbg_out, 'page_resource_uri: ' || page_resource_uri);
   sp_mode := get_keyword ('sponger:get', params, 'add');
@@ -576,20 +582,43 @@ post_process_err_with_log4v:
   </div> <!-- #HD -->
   <div id="MD">
     <div class="page_resource_info">
-	<h2>About: <a href="<?= case when page_resource_uri like
-    'nodeID://%' then b3s_http_url (page_resource_uri) else
-    page_resource_uri end ?>"><?vsp if (length(label)) http_value
-    (label); else http_value(b3s_uri_curie (page_resource_uri));
-    ?></a>&nbsp;&nbsp;&nbsp;<a class="desc_permalink" href="<?= case when page_resource_uri like
-    'nodeID://%' then b3s_http_url (page_resource_uri) else
-    page_resource_uri end ?>">Goto</a>&nbsp;<a class="desc_sponge_link"
-    href="/describe/?url=<?U page_resource_uri ?><?= case when sid is
-    not null then '&sid=' || sid end ?>&amp;sponger:get=add"
-    title="Click to generate local descriptor data for this entity"
-    id="sp_link" rel="nofollow">Sponge</a>
-&nbsp;<a class="desc_permalink" href="<?vsp http (fct_make_curie (sprintf ('%s&distinct=%d',  plink_href, equ (dist, 0)), lines)); ?>" title="This link enables you toggle between normalized and un-normalized views of data using by applying or note applying a DISTINCT operator"><?vsp if (dist) http ('Not'); ?>Distinct</a>
-&nbsp;<a class="desc_permalink" href="<?vsp http (fct_make_curie (sprintf ('%s&distinct=%d', plink_href, dist), lines)); ?>">Permalink</a>
+
+    <h2>About:
+
+      <?vsp
+      if(safetolink>0) {
+        http(sprintf('<a href="%s">%s</a>\n',
+          case when page_resource_uri like 'nodeID://%' then b3s_http_url (page_resource_uri) else page_resource_uri end,
+          case when (length(label)) then http_value(label) else b3s_uri_curie(page_resource_uri) end));
+      } else {
+        http(case when (length(label)) then http_value(label) else b3s_uri_curie(page_resource_uri) end);
+      }
+      ?>
+    <a href="">
+    </a>&nbsp;&nbsp;&nbsp;
+    <?vsp
+      if(safetolink>0) {
+        http(sprintf('<a class="desc_permalink" href="%s">Goto</a>\n',
+          case when page_resource_uri like 'nodeID://%' then b3s_http_url (page_resource_uri) else page_resource_uri end
+        ));
+      }
+    ?>
+    &nbsp;
+    <a class="desc_sponge_link" href="/describe/?url=<?U page_resource_uri ?><?= case when sid is
+        not null then '&sid=' || sid end ?>&amp;sponger:get=add"
+        title="Click to generate local descriptor data for this entity"
+        id="sp_link" rel="nofollow">Sponge
+    </a>
+    &nbsp;
+    <a class="desc_permalink" href="<?vsp http (fct_make_curie (sprintf ('%s&distinct=%d',  plink_href, equ (dist, 0)), lines)); ?>" title="This link enables you toggle between normalized and un-normalized views of data using by applying or note applying a DISTINCT operator">
+    <?vsp if (dist) http ('Not'); ?>Distinct
+    </a>
+    &nbsp;
+    <a class="desc_permalink" href="<?vsp http(fct_make_curie (sprintf ('%s&distinct=%d', plink_href, dist), lines)); ?>">Permalink
+    </a>
+
     </h2>
+
       <div class="ds_inf_info">
 	    An Entity of Type : <a href="<?V e_type ?>"><?V e_type_label ?></a>,
 	    within Data Space : <a href="http://<?V host ?>"><?V host ?></a> associated with source <a href="usage.vsp?g=<?U _S ?><?V ses_parms ?>">document(s)</a><br/>
