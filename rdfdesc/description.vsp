@@ -587,11 +587,14 @@ post_process_err_with_log4v:
 
       <?vsp
       if(safetolink>0) {
-        http(sprintf('<a href="%s">%s</a>\n',
+        http(sprintf('<a href="%s">%V</a>\n',
           case when page_resource_uri like 'nodeID://%' then b3s_http_url (page_resource_uri) else page_resource_uri end,
-          case when (length(label)) then http_value(label) else b3s_uri_curie(page_resource_uri) end));
+          case when (length(label)) then label else b3s_uri_curie(page_resource_uri) end));
       } else {
-        http(case when (length(label)) then http_value(label) else b3s_uri_curie(page_resource_uri) end);
+	  if (length(label))
+	    http_value(label);
+	  else
+	    http (b3s_uri_curie(page_resource_uri));
       }
       ?>
     <a href="">
