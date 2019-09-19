@@ -47,7 +47,7 @@ OAT.Map = function(something, provider, optionsObject, specificOptions) {
 	fix:OAT.Map.FIX_NONE,	/* method of reposition of overlapping markers */
 	fixDistance:20,		/* new distance after repositioning in px */
 	fixEpsilon:15,		/* reposition markers closer than fixEpsilon px */
-	markerIcon:"icon.png",	/* icon used as map marker */
+	markerIcon:"oat/images/markers/01.png",	/* icon used as map marker */
 	markerIconSize:[16,16],	/* icon size */
 	init:false		/* init on constructor call */
     }

@@ -722,7 +722,7 @@ function init() {
     <xsl:if test="$type='geo' or $type='geo-list'">
   window.cMap = {};
   var mapcb = function() {
-    window.cMap.init(OAT.Map.TYPE_G3);
+    window.cMap.init(OAT.Map.TYPE_OL);
     window.cMap.centerAndZoom(0,0,0);
     window.cMap.setMapType(OAT.Map.MAP_HYB);
     OAT.MSG.attach ("*", "MAP_MARKER_CLICK", markerClickHandler);
@@ -745,7 +745,7 @@ function init() {
   }
 
   window.YMAPPID = "";
-  var providerType = OAT.Map.TYPE_G3;
+  var providerType = OAT.Map.TYPE_OL;
   window.cMap = new OAT.Map($('user_map'),providerType,{fix:OAT.Map.FIX_ROUND1});
   OAT.Map.loadApi(providerType, {callback: mapcb});
   window.geo_ui = new Geo_ui ('cond_form');
