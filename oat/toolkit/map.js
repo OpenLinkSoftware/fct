@@ -1197,7 +1197,7 @@ OAT.Map.loadApi = function(provider, optObj) {
 	'google':'https://maps.google.com/maps?file=api&v=2.x&async=2',
 	'googlev3':'https://maps.google.com/maps/api/js?sensor=true',
 	'yahoo':'http://api.maps.yahoo.com/ajaxymap?v=3.8',
-	'openlayers':'http://openlayers.org/api/OpenLayers.js',
+	'openlayers':'https://openlayers.org/api/OpenLayers.js',
 	'msve':'http://dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=6.2',
 	'msve_atlascompat':'http://dev.virtualearth.net/mapcontrol/v6.2/js/atlascompat.js'
     };
