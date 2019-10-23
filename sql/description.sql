@@ -1708,6 +1708,7 @@ create procedure fct_set_graphs (in sid any, in graphs any)
   declare xt, newx, s any;
   if (sid is null) return;
   xt := (select fct_state from fct_state where fct_sid = sid);
+  if (xt is null) return; -- bad sid
   s := string_output ();
   http ('<graphs>', s);
   foreach (any g in graphs) do
