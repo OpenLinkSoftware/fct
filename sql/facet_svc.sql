@@ -178,12 +178,24 @@ ret:
 create procedure fct_svc () __soap_http 'text/xml'
 {
   declare cnt, tp, ret, timeout, xt, xslt, maxt, tmp, lines, accept any;
+  declare http_method varchar;
 
   lines := http_request_header ();
   tp := http_request_header (lines, 'Content-Type');
   accept := http_request_header_full (lines, 'Accept', '*/*');
   accept := DB.DBA.HTTP_RDF_GET_ACCEPT_BY_Q (accept);
   set http_charset='utf-8';
+
+  http_method := http_request_get ('REQUEST_METHOD');
+  if (http_method = 'OPTIONS')
+  {
+      -- Most of the OPTIONS response is generated elsewhere.
+      http_status_set (200);
+      http_header ('Content-Length: 0\r\n');
+      http_header ('Content-Type: text/plain\r\n');
+      return '';
+  }
+
   if (tp <> 'text/xml' and tp <> 'application/json')
     {
       http_status_set (500);
