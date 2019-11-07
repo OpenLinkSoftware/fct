@@ -199,7 +199,7 @@
   <script type="text/javascript">
 
   var sparql_a = OAT.Dom.create('a',{}, 'sparql_a');
-  sparql_a.href='/sparql?default-graph-uri=&amp;qtxt=<xsl:value-of select="urlify ($p_qry)"/>&amp;debug='
+  sparql_a.href='/sparql?default-graph-uri=&amp;qtxt=<xsl:value-of select="urlify ($p_qry)"/>&amp;debug=&amp;signal_unconnected='
   sparql_a.innerHTML = 'View query as SPARQL';
   var plink_a = OAT.Dom.create('a',{}, 'plink_a');
   plink_a.href='<xsl:value-of select="$p_link"/>'; <!--'/fct/facet.vsp?qxml=<xsl:value-of select="urlify ($p_xml)"/>'; -->
