@@ -1710,6 +1710,10 @@ create procedure b3s_get_user_graph_permissions (
 create procedure b3s_uri_percent_decode (in uri any)
 {
   declare du any;
+  if (uri is null)
+    return '';
+  if (iswidestring (uri))
+    uri := charset_recode (uri, '_WIDE_', 'UTF-8');
   if (length(uri) and strcontains(uri, '%'))
   {
     -- Assume the label is a percent-encoded URL/Curie. Percent-decode the label.
