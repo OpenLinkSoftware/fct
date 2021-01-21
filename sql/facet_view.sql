@@ -636,7 +636,7 @@ fct_nav (in tree any,
 
   if ('text-properties' = tp)
     {
-      fct_view_link ('text', lim, 'Return to text match list', txt);
+      fct_view_link ('text-d', lim, 'Return to text match list', txt);
       return;
     }
 
