@@ -923,12 +923,26 @@ create procedure b3s_xsd_link (in dt varchar)
 
 create procedure b3s_o_is_out (in x any)
 {
-  declare f, s, og any;
+  declare f, s, og, wrds any;
   f := 'http://xmlns.com/foaf/0.1/';
   s := 'http://schema.org/';
   og := 'http://opengraphprotocol.org/schema/';
+  wrds := 'https://www.w3.org/2007/05/powder-s#';
   -- foaf:page, foaf:homePage, foaf:img, foaf:logo, foaf:depiction
-  if (__ro2sq (x) in (f||'page', f||'homePage', f||'img', f||'logo', f||'depiction', 'http://schema.org/url', 'http://schema.org/downloadUrl', 'http://schema.org/potentialAction', s||'logo', s||'image', s || 'mainEntityOfPage', og || 'image', 'http://www.openlinksw.com/ontology/webservices#usageExample'))
+  if (__ro2sq (x) in 
+    (f||'page', 
+    f||'homePage', 
+    f||'img', 
+    f||'logo', 
+    f||'depiction', 
+    'http://schema.org/url', 'http://schema.org/downloadUrl', 
+    'http://schema.org/potentialAction', 
+     s||'logo', 
+     s||'image', 
+     s || 'mainEntityOfPage', 
+     og || 'image', '
+     http://www.openlinksw.com/ontology/webservices#usageExample',
+     wrds || 'describedby'))
     {
       return 1;
     }
@@ -994,7 +1008,7 @@ again:
        _object := dat;
        goto again;
      }
-   else if (__tag (_object) = 243 or (isstring (_object) and (__box_flags (_object)= 1 or _object like 'nodeID://%' or _object like 'http://%')))
+   else if (__tag (_object) = 243 or (isstring (_object) and (__box_flags (_object)= 1 or _object like 'nodeID://%' or _object like 'http://%' or _object like 'https://%')))
      {
        declare _url, p_t any;
 
