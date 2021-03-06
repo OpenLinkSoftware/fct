@@ -942,7 +942,8 @@ create procedure b3s_o_is_out (in x any)
      s || 'mainEntityOfPage', 
      og || 'image', '
      http://www.openlinksw.com/ontology/webservices#usageExample',
-     wrds || 'describedby'))
+     wrds || 'describedby',
+     'http://www.w3.org/2007/05/powder-s#describedby'))
     {
       return 1;
     }
