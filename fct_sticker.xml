@@ -62,6 +62,7 @@
     DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/sum.sql', 0, 'report', 1);
     DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/val_scopes.sql', 0, 'report', 1);
     DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/fct_endpoints.sql', 0, 'report', 1);
+    DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/conductor/vad_fct_config.sql', 0, 'report', 1);
     if (sys_stat ('cl_run_local_only') = 1) 
       DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/complete_single.sql', 0, 'report', 1);
     else { 
@@ -75,14 +76,18 @@
       DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/srank_1.sql', 0, 'report', 1);
         result ('00000', 'You should read http://host:port/fct/install.html for instructions');
     }    
-        result ('00000', 'GUI is accesible via http://host:port/fct');
-        result ('00000', 'Post-installation guide is available from http://host:port/fct/post_install.html');
-      DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/grants.sql', 0, 'report', 1);
+    result ('00000', 'GUI is accesible via http://host:port/fct');
+    result ('00000', 'Post-installation guide is available from http://host:port/fct/post_install.html');
+    DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/grants.sql', 0, 'report', 1);
+
+    -- Copy fct VAD's configuration page resources to Conductor UI's folder
+    DB.DBA.fct_vad_configure ('fct', 'fct/conductor', 'vad_fct_config.vspx');
     ]]>
   </sql>
   <sql purpose='pre-uninstall'>
     <![CDATA[
     registry_remove ('fct_server_supports_invfp');
+    DB.DBA.VAD_LOAD_SQL_FILE('/DAV/VAD/fct/sql/fct_drop.sql', 1, 'report', 1);
     ]]>
   </sql>
 </ddls>
@@ -104,6 +109,7 @@
     <file type="$TYPE$" source_uri="rdfdesc/*.vsp" target_uri="fct/" />
     <file type="$TYPE$" source_uri="css/*.css" target_uri="fct/" />
     <file type="$TYPE$" source_uri="fonts/*" target_uri="fct/" />
+    <file type="$TYPE$" source_uri="conductor/*" target_uri="fct/" />
 </resources>
 <registry>
 </registry>
