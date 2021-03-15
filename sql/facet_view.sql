@@ -26,6 +26,16 @@
 registry_set ('_fct_xslt_', 
               case when registry_get('_fct_url_') = 0 then 'file://fct/' else registry_get('_fct_url_') end || 'xslt/');
 
+-- -----------------------------------------------------------------------
+-- Timeouts
+
+-- fct_timeout_min & fct_timeout_max are set by fct_create_registry_default_entries ()
+
+-- fct_timeout is only used in fct.fct.query() which handles SOAP requests.
+-- Obsolete?
+cl_exec ('registry_set (''fct_timeout'', ''0'')');
+
+-- -----------------------------------------------------------------------
 
 create procedure
 fct_view_info (in tree any, in ctx int, in txt any)
@@ -766,9 +776,6 @@ fct_view_cmd (in tp varchar)
   return 'cond';
 }
 ;
-
-cl_exec ('registry_set (''fct_timeout'', ''0'')');
-cl_exec ('registry_set (''fct_timeout_max'', ''20000'')');
 
 create procedure
 fct_set_default_qry (inout tree any)

@@ -82,6 +82,7 @@
 
     -- Copy fct VAD's configuration page resources to Conductor UI's folder
     DB.DBA.fct_vad_configure ('fct', 'fct/conductor', 'vad_fct_config.vspx');
+    DB.DBA.fct_vad_configure ('fct', 'fct/conductor', 'vad_fct_config.js');
     ]]>
   </sql>
   <sql purpose='pre-uninstall'>

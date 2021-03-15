@@ -39,8 +39,13 @@
       <v:variable persist="temp" name="v_inverseFuncProp" type="varchar" />
       <v:variable persist="temp" name="v_sameAs" type="varchar" />
       <v:variable persist="temp" name="v_terminology" type="varchar" />
+      <v:variable persist="temp" name="v_timeout_min" type="varchar" />
+      <v:variable persist="temp" name="v_timeout_max" type="varchar" />
     </vm:variables>
     <vm:pagebody>
+      <![CDATA[
+        <script type="text/javascript" src="vad_fct_config.js"></script>
+      ]]>
       <v:on-init>
         <![CDATA[
           set http_charset='utf-8';
@@ -64,14 +69,36 @@
           self.v_terminology := registry_get ('fct_default_terminology');
           if (self.v_terminology = 0)
             self.v_terminology := 'eav';
+
+          self.v_timeout_min := registry_get ('fct_timeout_min');
+          if (self.v_timeout_min = 0)
+            self.v_timeout_min := '8000';
+
+          self.v_timeout_max := registry_get ('fct_timeout_max');
+          if (self.v_timeout_max = 0)
+            self.v_timeout_max := '20000';
         ]]>
       </v:on-init>
       <div class="main_tab_page">
-        <p>
-          The defaults below provide initial values for various Faceted Browser options.<br/>
-          A user can set their own preferences by overriding these defaults through the Faceted Browser's Options screen.
-        </p>
         <v:form xhtml_id="form1" name="form1" method="POST" type="simple" action="">
+          <h2 style="color: #aeaeaa; font-weight: bold;">Global Settings</h2>
+
+          <h3 style="background-color: #f7f7f7; padding: 3px;">Query Timeouts</h3>
+          <p>
+            The timeout for a Facet query is specified on a per-query basis as one of the query parameters.<br/>
+            The minimum and maximum timeouts below set limits on the permitted range of the query timeout.
+          </p>
+          <span class="fm_label" style="padding: 2px 5px 0 0; width:245px">Minimum timeout (ms)</span>
+          <v:text xhtml_id="timeoutMin" name="timeoutMin" value="--self.v_timeout_min" xhtml_style="margin-right: 10px;"/>
+          <br/>
+          <span class="fm_label" style="padding: 2px 5px 0 0; width:245px">Maximum timeout (ms)</span>
+          <v:text xhtml_id="timeoutMax" name="timeoutMax" value="--self.v_timeout_max" />
+
+          <h2 style="color: #aeaeaa; font-weight: bold;">User Overridable Settings</h2>
+          <p>
+            The defaults below provide initial values for various Faceted Browser options.<br/>
+            A user can set their own preferences by overriding these defaults through the Faceted Browser's Options screen.
+          </p>
           <h3 style="background-color: #f7f7f7; padding: 3px;">Resultset Paging Defaults</h3>
           <span class="fm_label" style="padding: 2px 5px 0 0; width:245px">Rows displayed per page</span>
           <v:select-list name="resultPageSize" xhtml_id="resultPageSize" xhtml_style="width: 100px">
@@ -163,6 +190,8 @@
                 registry_set ('fct_default_invfp', self.inverseFuncProp.ufl_value);
                 registry_set ('fct_default_sas', self.sameAs.ufl_value);
                 registry_set ('fct_default_terminology', self.terminology.ufl_value);
+                registry_set ('fct_timeout_min', self.timeoutMin.ufl_value);
+                registry_set ('fct_timeout_max', self.timeoutMax.ufl_value);
               ]]>
             </v:on-post>
           </v:button>

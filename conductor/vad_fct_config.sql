@@ -1,8 +1,20 @@
 create procedure DB.DBA.fct_create_registry_default_entries () 
 {
   declare reg_default_limit, reg_default_inf, reg_default_invfp, reg_default_sas, reg_default_terminology any;
+  declare reg_timeout_min, reg_timeout_max any;
+
+  -- Timeouts set through Conductor's Fct Configuration UI.
+  -- These cannot be overridden by a user.
+  reg_timeout_min := registry_get ('fct_timeout_min');
+  reg_timeout_max := registry_get ('fct_timeout_max');
+
+  if (reg_timeout_min = 0)
+    registry_set('fct_timeout_min', '8000'); 
+  if (reg_timeout_max = 0)
+    registry_set('fct_timeout_max', '20000'); 
 
   -- Global, pan-user defaults set through Conductor's Fct Configuration UI
+  -- These can be overridden by a user.
   reg_default_limit := registry_get('fct_default_limit'); 
   reg_default_inf := registry_get('fct_default_inf'); 
   reg_default_invfp := registry_get('fct_default_invfp'); 

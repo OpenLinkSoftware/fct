@@ -195,9 +195,6 @@ fct_long_uri (in x any)
 cl_exec ('registry_set (''fct_label_iri'', ?)',
          vector (cast (iri_id_num (__i2id ('http://www.openlinksw.com/schemas/virtrdf#label')) as varchar)));
 
-cl_exec ('registry_set (''fct_timeout_min'',''8000'')');
-cl_exec ('registry_set (''fct_timeout_max'',''40000'')');
-
 create procedure
 FCT_LABEL (in x any, in g_id iri_id_8, in ctx varchar)
 {
