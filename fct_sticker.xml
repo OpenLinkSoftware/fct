@@ -47,6 +47,7 @@
     } 
     DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/ns.sql', 0, 'report', 1);
     DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/virt_rdf_label.sql', 0, 'report', 1);
+    DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/virt_rdf_url.sql', 0, 'report', 1);
     DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/facet.sql', 0, 'report', 1);
     DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/complete_ddl.sql', 0, 'report', 1);
     DB.DBA.VAD_LOAD_SQL_FILE('$BASE_PATH$/fct/sql/b3s_cl_rexec.sql', 0, 'report', 1);
