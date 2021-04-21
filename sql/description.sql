@@ -923,31 +923,10 @@ create procedure b3s_xsd_link (in dt varchar)
 
 create procedure b3s_o_is_out (in x any)
 {
-  declare f, s, og, wrds any;
-  f := 'http://xmlns.com/foaf/0.1/';
-  s := 'http://schema.org/';
-  og := 'http://opengraphprotocol.org/schema/';
-  wrds := 'https://www.w3.org/2007/05/powder-s#';
-  -- foaf:page, foaf:homePage, foaf:img, foaf:logo, foaf:depiction
-  if (__ro2sq (x) in 
-    (f||'page', 
-    f||'homePage', 
-    f||'img', 
-    f||'logo', 
-    f||'depiction', 
-    'http://schema.org/url', 'http://schema.org/downloadUrl', 
-    'http://schema.org/potentialAction', 
-     s||'logo', 
-     s||'image', 
-     s || 'mainEntityOfPage', 
-     og || 'image', '
-     http://www.openlinksw.com/ontology/webservices#usageExample',
-     wrds || 'describedby',
-     'http://www.w3.org/2007/05/powder-s#describedby'))
-    {
-      return 1;
-    }
-  return 0;
+  declare s, vr any;
+  s := iri_to_id (x);
+  vr := iri_to_id ('http://www.openlinksw.com/schemas/virtrdf#url');
+  return rdf_is_sub ('virtrdf-url', s,  vr, 3);
 }
 ;
 
