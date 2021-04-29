@@ -233,7 +233,7 @@
     </div> <!-- .subj_nav -->
 
 <!-- proptable -->
-    <div id="TAB_ROW">
+    <div id="TAB_ROW" style="margin-top:0 !important">
       <div class="tab <?vsp http (case when tp = 1 then ' tab_selected' else '' end); ?>">
 	  <a  title="<?V case when connection_get('s_term') = 's' then 'Internal Document (named graph) Identifiers that denotes documents in which the current entity being described is the *subject* of one or more *RDF* based sentences' else 'Internal Document (named graph) Identifiers that denotes documents in which the current entity being described is the *entity* of one or more *EAV* based sentences' end  ?>"
 	      href="<?V http_path () ?>?g=<?U _S ?>&amp;tp=1<?V ses_params ?>">Subject of Sentences In Document</a>
@@ -254,7 +254,7 @@
     <form name="f" action="usage.vsp?g=<?U page_resource_uri ?><?V b3s_render_ses_params(0) ?>" method="post">
     <div id="TAB_CTR">
       <div class="tab_page">
-        <table class="description">
+        <table class="metadata-description">
 	  <?vsp
 	    declare qr varchar;
 	    declare tgr any;
