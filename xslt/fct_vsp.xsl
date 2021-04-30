@@ -848,7 +848,7 @@ var addthis_share = {
   <script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js"></script>
   </xsl:if>
 </xsl:template>
-
+ 
 <xsl:template match="@* | node()">
   <xsl:copy>
     <xsl:apply-templates select="@* | node()"/>
