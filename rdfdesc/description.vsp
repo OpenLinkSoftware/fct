@@ -72,13 +72,15 @@
   declare q_txt any;
   declare safetolink integer;
 
+  --New addition from latest vsp
   set http_charset='utf-8';
-  { 
-    --  catch error when using old binaries
-    declare continue handler for sqlstate '*';
-    --  always treat narrow string boxes as UTF-8 encoded
-    set http_in_charset='UTF-8';
-  }
+    { 
+        --  catch error when using old binaries
+        declare continue handler for sqlstate '*';
+        --  always treat narrow string boxes as UTF-8 encoded
+        set http_in_charset='UTF-8';
+    }
+  --End New Addition
 
   if (registry_get ('fct_auto_sponge') = '1')
     auto_sponge_on_empty_graph := 1;
@@ -524,6 +526,9 @@ post_process_err_with_log4v:
 <head>
     <base href="/fct/rdfdesc/" />
     <title>About: <?vsp if (length (label)) http (label); else http (b3s_uri_percent_decode(b3s_uri_curie (page_resource_uri)));?></title>
+    <link href="../css/bootstrap5.css" rel="stylesheet">
+    <script src="../js/bootstrap5.min.js"></script>
+    <link rel="stylesheet" href="../fontawesome/css/all.css">
     <!--link rel="alternate" type="application/rdf+xml" href="<?=rdf_link?>" title="RDF" /-->
 
     <?vsp
@@ -593,8 +598,7 @@ post_process_err_with_log4v:
   <div id="MD">
     <div class="page_resource_info">
 
-    <h2>About:
-
+    <h2>
       <?vsp
       if(safetolink>0) {
         http(sprintf('<a href="%s">%s</a>\n',
@@ -608,32 +612,73 @@ post_process_err_with_log4v:
       }
       ?>
     <a href="">
-    </a>&nbsp;&nbsp;&nbsp;
+    </a>
+    <!--&nbsp;
+     &nbsp;&nbsp;
     <?vsp
       if(safetolink>0) {
         http(sprintf('<a class="desc_permalink" href="%s">Goto</a>\n',
           case when page_resource_uri like 'nodeID://%' then b3s_http_url (page_resource_uri) else page_resource_uri end
         ));
       }
-    ?>
-    &nbsp;
+    ?> -->
+    <a id="permalink" class="desc_permalink" href="<?vsp http(fct_make_curie (sprintf ('%s&distinct=%d', plink_href, dist), lines)); ?>" onclick="myFunction()"><sup><span><i class="fas fa-copy"></i></span></sup>
+    </a>
+    <a id="share" onclick="myFunction()" style="display:none">Share<span><textarea id="purl"></textarea></span></a>
     <a class="desc_sponge_link" href="/describe/?url=<?U page_resource_uri ?><?= case when sid is
-        not null then '&sid=' || sid end ?>&amp;sponger:get=add"
-        title="Click to generate local descriptor data for this entity"
-        id="sp_link" rel="nofollow">Sponge
+    not null then '&sid=' || sid end ?>&amp;sponger:get=add"
+    title="Click to generate local descriptor data for this entity"
+    id="sp_link" rel="nofollow"><sup><span><i class="fas fa-sync"></i></span></sup>
     </a>
     &nbsp;
-    <a class="desc_permalink" href="<?vsp http (fct_make_curie (sprintf ('%s&distinct=%d',  plink_href, equ (dist, 0)), lines)); ?>" title="This link enables you toggle between normalized and un-normalized views of data using by applying or note applying a DISTINCT operator">
-    <?vsp if (dist) http ('Not'); ?>Distinct
-    </a>
-    &nbsp;
-    <a class="desc_permalink" href="<?vsp http(fct_make_curie (sprintf ('%s&distinct=%d', plink_href, dist), lines)); ?>">Permalink
-    </a>
+    <!--<li class="desc_permalink dropdown fct-dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="export-dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Control
+        </a>
+            <ul class="dropdown-menu" aria-labelledby="export-dropdown">
+
+                <li>
+
+                </li>
+                <li>
+                    <a class="desc_permalink" href="<?vsp http (fct_make_curie (sprintf ('%s&distinct=%d',  plink_href, equ (dist, 0)), lines)); ?>" title="This link enables you toggle between normalized and un-normalized views of data using by applying or note applying a DISTINCT operator">
+                    <?vsp if (dist) http ('Not'); ?>Distinct
+                    </a>
+                    &nbsp;
+                </li>
+            </ul>
+    </li>-->
+            <li class="desc_permalink dropdown fct-dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="export-dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Format
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="export-dropdown">
+              <li><h6 class="dropdown-header">RDF</h6></li>
+              <li><a href="<?=rdf_link?><?=sprintf ('&output=%U', 'text/plain') ?>">N-Triples</a></li>
+              <li><a href="<?=rdf_link?><?=sprintf ('&output=%U', 'text/turtle') ?>">N3 (Turtle)</a></li>
+              <li><a href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/ld+json')?>">JSON-LD</a></li>
+	          <li><a href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/rdf+json')?>">JSON</a></li>
+	          <li><a href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/rdf+xml') ?>">XML</a>
+              <li><hr class="dropdown-divider"></li>
+
+              <li><h6 class="dropdown-header">Content Formats</h6></li>
+              <li> <a href="<?=rdf_link?><?=sprintf ('&output=%U', 'text/csv')?>">CSV</a></li>
+	          <li> <a href="<?=rdf_link?><?= sprintf ('&output=%U', 'text/cxml')?>">CXML</a></li>
+	
+              <li><h6 class="dropdown-header">OData</h6></li>
+	          <li> <a href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/atom+xml')?>">Atom</a></li>
+	          <li> <a href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/odata+json')?>">OData</a></li>
+              <li><h6 class="dropdown-header">Microdata</h6></li>
+	          <li> <a href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/microdata+json') ?>">Microdata</a></li>
+	          <li> <a href="<?=rdf_link?><?=sprintf ('&output=%U', 'text/html') ?>">HTML</a></li>
+
+            </ul>
+          </li>
 
     </h2>
 
       <div class="ds_inf_info">
-	    An Entity of Type : <a href="<?V e_type ?>"><?V e_type_label ?></a>,
+	    A(n) <a href="<?V e_type ?>"><?V e_type_label ?></a>,
 	    within Data Space : <a href="http://<?V host ?>"><?V host ?></a> associated with source <a href="usage.vsp?g=<?U _S ?><?V ses_parms ?>">document(s)</a><br/>
 <?vsp
 
@@ -670,14 +715,14 @@ post_process_err_with_log4v:
               <option value="new_with_class">Start New Facet</option>
               <option value="set_class">Add To Current Facet</option>
             </select>
-            <button class="fct_sel_as_type" title="">Go</button>
+            <button class="fct_sel_as_type btn btn-light" title="">Go</button>
 <?vsp
           }
         else
           {
 ?>
             <input type="hidden" name="cmd" value="new_with_class"/>
-            <button class="fct_sel_as_type" title="">New Facet based on Instances of this Class</button>
+            <button class="fct_sel_as_type btn btn-light" title="">New Facet based on Instances of this Class</button>
 <?vsp
           }
 ?>
@@ -696,14 +741,20 @@ post_process_err_with_log4v:
 <?vsp } ?>
     </div>
   </div>
+  
 <?vsp
 if (_subject <> '') {
 ?>
+   <div class="break-col"></div>
   <p class="subj_desc"><?vsp http (sprintf ('%s', _subject)); ?></p>
+   <div class="break-col"></div>
+
 <?vsp
 } else {
 ?>
-  <p class="subj_delim"></p>
+   <div class="break-col"></div>
+  <p class="subj_desc">No Abstract</p>
+   <div class="break-col"></div>
 <?vsp
 }
 ?>
@@ -711,7 +762,7 @@ if (_subject <> '') {
                 <li><a href="/fct/facet.vsp?sid=<?V sid ?>&amp;cmd=open_property">Choose <?V ''?> as Property (p)</a></li>
                 <li><a href="">Choose <?V ''?> as Value (o)</a></li>-->
 <!-- proptable -->
-    <table class="description">
+    <table class="description table table-borderless">
 
 <?vsp
 
@@ -721,9 +772,9 @@ if (_subject <> '') {
       -- dbg_obj_princ ('user = ', USER, ', gs_user_id = ', gs_user_id);
       gs_check_needed := b3s_gs_check_needed();
       if (connection_get ('s_term') = 's')
-        http ('<tr><th class="property">Properties</th><th class="value">Objects</th></tr>');
+        http ('<thead><tr><th class="property"><div>Properties</div></th><th class="value"><div>Objects</div></th></tr><thead>');
       else
-        http ('<tr><th class="property">Attributes</th><th class="value">Values</th></tr>');
+        http ('<thead><tr><th class="property"><div>Attributes</div></th><th class="value"><div>Values</div></th></tr></thead>');
       all_lang := vector ('*', 1.0);
       topof := sprintf (' TOP %d, %d  ', n_per_page * page, n_per_page);
       _skip := n_per_page * page;
@@ -885,6 +936,9 @@ if (_subject <> '') {
       }
 ?>
       </table>
+        
+      <div class="break-col"></div>
+
       <div id="nav">
 	  <form action="/describe/" method="get">
 	  <div>
@@ -912,19 +966,19 @@ if (_subject <> '') {
 	      } } ?>
 	      <input type="hidden" name="lp" value="<?V _last ?>"/>
 	      <?vsp if (topof <> '' and _last > 0) {  if (1 or page > 0) { ?>
-	      <button type="submit" value="" name="first" <?vsp if (page <= 0) { http ('disabled="disabled"'); } ?>>&#9666;&#9666; First</button>
+	      <button class="btn btn-light" type="submit" value="" name="first" <?vsp if (page <= 0) { http ('disabled="disabled"'); } ?>>&#9666;&#9666; First</button>
 	      &nbsp;
 	      <input type="hidden" name="op" value="<?V page - 1 ?>"/>
-	      <button type="submit" value="" name="prev" <?vsp if (page <= 0) { http ('disabled="disabled"'); } ?>>&#9666; Prev</button>
+	      <button class="btn btn-light" type="submit" value="" name="prev" <?vsp if (page <= 0) { http ('disabled="disabled"'); } ?>>&#9666; Prev</button>
 	      &nbsp;&nbsp;&nbsp;
 	<?vsp } if (1 or not dis_next) { ?>
-	      <button type="submit" value="" name="next" <?vsp if (dis_next) { http ('disabled="disabled"'); } ?>>Next &#9656;</button>
+	      <button class="btn btn-light" type="submit" value="" name="next" <?vsp if (dis_next) { http ('disabled="disabled"'); } ?>>Next &#9656;</button>
 	       &nbsp;
-	      <button type="submit" value="" name="last" <?vsp if (dis_next) { http ('disabled="disabled"'); } ?>>Last &#9656;&#9656;</button>
+	      <button class="btn btn-light" type="submit" value="" name="last" <?vsp if (dis_next) { http ('disabled="disabled"'); } ?>>Last &#9656;&#9656;</button>
 	       &nbsp;&nbsp;&nbsp;
 	       Page <?V page + 1 ?> of <?V _last + 1 ?>  &nbsp;&nbsp;&nbsp;
 	       <input type="text" value="<?V page + 1 ?>" size="5" name="gp" <?vsp if (page <= 0 AND dis_next) { http('disabled="disabled"'); }?> /> &nbsp;
-	       <button type="submit" value="" name="go" <?vsp if (page <= 0 AND dis_next) { http('disabled="disabled"'); }?> >Go</button>
+	       <button class="btn btn-light" type="submit" value="" name="go" <?vsp if (page <= 0 AND dis_next) { http('disabled="disabled"'); }?> >Go</button>
 	<?vsp } } ?>
 	</div>
 	</form>
@@ -933,7 +987,9 @@ if (_subject <> '') {
     <?vsp b3s_render_dbg_out (dbg_out); ?>
 <!-- footer -->
     <div id="FT">
+    <div class="gen-info">
 	Faceted Search &amp; Find service v<?vsp http(DB.DBA.VAD_CHECK_VERSION('fct')); ?> as of <?V fct_build_info () ?><br/><br/>
+    </div>
 <?vsp if (_addthis_key <> '0') { ?>
   <div id="FT_share">
     <!-- AddThis Button BEGIN -->
@@ -978,21 +1034,7 @@ if (_subject <> '') {
 	<?vsp } ?>
 	<a href="http://linkeddata.uriburner.com/ode/?uri=<?vsp http_url (page_resource_uri); ?>" title="Basic navigation and exploration" target="_blank">ODE</a>
 
-        &nbsp; &nbsp; Content Formats: &nbsp;
-	<a href="<?=rdf_link?><?= sprintf ('&output=%U', 'text/cxml')?>"><img src="/fct/images/cxml_doc.png" class="dicon"/></a>
-	<a href="<?=rdf_link?><?=sprintf ('&output=%U', 'text/csv')?>"><img src="/fct/images/csv_doc.png" class="dicon"/></a>
-	&nbsp; &nbsp; RDF &nbsp;
-	<a href="<?=rdf_link?><?=sprintf ('&output=%U', 'text/plain') ?>"><img src="/fct/images/ntriples_doc.png" class="dicon"/></a>
-	<a href="<?=rdf_link?><?=sprintf ('&output=%U', 'text/turtle') ?>"><img src="/fct/images/n3turtle_doc.png" class="dicon"/></a>
-	<a href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/ld+json')?>"><img src="/fct/images/jsonld_doc.png" class="dicon"/></a>
-	<a href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/rdf+json')?>"><img src="/fct/images/json_doc.png" class="dicon"/></a>
-	<a href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/rdf+xml') ?>"><img src="/fct/images/xml_doc.png" class="dicon"/></a>
-	&nbsp; &nbsp; ODATA &nbsp;
-	<a href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/atom+xml')?>"><img src="/fct/images/atom_doc.png" class="dicon"/></a>
-	<a href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/odata+json')?>"><img src="/fct/images/json_doc.png" class="dicon"/></a>
-	&nbsp; &nbsp; Microdata &nbsp;
-	<a href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/microdata+json') ?>"><img src="/fct/images/json_doc.png" class="dicon"/></a>
-	<a href="<?=rdf_link?><?=sprintf ('&output=%U', 'text/html') ?>"><img src="/fct/images/html_doc.png" class="dicon"/></a>
+  
         &nbsp; &nbsp;<a href="/fct/facet_doc.html">About</a>&nbsp; &nbsp;
       </div> <!-- #ft_t -->
       <div id="ft_b">
