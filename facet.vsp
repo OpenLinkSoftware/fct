@@ -11,8 +11,10 @@
   declare val_vad_present int;
   declare val_serviceId, pageUrl, query_str varchar;
   declare val_auth_method integer;
-  main_ss := registry_get ('fct_main_ss');
-  if (not isstring (main_ss)) main_ss := '/fct/css/default.css';
+  --main_ss := registry_get('css/bootstrap5.css');
+
+ main_ss := registry_get ('fct_main_ss');
+ if (not isstring (main_ss)) main_ss := 'css/default.css';
 
   val_vad_present := 0;
   if (VAD_CHECK_VERSION ('VAL') is not null)
@@ -46,15 +48,17 @@
 <?vsp
   fct_gen_opensearch_link();
 ?>
-
+<link href="css/bootstrap5.css" rel="stylesheet">
 <script type="text/javascript" >
     var featureList=["map", "combolist", "ajax", "tab", "json", "location"];
 </script>
-<script type="text/javascript" src="/fct/js/jquery-1.12.3.min.js"></script>
+<!--<script type="text/javascript" src="/fct/js/jquery-1.12.3.min.js"></script>-->
+<script src="https://code.jquery.com/jquery-3.6.0.js"></script>
 <script type="text/javascript" src="/fct/oat/toolkit/loader.js"></script>
 <script type="text/javascript" src="/fct/js/facet.js"></script>
 <script type="text/javascript" src="/fct/js/jquery-ui-1.11.4.min.js"></script>
 <link rel="stylesheet" type="text/css" href="/fct/css/jquery-ui-1.11.4.min.css" />
+<link rel="stylesheet" type="text/css" href="fontawesome/css/all.min.css">
 
 <?vsp 
   declare sid, _S, ses_parms varchar;
@@ -232,7 +236,7 @@ declare exit handler for sqlstate '*'
 
   http('  </div>\n');
   http('  </div>\n');
-  http('  <div class="btn_bar"><button onclick="document.location=''/fct/facet.vsp''">New Search</button></div>\n');  
+  http('  <div class="btn_bar"><button onclick="document.location=''/fct/facet.vsp''">New Search</button></div>\n');
   http('</div>\n');
 
   goto footer;
@@ -259,17 +263,20 @@ footer:;
 
 </div><!-- #MD -->
 <div id="FT">
-    Faceted Search &amp; Find service v<?vsp http(DB.DBA.VAD_CHECK_VERSION('fct')); ?> as of <?V fct_build_info () ?><br/><br/>
-  <a href="http://virtuoso.openlinksw.com/"><img src="/fct/images/virt_power_no_border.png" alt="Powered by OpenLink Virtuoso"/></a>
-  <a href="http://linkeddata.org"><img src="/fct/images/LoDLogo.gif" alt="Linked Data"/></a>
-  <?vsp 
-    if (isstring (registry_get ('fst_hosted'))) { http (registry_get ('fst_hosted')); }
-  ?>
-  <br/>
-  <?vsp fct_virt_info (); ?><br /> 
-  <span class="copyright">Data on this page is owned by its respective rights holders.<br/>Virtuoso Faceted Browser Copyright &copy; 2009-<?V "LEFT" (datestring (now ()), 4)?> OpenLink Software</span>
-  <div id="FT_L"></div>
-  <div id="FT_R"></div>
+    <div class="fct_debug_info">
+        Faceted Search &amp; Find service v<?vsp http(DB.DBA.VAD_CHECK_VERSION('fct')); ?> as of <?V fct_build_info () ?><br/>
+        <?vsp 
+        if (isstring (registry_get ('fst_hosted'))) { http (registry_get ('fst_hosted')); }
+        ?>
+        <?vsp fct_virt_info (); ?><br /> 
+    </div>
+    <div id="FT_L"></div>
+    <div id="FT_R"></div>
+    <span class="copyright">Data on this page is owned by its respective rights holders.<br/>Virtuoso Faceted Browser Copyright &copy; 2009-<?V "LEFT" (datestring (now ()), 4)?> <a href="www.openlinksw.com">OpenLink Software</a></span>
+
+
+    </div>
+    
 </div>
 </div> <!-- #PG -->
 <div id="fct_ft_fm" style="display:none">
