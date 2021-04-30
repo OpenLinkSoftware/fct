@@ -2721,7 +2721,7 @@ create procedure fct_page_head ()
   http ('<div id="hd_l">
     <h1 id="logo">
         <a href="/fct/facet.vsp">
-	   <img src="/fct/images/openlink_site_logo.png" alt="OpenLink Software"/>
+	   <img src="/fct/images/virtuoso_logo_gel_250.png" alt="Virtuoso Universal Server"/>
         </a>
     </h1>
     <div id="homelink"></div>
@@ -2744,7 +2744,7 @@ create procedure fct_desc_page_head ()
   http ('<div id="hd_l">
     <h1 id="logo">
         <a href="/fct/facet.vsp">
-	   <img src="/fct/images/openlink_site_logo.png" alt="OpenLink Software"/>
+	   <img src="/fct/images/virtuoso_logo_gel_250.png" alt="Virtuoso Universal Server"/>
         </a>
     </h1>
     <div id="homelink"></div>
