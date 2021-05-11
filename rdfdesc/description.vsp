@@ -551,51 +551,56 @@ post_process_err_with_log4v:
 </head>
 <body about="<?V page_resource_uri ?>">
   <div id="PG">
-    <div id="HD">
-    <?vsp fct_desc_page_head (); ?>
-    <div id="hd_r">
-      <div id="val_login_status">
-	<?include fct_val_login_status.vsp ?>
-	<?vsp if (view_mode = 'read-only')
-	    -- http ('<div style="float:right">(Read-only view - Sponging disallowed)</div>');
-	    http ('<div style="float:right">(Sponging disallowed)</div>');
-	  else if (view_mode = 'read-write')
-	    -- http ('<div style="float:right">(Read-write view - Sponging disallowed)</div>');
-	    http ('<div style="float:right">(Sponging disallowed)</div>');
-	?>
-      </div>
-    </div>
-    <ul id="main_menu">
-      <?vsp if (sid is not null) { ?>
-        <li><a href="<?= b3s_render_fct_link() ?>">Facets</a></li>
-      <?vsp } else { ?>
-      <li><a href="/fct/">Facets (new session)</a></li>
-      <?vsp } ?>
-      <li id="mnu_descr" class="sel"><a href="/describe/?uri=<?U b3s_u2w(_S) ?><?V ses_parms ?>" class="sel">Description</a></li>
-      <li id="mnu_usage">
-        <a href="usage.vsp?g=<?U _S ?><?V ses_parms ?>">Metadata</a>
-      </li>
-      <li id="mnu_settings"><a href="settings.vsp?g=<?U b3s_u2w(_S) ?><?V ses_parms ?>">Settings</a>
-        <div id="settings_popup" style="display: none">
-          <ul>
-            <li>
-              <label for="inf_sel">Rule:</label>
-              <select id="inf_sel" onchange="javascript:inf_cb();"><?vsp b3s_render_inf_opts (); ?></select><br/>
-            </li>
-            <li>
-              <label for="invfp_sel">Inverse Functional Properties:</label>
-              <select id="invfp_sel" onchange="javascript:invfp_cb();"><?vsp b3s_render_invfp_opts (); ?></select>
-            </li>
-            <li>
-              <label for="sas_sel">&quot;Same As&quot;:</label>
-              <select id="sas_sel" onchange="javascript:sas_cb();"><?vsp b3s_render_sas_opts (); ?></select>
-            </li>
-          </ul>
-        </div> <!-- settings-popup -->
-      </li>
-    </ul>
-  </div> <!-- #HD -->
-  <div id="MD">
+    <div id="navbar" class ="navbar navbar-default navbar-fixed-top">
+        <div id="hd-container" class="container">
+            <div id="HD">
+                <?vsp fct_desc_page_head (); ?>
+                <div id="hd_r">
+                <div id="val_login_status">
+                <?include fct_val_login_status.vsp ?>
+                <?vsp if (view_mode = 'read-only')
+                    -- http ('<div style="float:right">(Read-only view - Sponging disallowed)</div>');
+                    http ('<div style="float:right">(Sponging disallowed)</div>');
+                else if (view_mode = 'read-write')
+                    -- http ('<div style="float:right">(Read-write view - Sponging disallowed)</div>');
+                    http ('<div style="float:right">(Sponging disallowed)</div>');
+                ?>
+                </div>
+                </div>
+                <ul id="main_menu">
+                <?vsp if (sid is not null) { ?>
+                    <li><a href="<?= b3s_render_fct_link() ?>">Facets</a></li>
+                <?vsp } else { ?>
+                <li><a href="/fct/">Facets (new session)</a></li>
+                <?vsp } ?>
+                <li id="mnu_descr" class="sel"><a href="/describe/?uri=<?U b3s_u2w(_S) ?><?V ses_parms ?>" class="sel">Description</a></li>
+                <li id="mnu_usage">
+                    <a href="usage.vsp?g=<?U _S ?><?V ses_parms ?>">Metadata</a>
+                </li>
+                <li id="mnu_settings"><a href="settings.vsp?g=<?U b3s_u2w(_S) ?><?V ses_parms ?>">Settings</a>
+                    <div id="settings_popup" style="display: none">
+                    <ul>
+                        <li>
+                        <label for="inf_sel">Rule:</label>
+                        <select id="inf_sel" onchange="javascript:inf_cb();"><?vsp b3s_render_inf_opts (); ?></select><br/>
+                        </li>
+                        <li>
+                        <label for="invfp_sel">Inverse Functional Properties:</label>
+                        <select id="invfp_sel" onchange="javascript:invfp_cb();"><?vsp b3s_render_invfp_opts (); ?></select>
+                        </li>
+                        <li>
+                        <label for="sas_sel">&quot;Same As&quot;:</label>
+                        <select id="sas_sel" onchange="javascript:sas_cb();"><?vsp b3s_render_sas_opts (); ?></select>
+                        </li>
+                    </ul>
+                    </div> <!-- settings-popup -->
+                </li>
+                </ul>
+            </div> <!-- #HD -->
+        </div>
+    </div> <!-- #navbar-->
+    
+  <div id="MD" class="container desc-md">
     <div class="page_resource_info">
 
     <h2>
@@ -762,180 +767,182 @@ if (_subject <> '') {
                 <li><a href="/fct/facet.vsp?sid=<?V sid ?>&amp;cmd=open_property">Choose <?V ''?> as Property (p)</a></li>
                 <li><a href="">Choose <?V ''?> as Value (o)</a></li>-->
 <!-- proptable -->
-    <table class="description table table-borderless">
+    <div class="col-xs-12">
+        <table class="description table table-borderless">
 
-<?vsp
+    <?vsp
 
-    --  gs_user_id := USER;
-    --  gs_user_id := coalesce ((select U_ID from DB.DBA.SYS_USERS where U_NAME=gs_user_id and not U_ACCOUNT_DISABLED), http_nobody_uid());
-      gs_user_id := get_user_id (1);
-      -- dbg_obj_princ ('user = ', USER, ', gs_user_id = ', gs_user_id);
-      gs_check_needed := b3s_gs_check_needed();
-      if (connection_get ('s_term') = 's')
-        http ('<thead><tr><th class="property"><div>Properties</div></th><th class="value"><div>Objects</div></th></tr><thead>');
-      else
-        http ('<thead><tr><th class="property"><div>Attributes</div></th><th class="value"><div>Values</div></th></tr></thead>');
-      all_lang := vector ('*', 1.0);
-      topof := sprintf (' TOP %d, %d  ', n_per_page * page, n_per_page);
-      _skip := n_per_page * page;
+        --  gs_user_id := USER;
+        --  gs_user_id := coalesce ((select U_ID from DB.DBA.SYS_USERS where U_NAME=gs_user_id and not U_ACCOUNT_DISABLED), http_nobody_uid());
+        gs_user_id := get_user_id (1);
+        -- dbg_obj_princ ('user = ', USER, ', gs_user_id = ', gs_user_id);
+        gs_check_needed := b3s_gs_check_needed();
+        if (connection_get ('s_term') = 's')
+            http ('<thead><tr><th class="property"><div>Properties</div></th><th class="value"><div>Objects</div></th></tr><thead>');
+        else
+            http ('<thead><tr><th class="property"><div>Attributes</div></th><th class="value"><div>Values</div></th></tr></thead>');
+        all_lang := vector ('*', 1.0);
+        topof := sprintf (' TOP %d, %d  ', n_per_page * page, n_per_page);
+        _skip := n_per_page * page;
 
-      if (length (_F) or 1 = sys_stat ('cl_run_local_only'))
-      {
-      dt1 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT any, 0 as FLAG int from (sparql %s define output:valmode "AUTO" %s select distinct ?p ?o %s where { <%s> ?p ?o }  order by 1) sp1', inf, val_perms_clause, _F, _S);
-      }
-      else
-      {
-        gs_check_cond := case gs_check_needed when 0 then '' else sprintf (' AND DB.DBA.RDF_GRAPH_USER_PERMS_ACK (G, %d, 1)', gs_user_id) end;
-      dt1 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT any, 0 as FLAG int from (SELECT DISTINCT p, o FROM DB.DBA.RDF_QUAD %s where s = __i2idn (\'%s\' , 1) %s ORDER BY 1 ASC OPTION (QUIETCAST%s%s)) sp1',
-        tbinf, _S, gs_check_cond, tbinf, tbsas);
-      }
-      dt2 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT any, 1 as FLAG int from (sparql %s define output:valmode "AUTO" %s select distinct ?p ?o %s where { ?o ?p <%s> } order by 1) sp2', inf, val_perms_clause, _F, _S);
-
-      --topof := '';
-      qry_str := sprintf ('select %s PRED, OBJECT, FLAG from (%s UNION ALL %s) un0', topof, dt1, dt2);
-      if (dist = 0)
-        qry_str := replace (qry_str, 'distinct', '');
-      if (_last = 0)
+        if (length (_F) or 1 = sys_stat ('cl_run_local_only'))
         {
-	  if (length (_F) or 1 = sys_stat ('cl_run_local_only'))
+        dt1 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT any, 0 as FLAG int from (sparql %s define output:valmode "AUTO" %s select distinct ?p ?o %s where { <%s> ?p ?o }  order by 1) sp1', inf, val_perms_clause, _F, _S);
+        }
+        else
+        {
+            gs_check_cond := case gs_check_needed when 0 then '' else sprintf (' AND DB.DBA.RDF_GRAPH_USER_PERMS_ACK (G, %d, 1)', gs_user_id) end;
+        dt1 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT any, 0 as FLAG int from (SELECT DISTINCT p, o FROM DB.DBA.RDF_QUAD %s where s = __i2idn (\'%s\' , 1) %s ORDER BY 1 ASC OPTION (QUIETCAST%s%s)) sp1',
+            tbinf, _S, gs_check_cond, tbinf, tbsas);
+        }
+        dt2 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT any, 1 as FLAG int from (sparql %s define output:valmode "AUTO" %s select distinct ?p ?o %s where { ?o ?p <%s> } order by 1) sp2', inf, val_perms_clause, _F, _S);
+
+        --topof := '';
+        qry_str := sprintf ('select %s PRED, OBJECT, FLAG from (%s UNION ALL %s) un0', topof, dt1, dt2);
+        if (dist = 0)
+            qry_str := replace (qry_str, 'distinct', '');
+        if (_last = 0)
             {
-	      dt1 := sprintf ('select count(*) as cnt from (sparql %s define output:valmode "AUTO" %s select distinct ?p ?o %s where { <%s> ?p ?o }  order by 1) sp1', inf, val_perms_clause, _F, _S);
-	    }
-          else
-	    {
-              gs_check_cond := case gs_check_needed when 0 then '' else sprintf (' AND DB.DBA.RDF_GRAPH_USER_PERMS_ACK (G, %d, 1)', gs_user_id) end;
-              dt1 := sprintf ('select count(*) as cnt from (SELECT DISTINCT p, o FROM DB.DBA.RDF_QUAD %s where s = __i2idn (\'%s\' , 1) %s ORDER BY 1 ASC OPTION (QUIETCAST%s%s)) sp1',
-                tbinf, _S, gs_check_cond, tbinf, tbsas);
-	    }
-	  dt2 := sprintf ('select count(*) as cnt from (sparql %s define output:valmode "AUTO" %s select distinct ?p ?o %s where { ?o ?p <%s> } order by 1) sp2', inf, val_perms_clause, _F, _S);
+        if (length (_F) or 1 = sys_stat ('cl_run_local_only'))
+                {
+            dt1 := sprintf ('select count(*) as cnt from (sparql %s define output:valmode "AUTO" %s select distinct ?p ?o %s where { <%s> ?p ?o }  order by 1) sp1', inf, val_perms_clause, _F, _S);
+            }
+            else
+            {
+                gs_check_cond := case gs_check_needed when 0 then '' else sprintf (' AND DB.DBA.RDF_GRAPH_USER_PERMS_ACK (G, %d, 1)', gs_user_id) end;
+                dt1 := sprintf ('select count(*) as cnt from (SELECT DISTINCT p, o FROM DB.DBA.RDF_QUAD %s where s = __i2idn (\'%s\' , 1) %s ORDER BY 1 ASC OPTION (QUIETCAST%s%s)) sp1',
+                    tbinf, _S, gs_check_cond, tbinf, tbsas);
+            }
+        dt2 := sprintf ('select count(*) as cnt from (sparql %s define output:valmode "AUTO" %s select distinct ?p ?o %s where { ?o ?p <%s> } order by 1) sp2', inf, val_perms_clause, _F, _S);
 
-	  declare cnt1, cnt2 integer;
+        declare cnt1, cnt2 integer;
 
-	  count_str := dt1;
-          if (dist = 0)
-            count_str := replace (count_str, 'distinct', '');
-          count_str := replace (count_str, 'order by 1', '');
-	  exec (count_str, null, null, vector (), 0, meta, data);
-	  if (length (data) and length (data[0]))
-	    cnt1 := data[0][0]; -- sum is supposed to have always number
-	  else
-	    cnt1 := 0;
+        count_str := dt1;
+            if (dist = 0)
+                count_str := replace (count_str, 'distinct', '');
+            count_str := replace (count_str, 'order by 1', '');
+        exec (count_str, null, null, vector (), 0, meta, data);
+        if (length (data) and length (data[0]))
+            cnt1 := data[0][0]; -- sum is supposed to have always number
+        else
+            cnt1 := 0;
 
-	  count_str := dt2;
-          if (dist = 0)
-            count_str := replace (count_str, 'distinct', '');
-          count_str := replace (count_str, 'order by 1', '');
-	  exec (count_str, null, null, vector (), 0, meta, data);
-	  if (length (data) and length (data[0]))
-	    cnt2 := data[0][0]; -- sum is supposed to have always number
-	  else
-	    cnt2 := 0;
+        count_str := dt2;
+            if (dist = 0)
+                count_str := replace (count_str, 'distinct', '');
+            count_str := replace (count_str, 'order by 1', '');
+        exec (count_str, null, null, vector (), 0, meta, data);
+        if (length (data) and length (data[0]))
+            cnt2 := data[0][0]; -- sum is supposed to have always number
+        else
+            cnt2 := 0;
 
-          _last := cnt1 + cnt2;
-	  --if (_last = 0)
-	  --_last := n_per_page;
-	  _last := _last / n_per_page;
+            _last := cnt1 + cnt2;
+        --if (_last = 0)
+        --_last := n_per_page;
+        _last := _last / n_per_page;
+            }
+
+        -- dbg_obj_princ ('qry_str = ', qry_str);
+        exec (qry_str, null, null, vector (), 0, null, null, h1);
+        curr_pred := '';
+        inx := 0;
+        data := null;
+        while (0 = exec_next (h1, null, null, data))
+        {
+            declare PRED, OBJECT, FLAG any;
+        --if (inx <= _skip)
+        --  goto nxt1;
+            if (length (data) < 3)
+            goto skip;
+        pred := data[0];
+            object := data[1];
+            FLAG := data[2];
+        if (not length (PRED))
+            goto nxt1;
+
+        if (curr_pred <> pred)
+            {
+                if (curr_pred <> '') http ('</ul></td></tr>');
+            b3s_http_print_l (PRED, odd_position, flag, sid, langs);
+            curr_pred := pred;
+            }
+            vis := b3s_http_print_r (OBJECT, sid, PRED, langs, 1, all_langs, _from, FLAG);
+        nxt1:;
+        inx := inx + 1;
+        skip:;
+        }
+        exec_close (h1);
+        if (curr_pred <> '') http ('</ul></td></tr>');
+    --      dbg_obj_print (inx);
+        if (inx < n_per_page)
+            dis_next := 1;
+
+        if (odd_position = 0)
+        {
+        if (auto_sponge_on_empty_graph)
+        {
+        -- Sponging wasn't explicitly requested in the request URL.
+        -- The view dataset is empty.
+        -- Rather than display an empty result set, force automatic sponging.
+
+        declare spongeUrl varchar;
+        spongeUrl := sprintf ('%s://%s/describe/?url=%U&sponger:get=add&sr=clean', protocol, host, gr);
+
+        if (val_vad_present and not graph_perms_allow_sponge)
+        {
+            -- The current user is looking at a read-only view of an empty result set.
+            -- Logging in (or re-logging in as a different user) may permit sponging, so display a login dialog.
+            -- Force a re-sponge if authentication succeeds
+
+            declare auth_dlg_msg varchar;
+            auth_dlg_msg := 'No cached data is available. Authenticate to re-sponge.';
+
+            http_rewrite ();
+            connection_set ('__val_denied_service_id__', val_serviceId);
+            connection_set ('__val_req_res__', 'urn:virtuoso:access:sponger:describe');
+            connection_set ('__val_req_acl_scope__', 'urn:virtuoso:val:scopes:sponger:describe');
+            -- connection_set ('__val_req_res_label__', '/describe service');
+            connection_set ('__val_req_res_label__', 'Faceted Browsing Service');
+            connection_set ('__val_post_auth_action__','complete Extract, Transform, and Load operation using');
+            connection_set ('__val_returnto_url__', spongeUrl);
+
+            if (connection_get ('b3s_dbg'))
+            connection_set ('__val_err_msg__', auth_dlg_msg);
+
+            if (val_serviceId is null)
+            http_status_set(401);
+            else
+            http_status_set(403);
+
+            return 0;
+        }
+        else if (not sponge_request)
+        {
+            http_rewrite ();
+            http_status_set (303);
+            http_header (sprintf('Location: %s\r\n', spongeUrl));
+            return 0;
+        }
         }
 
-      -- dbg_obj_princ ('qry_str = ', qry_str);
-      exec (qry_str, null, null, vector (), 0, null, null, h1);
-      curr_pred := '';
-      inx := 0;
-      data := null;
-      while (0 = exec_next (h1, null, null, data))
-	{
-           declare PRED, OBJECT, FLAG any;
-	   --if (inx <= _skip)
-	   --  goto nxt1;
-           if (length (data) < 3)
-	     goto skip;
-	   pred := data[0];
-           object := data[1];
-           FLAG := data[2];
-	   if (not length (PRED))
-	     goto nxt1;
+        if (err is not null)
+        {
+        http_request_status ('HTTP/1.1 400 Bad Request');
+        http ('<tr><td colspan="2"><div id="err">');
+        http_value (err);
+        http ('</div></td></tr>');
+        }
+        else
+        {
+        http_request_status ('HTTP/1.1 404 Not Found');
+        http ('<tr><td colspan="2"><p>No further information is available.</p></td></tr>');
+        }
 
-	   if (curr_pred <> pred)
-	     {
-               if (curr_pred <> '') http ('</ul></td></tr>');
-	       b3s_http_print_l (PRED, odd_position, flag, sid, langs);
-	       curr_pred := pred;
-	     }
-           vis := b3s_http_print_r (OBJECT, sid, PRED, langs, 1, all_langs, _from, FLAG);
-	   nxt1:;
-	   inx := inx + 1;
-	   skip:;
-	}
-      exec_close (h1);
-      if (curr_pred <> '') http ('</ul></td></tr>');
---      dbg_obj_print (inx);
-      if (inx < n_per_page)
-        dis_next := 1;
-
-      if (odd_position = 0)
-      {
-	if (auto_sponge_on_empty_graph)
-	{
-	  -- Sponging wasn't explicitly requested in the request URL.
-	  -- The view dataset is empty.
-	  -- Rather than display an empty result set, force automatic sponging.
-
-	  declare spongeUrl varchar;
-	  spongeUrl := sprintf ('%s://%s/describe/?url=%U&sponger:get=add&sr=clean', protocol, host, gr);
-
-	  if (val_vad_present and not graph_perms_allow_sponge)
-	  {
-	    -- The current user is looking at a read-only view of an empty result set.
-	    -- Logging in (or re-logging in as a different user) may permit sponging, so display a login dialog.
-	    -- Force a re-sponge if authentication succeeds
-
-	    declare auth_dlg_msg varchar;
-	    auth_dlg_msg := 'No cached data is available. Authenticate to re-sponge.';
-
-	    http_rewrite ();
-	    connection_set ('__val_denied_service_id__', val_serviceId);
-	    connection_set ('__val_req_res__', 'urn:virtuoso:access:sponger:describe');
-	    connection_set ('__val_req_acl_scope__', 'urn:virtuoso:val:scopes:sponger:describe');
-	    -- connection_set ('__val_req_res_label__', '/describe service');
-	    connection_set ('__val_req_res_label__', 'Faceted Browsing Service');
-	    connection_set ('__val_post_auth_action__','complete Extract, Transform, and Load operation using');
-	    connection_set ('__val_returnto_url__', spongeUrl);
-
-	    if (connection_get ('b3s_dbg'))
-	      connection_set ('__val_err_msg__', auth_dlg_msg);
-
-	    if (val_serviceId is null)
-	      http_status_set(401);
-	    else
-	      http_status_set(403);
-
-	    return 0;
-	  }
-	  else if (not sponge_request)
-	  {
-	    http_rewrite ();
-	    http_status_set (303);
-	    http_header (sprintf('Location: %s\r\n', spongeUrl));
-	    return 0;
-	  }
-	}
-
-	if (err is not null)
-	{
-	  http_request_status ('HTTP/1.1 400 Bad Request');
-	  http ('<tr><td colspan="2"><div id="err">');
-	  http_value (err);
-	  http ('</div></td></tr>');
-	}
-	else
-	{
-	  http_request_status ('HTTP/1.1 404 Not Found');
-	  http ('<tr><td colspan="2"><p>No further information is available.</p></td></tr>');
-	}
-
-      }
-?>
-      </table>
+        }
+    ?>
+        </table>
+    </div>
         
       <div class="break-col"></div>
 
@@ -986,7 +993,7 @@ if (_subject <> '') {
     </div> <!--  #MD -->
     <?vsp b3s_render_dbg_out (dbg_out); ?>
 <!-- footer -->
-    <div id="FT">
+    <div id="FT" class="footer">
     <div class="gen-info">
 	Faceted Search &amp; Find service v<?vsp http(DB.DBA.VAD_CHECK_VERSION('fct')); ?> as of <?V fct_build_info () ?><br/><br/>
     </div>
