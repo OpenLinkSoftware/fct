@@ -104,7 +104,7 @@
           <xsl:when test="$view-type = 'properties'"><h3>Properties</h3></xsl:when>
           <xsl:when test="$view-type = 'properties-in'"><h3>Referencing Properties</h3></xsl:when-->
           <!--<xsl:when test="$view-type = 'list'"><h3 data-ltype="Select a value or condition">Select a value or condition</h3></xsl:when>-->
-          <xsl:when test="$view-type = 'entities-list'"><h3>Distinct Entities found</h3></xsl:when>
+          <xsl:when test="$view-type = 'entities-list'"><h3 id="elist">Entities</h3></xsl:when>
           <!--xsl:when test="$view-type = 'list-count'"><h3>Distinct values</h3></xsl:when>
           <xsl:when test="$view-type = 'geo'"><h3>Location</h3></xsl:when-->
         </xsl:choose>
@@ -407,7 +407,7 @@
 	  <tr><th>Include</th><th>Types</th><!--th>Label</th--><th>Action</th><th>Count</th></tr>
       </xsl:when>
       <xsl:when test="$view-type = 'text' or $view-type = 'text-d'">
-	    <tr><th>Rank</th><th><xsl:value-of select="$s_term"/></th><th>Title</th><th>Named Graph</th><th>Preview</th></tr>
+	    <tr><th>Rank</th><th><xsl:value-of select="$s_term"/></th><th>Title</th><th>Data Source</th><th>Preview</th></tr>
       </xsl:when>
       <xsl:when test="$view-type = 'text' or $view-type = 'propval-list'">
 	    <tr><th>Value</th><th>Datatype</th></tr>
