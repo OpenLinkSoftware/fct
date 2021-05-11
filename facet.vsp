@@ -49,6 +49,8 @@
   fct_gen_opensearch_link();
 ?>
 <link href="css/bootstrap5.css" rel="stylesheet">
+<link href="css/fct-only.css" rel="stylesheet">
+
 <script type="text/javascript" >
     var featureList=["map", "combolist", "ajax", "tab", "json", "location"];
 </script>
@@ -106,21 +108,27 @@
 </head>
 <body>
 <div id="PG">
-<div id="HD">
-  <?vsp fct_page_head (); ?>  
-    <div id="hd_r">
-      <div id="val_login_status">
-	<?include rdfdesc/fct_val_login_status.vsp ?>
-      </div>
+<div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div id="hd-container" class="container">
+        <div id="HD">
+            <?vsp fct_page_head (); ?>  
+            <div id="hd_r">
+                <div id="val_login_status">
+                <?include rdfdesc/fct_val_login_status.vsp ?>
+                </div>
+        </div>
+        </div><!-- #HD -->
     </div>
-</div><!-- #HD -->
+</div>
+
+
   <img id="qrcode_thumb" alt="QRcode icon" src="/fct/images/qr_thumb.png"/>
   <div id="qrcode_popup" title="QRCode" style="display:none">
     <div id="qrcode">
 	<img id="qrcode_img" style="height:120px; width:120px;" alt="" src=""/>
     </div>
   </div>
-<div id="MD">
+<div id="MD" class="fct-md container">
 <?vsp 
 --
 -- 
