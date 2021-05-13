@@ -353,7 +353,7 @@
 <div class="dbg"><xsl:value-of select="$view-type"/></div>
 <div class="">
 <table id="result_t">
-  <xsl:attribute name="class">result table table-borderless <xsl:value-of select="$view-type"/></xsl:attribute>
+  <xsl:attribute name="class">result table <xsl:value-of select="$view-type"/></xsl:attribute>
   <thead>
     <xsl:choose>
       <xsl:when test="$view-type = 'properties'">
