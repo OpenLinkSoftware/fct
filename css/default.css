@@ -254,7 +254,7 @@
    margin: 10px; 
    padding: 10px;
    background-color: #fff;
-   /*border: 1px solid black;*/
+   border: 1px solid black;
  }
  
  p.subj_delim {
@@ -737,18 +737,7 @@
    border: none;
  }
  
- /*
- ::-webkit-scrollbar {
-   -webkit-appearance: none;
-   width: 7px;
- }
- 
- ::-webkit-scrollbar-thumb {
-   border-radius: 4px;
-   background-color: rgba(0, 0, 0, .5);
-   box-shadow: 0 0 1px rgba(255, 255, 255, .5);
- }
- */
+
  
  #val_login_status table tbody{
      color: white;
