@@ -29,3 +29,9 @@ To install and run the package, you need a recent version of:
 # See Also
   * [Virtuoso Web Site](https://virtuoso.openlinksw.com/)
   * [Virtuoso Open Source Edition GIT tree](https://github.com/openlink/virtuoso-opensource/)
+  * [Virtuoso Facets Web Service](http://vos.openlinksw.com/owiki/wiki/VOS/VirtuosoFacetsWebService)
+    * Fct shares common underpinnings with the Virtuoso Facets Web Service
+  * [FacetJsClient](https://github.com/OpenLinkSoftware/FacetJsClient)
+    * A Javascript client for the Virtuoso Faceted Browsing Service.
+  * [FacetJsClient documentation](https://www.openlinksw.com/DAV/Public/FacetJsClient/doc/index.html)
+    * Includes a description of the Facet Service XML data structure which underpins Fct, how to interpret it, examples showing the resulting generated SPARQL query and the significance of the position of the view element in setting the implicit focus (subject node) for applying Fct filters. Useful for developers wanting to understand the Fct internals.
