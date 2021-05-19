@@ -2726,7 +2726,7 @@ create procedure fct_page_head ()
     </h1>
     <div id="homelink"></div>
   </div> <!-- hd_l -->
-  <div id="hd_r">
+  <!-- <div id="hd_r">
     <div class="addthis_toolbox addthis_default_style">
       <a class="addthis_button_compact"></a>
       <a class="addthis_button_preferred_1"></a>
@@ -2734,8 +2734,8 @@ create procedure fct_page_head ()
       <a class="addthis_button_preferred_3"></a>
       <a class="addthis_button_preferred_4"></a>
       <a class="addthis_button_google_plusone"></a>
-    </div>
-  </div> <!-- hd_r -->');
+    </div> -->
+ <!-- </div>  hd_r -->');
 }
 ;
 
