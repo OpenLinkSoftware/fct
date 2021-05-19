@@ -319,6 +319,7 @@ footer:;
 </div><!-- #MD -->
 
 <div id="FT">
+    <!--
     <div class="fct_debug_info">
         Faceted Search &amp; Find service v<?vsp http(DB.DBA.VAD_CHECK_VERSION('fct')); ?> as of <?V fct_build_info () ?><br/>
         <?vsp 
@@ -326,9 +327,10 @@ footer:;
         ?>
         <?vsp fct_virt_info (); ?><br /> 
     </div>
+    -->
     <div id="FT_L"></div>
     <div id="FT_R"></div>
-    <span class="copyright">Data on this page is owned by its respective rights holders.<br/>Virtuoso Faceted Browser Copyright &copy; 2009-<?V "LEFT" (datestring (now ()), 4)?> <a href="www.openlinksw.com">OpenLink Software</a></span>
+    <!--<span class="copyright">Data on this page is owned by its respective rights holders.<br/>Virtuoso Faceted Browser Copyright &copy; 2009-<?V "LEFT" (datestring (now ()), 4)?> <a href="www.openlinksw.com">OpenLink Software</a></span> -->
 
     </div>
     
