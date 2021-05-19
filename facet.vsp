@@ -61,6 +61,8 @@
 <script type="text/javascript" src="/fct/js/jquery-ui-1.11.4.min.js"></script>
 <link rel="stylesheet" type="text/css" href="/fct/css/jquery-ui-1.11.4.min.css" />
 <link rel="stylesheet" type="text/css" href="fontawesome/css/all.min.css">
+<script type="text/javascript" src="js/bootstrap5.min.js"></script>
+
 
 <?vsp 
   declare sid, _S, ses_parms varchar;
@@ -115,8 +117,16 @@
             <div id="hd_r">
                 <div id="val_login_status">
                 <?include rdfdesc/fct_val_login_status.vsp ?>
-                </div>
-        </div>
+                
+                </div>  
+   
+            </div>
+            <ul id="main_menu">
+                  <li>
+                      <a id="hd_about" type="button" class="desc_permalink"  data-bs-toggle="modal" data-bs-target="#infoModal" style:"color:black !important;">About</a>
+                  </li>
+            </ul>  
+            
         </div><!-- #HD -->
     </div>
 </div>
@@ -129,6 +139,41 @@
     </div>
   </div>
 <div id="MD" class="fct-md container">
+ 
+<!-- Modal -->
+            <div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="infoModalLabel">About This Virtuoso Faceted Browser Instance</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                                <div class="gen-info">
+                                </div>
+                                Faceted Search &amp; Find service v<?vsp http(DB.DBA.VAD_CHECK_VERSION('fct')); ?> as of <?V fct_build_info () ?><br/><br/>
+
+                                <?vsp fct_virt_info (); ?><br />
+                                <?vsp
+                                    declare license_text varchar;
+                                    license_text := registry_get ('fct_license_text');
+
+                                    if (license_text) {
+                                        http(license_text);
+                                }
+
+                                    ?>
+                                    <br/>
+                                Data on this page belongs to its respective rights holders.<br/><br/>
+                                Virtuoso Faceted Browser Copyright &copy; 2009-<?V "LEFT" (datestring (now ()), 4)?> OpenLink Software
+                        </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+  <!-- End Modal -->  
 <?vsp 
 --
 -- 
@@ -263,13 +308,16 @@ footer:;
 
 ?>
 <?vsp if (dbg_lvl) { ?>
+           
 <div class="dbg">
   <pre><![CDATA[<?vsp if (sq is not null) http(sq); ?>]]></pre>
 <?vsp fct_render_dbg_out ();?>
 </div>
 <?vsp } ?>
+  
 
 </div><!-- #MD -->
+
 <div id="FT">
     <div class="fct_debug_info">
         Faceted Search &amp; Find service v<?vsp http(DB.DBA.VAD_CHECK_VERSION('fct')); ?> as of <?V fct_build_info () ?><br/>
