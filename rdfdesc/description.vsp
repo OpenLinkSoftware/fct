@@ -595,6 +595,11 @@ post_process_err_with_log4v:
                     </ul>
                     </div> <!-- settings-popup -->
                 </li>
+                <li>
+                <a type="button" class="desc_permalink"  data-bs-toggle="modal" data-bs-target="#infoModal">
+                    About
+                </a>
+                </li>
                 </ul>
             </div> <!-- #HD -->
         </div>
@@ -632,7 +637,7 @@ post_process_err_with_log4v:
     <a id="share" onclick="myFunction()" style="display:none">Share<span><textarea id="purl"></textarea></span></a>
     <a class="desc_sponge_link" href="/describe/?url=<?U page_resource_uri ?><?= case when sid is
     not null then '&sid=' || sid end ?>&amp;sponger:get=add"
-    title="Click to generate local descriptor data for this entity"
+    title="click to import data from external source"
     id="sp_link" rel="nofollow"><sup><span><i class="fas fa-sync"></i></span></sup>
     </a>
     &nbsp;
@@ -658,27 +663,61 @@ post_process_err_with_log4v:
               Format
             </a>
             <ul class="dropdown-menu" aria-labelledby="export-dropdown">
-              <li><h6 class="dropdown-header">RDF</h6></li>
-              <li><a href="<?=rdf_link?><?=sprintf ('&output=%U', 'text/plain') ?>">N-Triples</a></li>
-              <li><a href="<?=rdf_link?><?=sprintf ('&output=%U', 'text/turtle') ?>">N3 (Turtle)</a></li>
-              <li><a href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/ld+json')?>">JSON-LD</a></li>
-	          <li><a href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/rdf+json')?>">JSON</a></li>
-	          <li><a href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/rdf+xml') ?>">XML</a>
+              <li><h6 class="dropdown-header"><strong>RDF</strong></h6></li>
+              <li><a class="dropdown-header" href="<?=rdf_link?><?=sprintf ('&output=%U', 'text/plain') ?>">N-Triples</a></li>
+              <li><a class="dropdown-header" href="<?=rdf_link?><?=sprintf ('&output=%U', 'text/turtle') ?>">N3 (Turtle)</a></li>
+              <li><a class="dropdown-header" href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/ld+json')?>">JSON-LD</a></li>
+	          <li><a class="dropdown-header" href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/rdf+json')?>">JSON</a></li>
+	          <li><a class="dropdown-header" href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/rdf+xml') ?>">XML</a>
               <li><hr class="dropdown-divider"></li>
-
-              <li><h6 class="dropdown-header">Content Formats</h6></li>
-              <li> <a href="<?=rdf_link?><?=sprintf ('&output=%U', 'text/csv')?>">CSV</a></li>
-	          <li> <a href="<?=rdf_link?><?= sprintf ('&output=%U', 'text/cxml')?>">CXML</a></li>
-	
-              <li><h6 class="dropdown-header">OData</h6></li>
-	          <li> <a href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/atom+xml')?>">Atom</a></li>
-	          <li> <a href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/odata+json')?>">OData</a></li>
-              <li><h6 class="dropdown-header">Microdata</h6></li>
-	          <li> <a href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/microdata+json') ?>">Microdata</a></li>
-	          <li> <a href="<?=rdf_link?><?=sprintf ('&output=%U', 'text/html') ?>">HTML</a></li>
-
+              <li><h6 class="dropdown-header"><strong>Microdata</strong></h6></li>
+	          <li> <a class="dropdown-header" href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/microdata+json') ?>">Microdata</a></li>
+	          <li> <a class="dropdown-header" href="<?=rdf_link?><?=sprintf ('&output=%U', 'text/html') ?>">HTML</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><h6 class="dropdown-header"><strong>OData</strong></h6></li>
+	          <li> <a class="dropdown-header" href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/atom+xml')?>">Atom</a></li>
+	          <li> <a class="dropdown-header" href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/odata+json')?>">OData</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><h6 class="dropdown-header"><strong>Others</strong></h6></li>
+              <li> <a class="dropdown-header" href="<?=rdf_link?><?=sprintf ('&output=%U', 'text/csv')?>">CSV</a></li>
+	            <li> <a class="dropdown-header" href="<?=rdf_link?><?= sprintf ('&output=%U', 'text/cxml')?>">CXML</a></li>
             </ul>
           </li>
+
+
+            <!-- Modal -->
+            <div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="infoModalLabel">About This Virtuoso Faceted Browser Instance</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                                <div class="gen-info">
+                                </div>
+                                Faceted Search &amp; Find service v<?vsp http(DB.DBA.VAD_CHECK_VERSION('fct')); ?> as of <?V fct_build_info () ?><br/><br/>
+
+                                <?vsp fct_virt_info (); ?><br />
+                                <?vsp
+                                    declare license_text varchar;
+                                    license_text := registry_get ('fct_license_text');
+
+                                    if (license_text) {
+                                        http(license_text);
+                                }
+
+                                    ?>
+                                    <br/>
+                                Data on this page belongs to its respective rights holders.<br/><br/>
+                                Virtuoso Faceted Browser Copyright &copy; 2009-<?V "LEFT" (datestring (now ()), 4)?> OpenLink Software
+                        </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+            <!-- End Modal -->
 
     </h2>
 
@@ -767,7 +806,7 @@ if (_subject <> '') {
                 <li><a href="/fct/facet.vsp?sid=<?V sid ?>&amp;cmd=open_property">Choose <?V ''?> as Property (p)</a></li>
                 <li><a href="">Choose <?V ''?> as Value (o)</a></li>-->
 <!-- proptable -->
-    <div class="col-xs-12">
+    <div class="col-xs-12" id="desc-tbl">
         <table class="description table table-borderless">
 
     <?vsp
@@ -994,9 +1033,57 @@ if (_subject <> '') {
     <?vsp b3s_render_dbg_out (dbg_out); ?>
 <!-- footer -->
     <div id="FT" class="footer">
+        <!-- Button trigger modal
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#infoModal">
+  Info
+</button>
+ -->
+
+<!-- Modal -->
+<!--
+<div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="infoModalLabel">About This Virtuoso Faceted Browser Instance</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        	<div class="gen-info">
+            </div>
+            Faceted Search &amp; Find service v<?vsp http(DB.DBA.VAD_CHECK_VERSION('fct')); ?> as of <?V fct_build_info () ?><br/><br/>
+
+            <?vsp fct_virt_info (); ?><br />
+            <?vsp
+                declare license_text varchar;
+                license_text := registry_get ('fct_license_text');
+
+                if (license_text) {
+                    http(license_text);
+            }
+
+                ?>
+                <br/>
+            Data on this page belongs to its respective rights holders.<br/>
+            Virtuoso Faceted Browser Copyright &copy; 2009-<?V "LEFT" (datestring (now ()), 4)?> OpenLink Software
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+</div>
+-->
+
+
+</div>
+
+<!--
     <div class="gen-info">
 	Faceted Search &amp; Find service v<?vsp http(DB.DBA.VAD_CHECK_VERSION('fct')); ?> as of <?V fct_build_info () ?><br/><br/>
+    
     </div>
+-->
+    
 <?vsp if (_addthis_key <> '0') { ?>
   <div id="FT_share">
     <!-- AddThis Button BEGIN -->
@@ -1057,6 +1144,7 @@ if (_subject <> '') {
 	    alt="Valid XHTML + RDFa" height="27" /></a>
 	</span>
 	<br />
+    <!--
 	<?vsp fct_virt_info (); ?><br />
 	<?vsp
           declare license_text varchar;
@@ -1069,9 +1157,11 @@ if (_subject <> '') {
         ?>
 	Data on this page belongs to its respective rights holders.<br/>
 	Virtuoso Faceted Browser Copyright &copy; 2009-<?V "LEFT" (datestring (now ()), 4)?> OpenLink Software
+    -->
       </div> <!-- #ft_b -->
     </div> <!-- #FT -->
     </div> <!-- #PG -->
+
 <!--    <div id="fct_selector_tpl" style="display:none">
       <h3></h3>
       <p class="fct_sel_expln"></p>
