@@ -13,6 +13,19 @@ FCT_FILES	= \
 	images/*.svg \
 	rdfdesc/*.vsp \
 	css/*.css \
+	fontawesome/css/* \
+	fontawesome/js/* \
+	fontawesome/less/* \
+	fontawesome/metadata/* \
+	fontawesome/sprites/* \
+	fontawesome/svgs/* \
+	fontawesome/webfonts/* \
+
+
+
+
+
+
 	vad_version \
 	VirtTripleLoader/.classpath \
 	VirtTripleLoader/.project \

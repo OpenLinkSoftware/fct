@@ -185,28 +185,42 @@
     <script type="text/javascript" src="/fct/js/description.js"></script>
     <script type="text/javascript" src="/fct/js/jquery-ui-1.11.4.min.js"></script>
     <link rel="stylesheet" type="text/css" href="/fct/css/jquery-ui-1.11.4.min.css" />
+    <link href="../css/bootstrap5.css" rel="stylesheet">
+    <script src="../js/bootstrap5.min.js"></script>
+    <link rel="stylesheet" href="../fontawesome/css/all.css">
 </head>
 <body class="usage_page">
-  <div id="HD">
-    <?vsp fct_desc_page_head (); ?>
-    <div id="hd_r">
-      <div id="val_login_status">
-	<?include fct_val_login_status.vsp ?>
-      </div>
-    </div>
-    <ul id="main_menu">
-      <?vsp if (sid is not null) { ?>
-        <li><a href="<?= b3s_render_fct_link() ?>">Facets</a></li>
-      <?vsp } ?>
-      <li id="mnu_descr"><a href="/describe/?uri=<?U b3s_u2w (page_resource_uri) ?><?V ses_params ?>">Description</a></li>
-      <li id="mnu_usage" class="sel">
-        <a href="javascript:void()" class="sel">Metadata</a>
-      </li>
-      <li id="mnu_settings"><a href="settings.vsp?g=<?U b3s_u2w (page_resource_uri) ?><?V ses_params ?>">Settings</a></li>
-    </ul>
-
-  </div> <!-- #HD -->
-  <div id="MD">
+  <div id="navbar" class ="navbar navbar-default navbar-fixed-top">
+    <div id="hd-container" class="container">
+      <div id="HD">
+        <?vsp fct_desc_page_head (); ?>
+        <div id="hd_r">
+          <div id="val_login_status">
+      <?include fct_val_login_status.vsp ?>
+          </div>
+        </div>
+        <ul id="main_menu">
+          <?vsp if (sid is not null) { ?>
+            <li><a href="<?= b3s_render_fct_link() ?>">Facets</a></li>
+          <?vsp } ?>
+          <li id="mnu_descr"><a href="/describe/?uri=<?U b3s_u2w (page_resource_uri) ?><?V ses_params ?>">Description</a></li>
+          <li id="mnu_usage" class="sel">
+            <a href="javascript:void()" class="sel">Metadata</a>
+          </li>
+          <li id="mnu_settings"><a href="settings.vsp?g=<?U b3s_u2w (page_resource_uri) ?><?V ses_params ?>">Settings</a></li>
+          <li id="mnu_about">
+            <a type="button" class="desc_permalink"  data-bs-toggle="modal" data-bs-target="#infoModal">
+                        About
+            </a>
+            
+          </li>
+        </ul>
+  </div> <!-- #navbar-->
+      </div> <!-- #HD -->
+    </div> <!-- #hd-container-->
+  <div id="MD" class="container">
+    <!-- MData options -->
+  <div id="#md-options">
     <div class="page_resource_info">
       <h2>About: <a href="<?= case when page_resource_uri like 'nodeID://%' then b3s_http_url (page_resource_uri) else page_resource_uri end ?>">
 	      <?vsp http (sprintf ('%s', label)); ?></a></h2>&nbsp;<a class="desc_permalink" href="usage.vsp?g=<?U b3s_u2w (page_resource_uri) ?>&tp=<?U tp ?>&<?V b3s_render_ses_params (0, 0) ?>">Permalink</a>
@@ -233,7 +247,8 @@
     </div> <!-- .subj_nav -->
 
 <!-- proptable -->
-    <div id="TAB_ROW">
+
+    <div id="TAB_ROW" style="margin-top:0 !important">
       <div class="tab <?vsp http (case when tp = 1 then ' tab_selected' else '' end); ?>">
 	  <a  title="<?V case when connection_get('s_term') = 's' then 'Internal Document (named graph) Identifiers that denotes documents in which the current entity being described is the *subject* of one or more *RDF* based sentences' else 'Internal Document (named graph) Identifiers that denotes documents in which the current entity being described is the *entity* of one or more *EAV* based sentences' end  ?>"
 	      href="<?V http_path () ?>?g=<?U _S ?>&amp;tp=1<?V ses_params ?>">Subject of Sentences In Document</a>
@@ -254,7 +269,7 @@
     <form name="f" action="usage.vsp?g=<?U page_resource_uri ?><?V b3s_render_ses_params(0) ?>" method="post">
     <div id="TAB_CTR">
       <div class="tab_page">
-        <table class="description">
+        <table class="metadata-description">
 	  <?vsp
 	    declare qr varchar;
 	    declare tgr any;
@@ -354,11 +369,45 @@
       </div> <!-- .tab_page -->
     </div> <!-- #TAB_CTR -->
     </form>
+    </div> <!-- #md-options>
     <?vsp b3s_render_dbg_out(dbg_out); ?>
+    <!-- Modal -->
+              <div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
+                  <div class="modal-dialog">
+                      <div class="modal-content">
+                          <div class="modal-header">
+                              <h5 class="modal-title" id="infoModalLabel">About This Virtuoso Faceted Browser Instance</h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                          </div>
+                          <div class="modal-body">
+                                  <div class="gen-info">
+                                  </div>
+                                  Faceted Search &amp; Find service v<?vsp http(DB.DBA.VAD_CHECK_VERSION('fct')); ?> as of <?V fct_build_info () ?><br/><br/>
+
+                                  <?vsp fct_virt_info (); ?><br />
+                                  <?vsp
+                                      declare license_text varchar;
+                                      license_text := registry_get ('fct_license_text');
+
+                                      if (license_text) {
+                                          http(license_text);
+                                  }
+
+                                      ?>
+                                      <br/>
+                                  Data on this page belongs to its respective rights holders.<br/><br/>
+                                  Virtuoso Faceted Browser Copyright &copy; 2009-<?V "LEFT" (datestring (now ()), 4)?> OpenLink Software
+                          </div>
+                      <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                      </div>
+                  </div>
+              </div>
+            <!-- End Modal -->
   </div> <!--  #MD -->
 <!-- footer -->
   <div id="FT">
-      Faceted Search &amp; Find service v<?vsp http(DB.DBA.VAD_CHECK_VERSION('fct')); ?><br/><br/>
+      <!--Faceted Search &amp; Find service v<?vsp http(DB.DBA.VAD_CHECK_VERSION('fct')); ?><br/><br/>--> 
 <?vsp if (_addthis_key <> '0') { ?>
   <div id="FT_share">
     <!-- AddThis Button BEGIN -->
@@ -431,10 +480,10 @@
 	    alt="Valid XHTML + RDFa" height="27" /></a>
 	</span>
 	<br />
-	This work is licensed under a
+	<!--This work is licensed under a
 	<a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-Share Alike 3.0 Unported License</a>.<br />
 	<?vsp fct_virt_info (); ?><br />
-	Copyright &copy; 2009-<?V "LEFT" (datestring (now ()), 4)?> OpenLink Software
+	Copyright &copy; 2009-<?V "LEFT" (datestring (now ()), 4)?> OpenLink Software -->
       </div> <!-- #ft_b -->
   </div> <!-- #FT -->
 </body>

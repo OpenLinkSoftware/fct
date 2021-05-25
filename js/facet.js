@@ -147,6 +147,7 @@ var uri_ac;
 // an ugly resize handler overriding CSS size for result
 //
 
+ //resize handler
 function resize_handler ()
 {
     var wp_width = OAT.Dom.getViewport ()[0];
@@ -157,6 +158,7 @@ function resize_handler ()
         $('res').style.width = _w;
       }
 }
+
 
 // Handle click in property values
 

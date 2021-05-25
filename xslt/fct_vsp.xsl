@@ -103,8 +103,8 @@
           <xsl:when test="$view-type = 'classes'"><h3>Types</h3></xsl:when>
           <xsl:when test="$view-type = 'properties'"><h3>Properties</h3></xsl:when>
           <xsl:when test="$view-type = 'properties-in'"><h3>Referencing Properties</h3></xsl:when-->
-          <xsl:when test="$view-type = 'list'"><h3>Select a value or condition</h3></xsl:when>
-          <xsl:when test="$view-type = 'entities-list'"><h3>Distinct Entities found</h3></xsl:when>
+          <!--<xsl:when test="$view-type = 'list'"><h3 data-ltype="Select a value or condition">Select a value or condition</h3></xsl:when>-->
+          <xsl:when test="$view-type = 'entities-list'"><h3 id="elist">Entities</h3></xsl:when>
           <!--xsl:when test="$view-type = 'list-count'"><h3>Distinct values</h3></xsl:when>
           <xsl:when test="$view-type = 'geo'"><h3>Location</h3></xsl:when-->
         </xsl:choose>
@@ -172,14 +172,10 @@
             </xsl:choose>
           </xsl:otherwise>
         </xsl:choose>
-        <div class="btn_bar">
-          <xsl:call-template name="render-pager">
-            <xsl:with-param name="pfx">pager_bottom</xsl:with-param>
-          </xsl:call-template>
-        </div> <!-- btn_bar -->
+        
       </xsl:otherwise> <!-- non-empty result -->
     </xsl:choose>
-    <div id="result_nfo">
+    <div id="result_nfo" class="gen-info">
       <xsl:choose>
         <xsl:when test="/facets/complete = 'yes'">
           <xsl:text>Complete result - </xsl:text>
@@ -203,7 +199,7 @@
   sparql_a.innerHTML = 'View query as SPARQL';
   var plink_a = OAT.Dom.create('a',{}, 'plink_a');
   plink_a.href='<xsl:value-of select="$p_link"/>'; <!--'/fct/facet.vsp?qxml=<xsl:value-of select="urlify ($p_xml)"/>'; -->
-  plink_a.innerHTML = 'Facet permalink';
+  plink_a.innerHTML = 'Facet permalink <i class="fa fa-copy"></i>';
 
     OAT.Dom.append (['sparql_a_ctr',sparql_a,plink_a]);
   </script>
@@ -355,13 +351,18 @@
 
 <xsl:template name="render-result">
 <div class="dbg"><xsl:value-of select="$view-type"/></div>
+<div class="">
 <table id="result_t">
-  <xsl:attribute name="class">result <xsl:value-of select="$view-type"/></xsl:attribute>
+  <xsl:attribute name="class">result table <xsl:value-of select="$view-type"/></xsl:attribute>
   <thead>
     <xsl:choose>
       <xsl:when test="$view-type = 'properties'">
-	  <tr><th></th><th>?s<xsl:value-of select="$pos"/>
-		  <xsl:choose>
+	  <tr><th>Include</th> 
+      
+      <th>
+      <!--?s<xsl:value-of select="$pos"/>
+		  
+          <xsl:choose>
 		      <xsl:when test="$p_term = 'Attribute'">
 			  <xsl:text> has </xsl:text> 
 		      </xsl:when>
@@ -369,28 +370,47 @@
 			  <xsl:text> subjectOf </xsl:text> 
 		      </xsl:otherwise>
 		  </xsl:choose>
-		  <xsl:value-of select="$p_term"/></th><!--th>Label</th--><th></th><th>Count</th></tr>
+          -->
+		  <xsl:value-of select="$p_term"/><xsl:text>s</xsl:text></th><!--th>Label</th--><th>Action</th><th>Count</th></tr>
       </xsl:when>
       <xsl:when test="$view-type = 'list-count'">
-	<tr><th></th><th><xsl:value-of select="$s_term"/></th><!--th>Title</th--><th></th><th>Count</th></tr>
+	    <tr><th><xsl:value-of select="$s_term"/></th><th>Action</th>
+        <!--th>Title</th-->
+        <xsl:choose>
+        <!--<xsl:when test="contains($s_term,'Entity')">
+            <th></th>
+        </xsl:when>-->
+        </xsl:choose>
+        <th>Count</th></tr>
       </xsl:when>
       <xsl:when test="$view-type = 'text-properties'">
-	<tr><th></th><th><xsl:value-of select="$p_term"/></th><!--th>Label</th--><th></th><th>Count</th></tr>
+	    <tr><th></th><th><xsl:value-of select="$p_term"/></th><!--th>Label</th--><th></th><th>Count</th></tr>
       </xsl:when>
       <xsl:when test="$view-type = 'properties-in'">
-	  <tr><th></th><th>?s<xsl:value-of select="$pos"/><xsl:text> is </xsl:text><xsl:value-of select="$o_term"/> Of <xsl:value-of select="$p_term"/></th><!--th>Label</th--><th></th><th>Count</th></tr>
+      
+	  <tr>
+        <th>
+ 
+            <xsl:value-of select="$o_term"/><xsl:text>s</xsl:text>
+            
+        </th><!--th>Label</th-->
+        <th>Action</th>
+        <th>Count</th></tr>
+      <!--
+      	  <tr><th>?s<xsl:value-of select="$pos"/><xsl:text> is </xsl:text><xsl:value-of select="$o_term"/> Of <xsl:value-of select="$p_term"/></th><th>Label</th<th>Action</th><th>Count</th></tr>
+      -->
       </xsl:when>
       <xsl:when test="$view-type = 'list'">
-	<tr><th></th><th></th><th></th></tr>
+	    <tr><th><b>Matching Values</b></th><th>Action</th></tr>
       </xsl:when>
       <xsl:when test="$view-type = 'classes'">
-	  <tr><th></th><th>?s<xsl:value-of select="$pos"/><xsl:text> instanceOf </xsl:text><xsl:value-of select="$t_term"/></th><!--th>Label</th--><th></th><th>Count</th></tr>
+	  <tr><th>Include</th><th>Types</th><!--th>Label</th--><th>Action</th><th>Count</th></tr>
       </xsl:when>
       <xsl:when test="$view-type = 'text' or $view-type = 'text-d'">
-	<tr><th></th><th></th><th></th><th><xsl:value-of select="$s_term"/></th><th>Title</th><th>Named Graph</th></tr>
+	    <tr><th>Rank</th><th><xsl:value-of select="$s_term"/></th><th>Title</th><th>Data Source</th><th>Preview</th></tr>
       </xsl:when>
       <xsl:when test="$view-type = 'text' or $view-type = 'propval-list'">
-	<tr><th>Value</th><th>Datatype</th></tr>
+	    <tr><th>Value</th><th>Datatype</th></tr>
       </xsl:when>
     </xsl:choose>
   </thead>
@@ -398,19 +418,19 @@
     <xsl:for-each select="row">
       <tr>
 	<xsl:choose>
-          <xsl:when test="$view-type = 'entities-list'">
-	    <xsl:if test="./@rank">
-              <td>
+        <xsl:when test="$view-type = 'entities-list'">
+	        <xsl:if test="./@rank">
+              <td data-ltype="entities-list">
                 <xsl:value-of select="./@rank"/>
               </td>
             </xsl:if>
-            <td>
+            <td data-tdtype="test">
               <xsl:call-template name="render-describe-link">
                 <xsl:with-param name="uri" select="column[1]"/>
                 <xsl:with-param name="content" select="column[2]"/>
               </xsl:call-template>
             </td>
-          </xsl:when>
+        </xsl:when>
 	  <xsl:when test="$view-type = 'properties' or
 			  $view-type = 'classes' or
 			  $view-type = 'properties-in' or
@@ -418,107 +438,140 @@
 			  $view-type = 'list' or
 			  $view-type = 'list-count'">
 	    <xsl:if test="./@rank">
-              <td>
+              <td data-tdtype="rank">
                 <xsl:value-of select="./@rank"/>
               </td>
-            </xsl:if>
-            <td>
-              <xsl:if test="$view-type = 'properties' or $view-type = 'classes'">
-                <input type="checkbox" name="cb" value="{position (.)}" checked="true" onclick="javascript:fct_sel_neg (this)"/>
-              </xsl:if>
+        </xsl:if>
+            
+        <xsl:choose>
+            <xsl:when test="not($view-type = 'list') and not($view-type = 'list-count') and not($view-type = 'properties-in')">
+                <td>
+                    <xsl:if test="$view-type = 'properties' or $view-type = 'classes'">
+                    <input type="checkbox" name="cb" value="{position (.)}" checked="true" onclick="javascript:fct_sel_neg (this)"/>
+                    </xsl:if>
 
-              <!--xsl:message terminate="no">
-                <xsl:value-of select="$query/query/class/@iri"/><xsl:text> | </xsl:text><xsl:value-of select="column[1]"/>
-              </xsl:message-->  
+                
+                    <!--xsl:message terminate="no">
+                    <xsl:value-of select="$query/query/class/@iri"/><xsl:text> | </xsl:text><xsl:value-of select="column[1]"/>
+                    </xsl:message-->  
 
-              <xsl:variable name="current_iri" select="column[1]"/> 
-              <xsl:variable name="use_iri">
+                    <xsl:variable name="current_iri" select="column[1]"/> 
+                    <xsl:variable name="use_iri">
+                    <xsl:choose>
+                        <xsl:when test="not $query/query/class[@iri = $current_iri] and column[1]/@sparql_ser != ''">
+                        <xsl:value-of select="urlify(column[1]/@sparql_ser)"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                        <xsl:value-of select="urlify($current_iri)"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                    </xsl:variable>
+                    <xsl:comment><xsl:value-of select="$current_iri"/></xsl:comment>
+                </td>
+            </xsl:when>
+        </xsl:choose>
+        
+
+        <td>
+            <xsl:variable name="current_iri" select="column[1]"/> 
+            <xsl:variable name="use_iri">
+                    <xsl:choose>
+                        <xsl:when test="not $query/query/class[@iri = $current_iri] and column[1]/@sparql_ser != ''">
+                        <xsl:value-of select="urlify(column[1]/@sparql_ser)"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                        <xsl:value-of select="urlify($current_iri)"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+            </xsl:variable>
+            <a id="a_{position (.)}">
+            <xsl:attribute name="class">sel_val</xsl:attribute>
+            <xsl:attribute name="href">
+                <xsl:text>/fct/facet.vsp?cmd=</xsl:text>
+                <xsl:value-of select="$command"/>
+                <xsl:text>&amp;</xsl:text>
                 <xsl:choose>
-                  <xsl:when test="not $query/query/class[@iri = $current_iri] and column[1]/@sparql_ser != ''">
-                    <xsl:value-of select="urlify(column[1]/@sparql_ser)"/>
-                  </xsl:when>
-                  <xsl:otherwise>
-                    <xsl:value-of select="urlify($current_iri)"/>
-                  </xsl:otherwise>
+                <xsl:when test="'cond' = $command">cond_t=eq&amp;val=<xsl:value-of select="$use_iri"/></xsl:when>
+                <xsl:otherwise>iri=<xsl:value-of select="$use_iri"/></xsl:otherwise>
                 </xsl:choose>
-              </xsl:variable>
-              <xsl:comment><xsl:value-of select="$current_iri"/></xsl:comment>
-            </td>
-            <td>
-              <a id="a_{position (.)}">
-                <xsl:attribute name="class">sel_val</xsl:attribute>
-                <xsl:attribute name="href">
-                  <xsl:text>/fct/facet.vsp?cmd=</xsl:text>
-                  <xsl:value-of select="$command"/>
-                  <xsl:text>&amp;</xsl:text>
-                  <xsl:choose>
-                    <xsl:when test="'cond' = $command">cond_t=eq&amp;val=<xsl:value-of select="$use_iri"/></xsl:when>
-                    <xsl:otherwise>iri=<xsl:value-of select="$use_iri"/></xsl:otherwise>
-                  </xsl:choose>
-                  <xsl:text>&amp;lang=</xsl:text>
-                  <xsl:value-of select="column[1]/@xml:lang"/>
-                  <xsl:text>&amp;datatype=</xsl:text>
-                  <xsl:value-of select="urlify (column[1]/@datatype)"/>
-                  <xsl:text>&amp;sid=</xsl:text>
-                  <xsl:value-of select="$sid"/>
-                </xsl:attribute> <!-- href -->
-                <xsl:attribute name="title">
-                  <xsl:value-of select="column[1]"/>
-                </xsl:attribute>
+                <xsl:text>&amp;lang=</xsl:text>
+                <xsl:value-of select="column[1]/@xml:lang"/>
+                <xsl:text>&amp;datatype=</xsl:text>
+                <xsl:value-of select="urlify (column[1]/@datatype)"/>
+                <xsl:text>&amp;sid=</xsl:text>
+                <xsl:value-of select="$sid"/>
+            </xsl:attribute> <!-- href -->
+            <xsl:attribute name="title">
+                <xsl:value-of select="column[1]"/>
+            </xsl:attribute>
+            <xsl:choose>
+                <xsl:when test="'' != string (column[2])">
+                <xsl:value-of select="column[2]"/>
+                </xsl:when>
+                <xsl:when test="'' != column[1]/@shortform">
+                <xsl:value-of select="column[1]/@shortform"/>
+                </xsl:when>
+                <xsl:otherwise>
+                <xsl:value-of select="column[1]"/>
+                </xsl:otherwise>
+            </xsl:choose>
+            <!--
+            <xsl:choose>
+                <xsl:when test="$view-type = 'list'">
+                    <xsl:attribute name="style">
+                     <xsl:text>10em</xsl:text>
+                    </xsl:attribute>
+                </xsl:when>
+            </xsl:choose>
+            -->
+            </a>
+        </td>
+        <td>
+            <xsl:if test="'uri' = column[1]/@datatype or 'url' = column[1]/@datatype">
+                <xsl:variable name="desc_title">
                 <xsl:choose>
-                  <xsl:when test="'' != string (column[2])">
-                    <xsl:value-of select="column[2]"/>
-                  </xsl:when>
-                  <xsl:when test="'' != column[1]/@shortform">
-                    <xsl:value-of select="column[1]/@shortform"/>
-                  </xsl:when>
-                  <xsl:otherwise>
-                    <xsl:value-of select="column[1]"/>
-                  </xsl:otherwise>
+                    <xsl:when test="$view-type = 'properties' or $view-type = 'properties-in'">
+                    Describe<xsl:text> </xsl:text><xsl:value-of select="$p_term"/>
+                    </xsl:when>
+                    <xsl:when test="$view-type = 'classes'">
+                    Describe<xsl:text> </xsl:text><xsl:value-of select="$t_term"/>
+                    </xsl:when>
+                    <xsl:when test="$view-type = 'list-count'">
+                    Describe<xsl:text> </xsl:text><xsl:value-of select="$s_term"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                    Describe
+                    </xsl:otherwise>
                 </xsl:choose>
-              </a>
-            </td>
-            <td>
-              <xsl:if test="'uri' = column[1]/@datatype or 'url' = column[1]/@datatype">
-		  <xsl:variable name="desc_title">
-		  <xsl:choose>
-		      <xsl:when test="$view-type = 'properties' or $view-type = 'properties-in'">
-			  Describe<xsl:text> </xsl:text><xsl:value-of select="$p_term"/>
-		      </xsl:when>
-		      <xsl:when test="$view-type = 'classes'">
-			  Describe<xsl:text> </xsl:text><xsl:value-of select="$t_term"/>
-		      </xsl:when>
-		      <xsl:when test="$view-type = 'list-count'">
-			  Describe<xsl:text> </xsl:text><xsl:value-of select="$s_term"/>
-		      </xsl:when>
-		      <xsl:otherwise>
-			  Describe
-		      </xsl:otherwise>
-		  </xsl:choose>
-		  </xsl:variable>  
-                <xsl:call-template name="render-describe-link">
-                  <xsl:with-param name="uri" select="column[1]"/>
-                  <xsl:with-param name="shortform" select="column[1]/@shortform"/>
-		  <xsl:with-param name="content"><xsl:value-of select="$desc_title"/></xsl:with-param>
-                </xsl:call-template>
-              </xsl:if>
-            </td>
-            <xsl:if test="$view-type = 'list'">
-              <td class="val_dt">
-                <xsl:value-of select="column[1]/@datatype"/>
-              </td>
+                </xsl:variable>  
+                    <xsl:call-template name="render-describe-link">
+                        <xsl:with-param name="uri" select="column[1]"/>
+                        <xsl:with-param name="shortform" select="column[1]/@shortform"/>
+                <xsl:with-param name="content"><xsl:value-of select="$desc_title"/></xsl:with-param>
+                    </xsl:call-template>
             </xsl:if>
-            <td>
-              <xsl:apply-templates select="column[3]"/>
+        </td>
+        <xsl:if test="$view-type = 'list'">
+            <td class="val_dt">
+            <xsl:value-of select="column[1]/@datatype"/>
             </td>
+        </xsl:if>
+        <td>
+            <xsl:apply-templates select="column[3]"/>
+        </td>
 	  </xsl:when>
           <xsl:otherwise> <!-- text matches view -->
             <td class="rnk">
               <xsl:for-each select="column[@datatype='trank' or @datatype='erank']">
                 <img class="rnk">
+                <!--
                   <xsl:attribute name="src">
                     <xsl:text>images/r_</xsl:text><xsl:value-of select="min (floor(.), 10)"/><xsl:text>.png</xsl:text>
                   </xsl:attribute>
+                -->
+                  <xsl:attribute name="src">
+                    <xsl:text>images/r_10.png</xsl:text>
+                  </xsl:attribute>              
                   <xsl:attribute name="alt">
                     <xsl:choose>
                       <xsl:when test="./@datatype='trank'">Text Rank:</xsl:when>
@@ -533,23 +586,30 @@
                     </xsl:choose>
                     <xsl:value-of select="."/>
                   </xsl:attribute>
+                  <xsl:attribute name="style">
+                    <xsl:choose>
+                      <xsl:when test="./@datatype='trank'">width:<xsl:value-of select="."/>em</xsl:when>
+                      <xsl:when test="./@datatype='erank'"><xsl:value-of select="."/>em</xsl:when> 
+                    </xsl:choose>
+                    
+                  </xsl:attribute>
                 </img>
               </xsl:for-each>
 	    </td>
 	    <xsl:for-each select="column">
-	      <td>
+	      <td data-tdtype="column-res">
                 <xsl:choose>
-		  <xsl:when test="'uri' = ./@datatype or 'url' = ./@datatype">
-                    <xsl:call-template name="render-describe-link">
-                      <xsl:with-param name="uri" select="."/>
-                      <xsl:with-param name="shortform" select="./@shortform"/>
-                    </xsl:call-template>
-		  </xsl:when>
-                  <xsl:when test="'erank' = ./@datatype or 'trank' = ./@datatype">
-                  </xsl:when>
-		  <xsl:otherwise>
-                    <xsl:apply-templates select="."/>
-                  </xsl:otherwise>
+                    <xsl:when test="'uri' = ./@datatype or 'url' = ./@datatype">
+                                <xsl:call-template name="render-describe-link">
+                                    <xsl:with-param name="uri" select="."/>
+                                    <xsl:with-param name="shortform" select="./@shortform"/>
+                                </xsl:call-template>
+                    </xsl:when>
+                    <xsl:when test="'erank' = ./@datatype or 'trank' = ./@datatype">
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:apply-templates select="."/>
+                    </xsl:otherwise>
                 </xsl:choose>
 	      </td>
 	    </xsl:for-each>
@@ -560,55 +620,66 @@
     </xsl:for-each>
   </tbody>
 </table>
+<div class="btn_bar">
+             <xsl:if test="/facets/result/@type='propval-list' or $view-type='list'">
+                <div id="modifiers">
 
-<xsl:if test="/facets/result/@type='propval-list' or $view-type='list'">
-  <form id="cond_form"> 
-    <input type="hidden" name="sid"><xsl:attribute name="value"><xsl:value-of select="$sid"/></xsl:attribute></input>
-    <input type="hidden" name="hi" id="out_hi"/>
-    <input type="hidden" name="lo" id="out_lo"/>
-    <input type="hidden" name="lang" id="out_lang"/>
-    <input type="hidden" name="datatype" id="out_dtp"/>
-    <input type="hidden" name="val" id="out_val"/>
-    <input type="hidden" name="cmd" value="cond" id="cmd"/>
-    <input type="hidden" name="cond_parms" id="cond_parms"/>
-    Add condition: 
-    <select id="cond_type" name="cond_t">
-      <option value="none">None</option>
-      <option value="eq">==</option>
-      <option value="neq">!=</option>
-      <option value="gte">&gt;=</option> 
-      <option value="gt">&gt;</option> 
-      <option value="lte">&lt;=</option>
-      <option value="lt">&lt;</option>
-      <option value="range">Between</option>
-      <option value="neg_range">Not Between</option>
-      <option value="contains">Contains</option>
-      <option value="in">In</option>
-      <option value="not_in">Not In</option>
-    </select>
-    <span id="cond_inp_ctr" style="display:none">
-      <!--label for="ckb_neg" class="ckb">Negation:</label><input type="checkbox" name="neg" id="ckb_neg"/--> 
-      <input id="cond_lo" type="text"/>
-      <span id="cond_hi_ctr"> and <input id="cond_hi" type="text"/></span> <select id="cond_dt"></select>
-      <input type="button" id="set_cond" value="Set Condition"/>
-    </span>
-    <div id="in_ctr" style="display:none"></div>
-    <div id="geo_ctr" style="display:none"></div>
-  </form> 
-  <form id="agg_form">
-      <input type="hidden" name="sid"><xsl:attribute name="value"><xsl:value-of select="$sid"/></xsl:attribute></input>
-    <input type="hidden" name="cmd" value="set_agg" id="set_agg"/>
-      Show aggregate: 
-    <select id="agg_type" name="agg">
-      <option value="">None</option>
-      <option value="SUM"><xsl:if test="$tree//query/@agg = 'SUM'"><xsl:attribute name="selected">1</xsl:attribute></xsl:if>Sum</option>
-      <option value="AVG"><xsl:if test="$tree//query/@agg = 'AVG'"><xsl:attribute name="selected">1</xsl:attribute></xsl:if>Avg</option>
-      <option value="MIN"><xsl:if test="$tree//query/@agg = 'MIN'"><xsl:attribute name="selected">1</xsl:attribute></xsl:if>Min</option>
-      <option value="MAX"><xsl:if test="$tree//query/@agg = 'MAX'"><xsl:attribute name="selected">1</xsl:attribute></xsl:if>Max</option>
-    </select>
-    <span id="agg_val"><xsl:value-of select="$agg_res"/></span>
-  </form> 
-</xsl:if>
+                    <form id="cond_form"> 
+                        <input type="hidden" name="sid"><xsl:attribute name="value"><xsl:value-of select="$sid"/></xsl:attribute></input>
+                        <input type="hidden" name="hi" id="out_hi"/>
+                        <input type="hidden" name="lo" id="out_lo"/>
+                        <input type="hidden" name="lang" id="out_lang"/>
+                        <input type="hidden" name="datatype" id="out_dtp"/>
+                        <input type="hidden" name="val" id="out_val"/>
+                        <input type="hidden" name="cmd" value="cond" id="cmd"/>
+                        <input type="hidden" name="cond_parms" id="cond_parms"/>
+                        Add Condition: 
+                        <select id="cond_type" name="cond_t">
+                        <option value="none">None</option>
+                        <option value="eq">==</option>
+                        <option value="neq">!=</option>
+                        <option value="gte">&gt;=</option> 
+                        <option value="gt">&gt;</option> 
+                        <option value="lte">&lt;=</option>
+                        <option value="lt">&lt;</option>
+                        <option value="range">Between</option>
+                        <option value="neg_range">Not Between</option>
+                        <option value="contains">Contains</option>
+                        <option value="in">In</option>
+                        <option value="not_in">Not In</option>
+                        </select>
+                        <span id="cond_inp_ctr" style="display:none">
+                        <!--label for="ckb_neg" class="ckb">Negation:</label><input type="checkbox" name="neg" id="ckb_neg"/--> 
+                        <input id="cond_lo" type="text"/>
+                        <span id="cond_hi_ctr"> and <input id="cond_hi" type="text"/></span> <select id="cond_dt"></select>
+                        <input type="button" id="set_cond" value="Set Condition"/>
+                        </span>
+                        <div id="in_ctr" style="display:none"></div>
+                        <div id="geo_ctr" style="display:none"></div>
+                        </form> 
+                    <form id="agg_form">
+                        <input type="hidden" name="sid"><xsl:attribute name="value"><xsl:value-of select="$sid"/></xsl:attribute></input>
+                        <input type="hidden" name="cmd" value="set_agg" id="set_agg"/>
+                        Show an Aggregate: 
+                        <select id="agg_type" name="agg">
+                        <option value="">None</option>
+                        <option value="SUM"><xsl:if test="$tree//query/@agg = 'SUM'"><xsl:attribute name="selected">1</xsl:attribute></xsl:if>Sum</option>
+                        <option value="AVG"><xsl:if test="$tree//query/@agg = 'AVG'"><xsl:attribute name="selected">1</xsl:attribute></xsl:if>Avg</option>
+                        <option value="MIN"><xsl:if test="$tree//query/@agg = 'MIN'"><xsl:attribute name="selected">1</xsl:attribute></xsl:if>Min</option>
+                        <option value="MAX"><xsl:if test="$tree//query/@agg = 'MAX'"><xsl:attribute name="selected">1</xsl:attribute></xsl:if>Max</option>
+                        </select>
+                        <span id="agg_val"><xsl:value-of select="$agg_res"/></span>
+                    </form>
+                </div> 
+            </xsl:if>
+         
+          <xsl:call-template name="render-pager">
+            <xsl:with-param name="pfx">pager_bottom</xsl:with-param>
+          </xsl:call-template>
+        </div> <!-- btn_bar -->
+</div>
+
+
 
 <xsl:call-template name="render-init-func">
   <xsl:with-param name="result" select="/facets/result"/>
@@ -646,10 +717,10 @@
           <xsl:when test="$shortform != ''">
             <xsl:value-of select="$shortform"/>
           </xsl:when>
-          <xsl:otherwise>
-            <xsl:value-of select="$uri"/>
-          </xsl:otherwise>
-        </xsl:choose>
+      <xsl:otherwise>
+        <xsl:value-of select="$uri"/>
+      </xsl:otherwise>
+    </xsl:choose>
       </xsl:when>
       <xsl:otherwise>
         <xsl:value-of select="$content"/>

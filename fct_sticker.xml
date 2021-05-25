@@ -110,6 +110,15 @@
     <file type="$TYPE$" source_uri="oat/images/markers/*" target_uri="fct/" />
     <file type="$TYPE$" source_uri="rdfdesc/*.vsp" target_uri="fct/" />
     <file type="$TYPE$" source_uri="css/*.css" target_uri="fct/" />
+    <file type="$TYPE$" source_uri="fontawesome/*" target_uri="fct/" />
+    <file type="$TYPE$" source_uri="fontawesome/css/*" target_uri="fct/" />
+    <file type="$TYPE$" source_uri="fontawesome/js/*" target_uri="fct/" />
+    <file type="$TYPE$" source_uri="fontawesome/less/*" target_uri="fct/" />
+    <file type="$TYPE$" source_uri="fontawesome/metadata/*" target_uri="fct/" />
+    <file type="$TYPE$" source_uri="fontawesome/scss/*" target_uri="fct/" />
+    <file type="$TYPE$" source_uri="fontawesome/svgs/*" target_uri="fct/" />
+    <file type="$TYPE$" source_uri="fontawesome/webfonts/*" target_uri="fct/" />
+
     <file type="$TYPE$" source_uri="fonts/*" target_uri="fct/" />
     <file type="$TYPE$" source_uri="conductor/*" target_uri="fct/" />
 </resources>

@@ -72,13 +72,15 @@
   declare q_txt any;
   declare safetolink integer;
 
+  --New addition from latest vsp
   set http_charset='utf-8';
-  { 
-    --  catch error when using old binaries
-    declare continue handler for sqlstate '*';
-    --  always treat narrow string boxes as UTF-8 encoded
-    set http_in_charset='UTF-8';
-  }
+    { 
+        --  catch error when using old binaries
+        declare continue handler for sqlstate '*';
+        --  always treat narrow string boxes as UTF-8 encoded
+        set http_in_charset='UTF-8';
+    }
+  --End New Addition
 
   if (registry_get ('fct_auto_sponge') = '1')
     auto_sponge_on_empty_graph := 1;
@@ -524,6 +526,9 @@ post_process_err_with_log4v:
 <head>
     <base href="/fct/rdfdesc/" />
     <title>About: <?vsp if (length (label)) http (label); else http (b3s_uri_percent_decode(b3s_uri_curie (page_resource_uri)));?></title>
+    <link href="../css/bootstrap5.css" rel="stylesheet">
+    <script src="../js/bootstrap5.min.js"></script>
+    <link rel="stylesheet" href="../fontawesome/css/all.css">
     <!--link rel="alternate" type="application/rdf+xml" href="<?=rdf_link?>" title="RDF" /-->
 
     <?vsp
@@ -546,55 +551,64 @@ post_process_err_with_log4v:
 </head>
 <body about="<?V page_resource_uri ?>">
   <div id="PG">
-    <div id="HD">
-    <?vsp fct_desc_page_head (); ?>
-    <div id="hd_r">
-      <div id="val_login_status">
-	<?include fct_val_login_status.vsp ?>
-	<?vsp if (view_mode = 'read-only')
-	    -- http ('<div style="float:right">(Read-only view - Sponging disallowed)</div>');
-	    http ('<div style="float:right">(Sponging disallowed)</div>');
-	  else if (view_mode = 'read-write')
-	    -- http ('<div style="float:right">(Read-write view - Sponging disallowed)</div>');
-	    http ('<div style="float:right">(Sponging disallowed)</div>');
-	?>
-      </div>
-    </div>
-    <ul id="main_menu">
-      <?vsp if (sid is not null) { ?>
-        <li><a href="<?= b3s_render_fct_link() ?>">Facets</a></li>
-      <?vsp } else { ?>
-      <li><a href="/fct/">Facets (new session)</a></li>
-      <?vsp } ?>
-      <li id="mnu_descr" class="sel"><a href="/describe/?uri=<?U b3s_u2w(_S) ?><?V ses_parms ?>" class="sel">Description</a></li>
-      <li id="mnu_usage">
-        <a href="usage.vsp?g=<?U _S ?><?V ses_parms ?>">Metadata</a>
-      </li>
-      <li id="mnu_settings"><a href="settings.vsp?g=<?U b3s_u2w(_S) ?><?V ses_parms ?>">Settings</a>
-        <div id="settings_popup" style="display: none">
-          <ul>
-            <li>
-              <label for="inf_sel">Rule:</label>
-              <select id="inf_sel" onchange="javascript:inf_cb();"><?vsp b3s_render_inf_opts (); ?></select><br/>
-            </li>
-            <li>
-              <label for="invfp_sel">Inverse Functional Properties:</label>
-              <select id="invfp_sel" onchange="javascript:invfp_cb();"><?vsp b3s_render_invfp_opts (); ?></select>
-            </li>
-            <li>
-              <label for="sas_sel">&quot;Same As&quot;:</label>
-              <select id="sas_sel" onchange="javascript:sas_cb();"><?vsp b3s_render_sas_opts (); ?></select>
-            </li>
-          </ul>
-        </div> <!-- settings-popup -->
-      </li>
-    </ul>
-  </div> <!-- #HD -->
-  <div id="MD">
+    <div id="navbar" class ="navbar navbar-default navbar-fixed-top">
+        <div id="hd-container" class="container">
+            <div id="HD">
+                <?vsp fct_desc_page_head (); ?>
+                <div id="hd_r">
+                <div id="val_login_status">
+                <?include fct_val_login_status.vsp ?>
+                <?vsp if (view_mode = 'read-only')
+                    -- http ('<div style="float:right">(Read-only view - Sponging disallowed)</div>');
+                    http ('<div style="float:right">(Sponging disallowed)</div>');
+                else if (view_mode = 'read-write')
+                    -- http ('<div style="float:right">(Read-write view - Sponging disallowed)</div>');
+                    http ('<div style="float:right">(Sponging disallowed)</div>');
+                ?>
+                </div>
+                </div>
+                <ul id="main_menu">
+                <?vsp if (sid is not null) { ?>
+                    <li><a href="<?= b3s_render_fct_link() ?>">Facets</a></li>
+                <?vsp } else { ?>
+                <li><a href="/fct/">Facets (new session)</a></li>
+                <?vsp } ?>
+                <li id="mnu_descr" class="sel"><a href="/describe/?uri=<?U b3s_u2w(_S) ?><?V ses_parms ?>" class="sel">Description</a></li>
+                <li id="mnu_usage">
+                    <a href="usage.vsp?g=<?U _S ?><?V ses_parms ?>">Metadata</a>
+                </li>
+                <li id="mnu_settings"><a href="settings.vsp?g=<?U b3s_u2w(_S) ?><?V ses_parms ?>">Settings</a>
+                    <div id="settings_popup" style="display: none">
+                    <ul>
+                        <li>
+                        <label for="inf_sel">Rule:</label>
+                        <select id="inf_sel" onchange="javascript:inf_cb();"><?vsp b3s_render_inf_opts (); ?></select><br/>
+                        </li>
+                        <li>
+                        <label for="invfp_sel">Inverse Functional Properties:</label>
+                        <select id="invfp_sel" onchange="javascript:invfp_cb();"><?vsp b3s_render_invfp_opts (); ?></select>
+                        </li>
+                        <li>
+                        <label for="sas_sel">&quot;Same As&quot;:</label>
+                        <select id="sas_sel" onchange="javascript:sas_cb();"><?vsp b3s_render_sas_opts (); ?></select>
+                        </li>
+                    </ul>
+                    </div> <!-- settings-popup -->
+                </li>
+                <li>
+                <a type="button" class="desc_permalink"  data-bs-toggle="modal" data-bs-target="#infoModal">
+                    About
+                </a>
+                </li>
+                </ul>
+            </div> <!-- #HD -->
+        </div>
+    </div> <!-- #navbar-->
+    
+  <div id="MD" class="container desc-md">
     <div class="page_resource_info">
 
-    <h2>About:
-
+    <h2>
       <?vsp
       if(safetolink>0) {
         http(sprintf('<a href="%s">%s</a>\n',
@@ -608,32 +622,107 @@ post_process_err_with_log4v:
       }
       ?>
     <a href="">
-    </a>&nbsp;&nbsp;&nbsp;
+    </a>
+    <!--&nbsp;
+     &nbsp;&nbsp;
     <?vsp
       if(safetolink>0) {
         http(sprintf('<a class="desc_permalink" href="%s">Goto</a>\n',
           case when page_resource_uri like 'nodeID://%' then b3s_http_url (page_resource_uri) else page_resource_uri end
         ));
       }
-    ?>
-    &nbsp;
+    ?> -->
+    <a id="permalink" class="desc_permalink" href="<?vsp http(fct_make_curie (sprintf ('%s&distinct=%d', plink_href, dist), lines)); ?>" onclick="myFunction()"><sup><span><i class="fas fa-copy"></i></span></sup>
+    </a>
+    <a id="share" onclick="myFunction()" style="display:none">Share<span><textarea id="purl"></textarea></span></a>
     <a class="desc_sponge_link" href="/describe/?url=<?U page_resource_uri ?><?= case when sid is
-        not null then '&sid=' || sid end ?>&amp;sponger:get=add"
-        title="Click to generate local descriptor data for this entity"
-        id="sp_link" rel="nofollow">Sponge
+    not null then '&sid=' || sid end ?>&amp;sponger:get=add"
+    title="click to import data from external source"
+    id="sp_link" rel="nofollow"><sup><span><i class="fas fa-sync"></i></span></sup>
     </a>
     &nbsp;
-    <a class="desc_permalink" href="<?vsp http (fct_make_curie (sprintf ('%s&distinct=%d',  plink_href, equ (dist, 0)), lines)); ?>" title="This link enables you toggle between normalized and un-normalized views of data using by applying or note applying a DISTINCT operator">
-    <?vsp if (dist) http ('Not'); ?>Distinct
-    </a>
-    &nbsp;
-    <a class="desc_permalink" href="<?vsp http(fct_make_curie (sprintf ('%s&distinct=%d', plink_href, dist), lines)); ?>">Permalink
-    </a>
+    <!--<li class="desc_permalink dropdown fct-dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="export-dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Control
+        </a>
+            <ul class="dropdown-menu" aria-labelledby="export-dropdown">
+
+                <li>
+
+                </li>
+                <li>
+                    <a class="desc_permalink" href="<?vsp http (fct_make_curie (sprintf ('%s&distinct=%d',  plink_href, equ (dist, 0)), lines)); ?>" title="This link enables you toggle between normalized and un-normalized views of data using by applying or note applying a DISTINCT operator">
+                    <?vsp if (dist) http ('Not'); ?>Distinct
+                    </a>
+                    &nbsp;
+                </li>
+            </ul>
+    </li>-->
+            <li class="desc_permalink dropdown fct-dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="export-dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Format
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="export-dropdown">
+              <li><h6 class="dropdown-header"><strong>RDF</strong></h6></li>
+              <li><a class="dropdown-header" href="<?=rdf_link?><?=sprintf ('&output=%U', 'text/plain') ?>">N-Triples</a></li>
+              <li><a class="dropdown-header" href="<?=rdf_link?><?=sprintf ('&output=%U', 'text/turtle') ?>">N3 (Turtle)</a></li>
+              <li><a class="dropdown-header" href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/ld+json')?>">JSON-LD</a></li>
+	          <li><a class="dropdown-header" href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/rdf+json')?>">JSON</a></li>
+	          <li><a class="dropdown-header" href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/rdf+xml') ?>">XML</a>
+              <li><hr class="dropdown-divider"></li>
+              <li><h6 class="dropdown-header"><strong>Microdata</strong></h6></li>
+	          <li> <a class="dropdown-header" href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/microdata+json') ?>">Microdata</a></li>
+	          <li> <a class="dropdown-header" href="<?=rdf_link?><?=sprintf ('&output=%U', 'text/html') ?>">HTML</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><h6 class="dropdown-header"><strong>OData</strong></h6></li>
+	          <li> <a class="dropdown-header" href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/atom+xml')?>">Atom</a></li>
+	          <li> <a class="dropdown-header" href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/odata+json')?>">OData</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><h6 class="dropdown-header"><strong>Others</strong></h6></li>
+              <li> <a class="dropdown-header" href="<?=rdf_link?><?=sprintf ('&output=%U', 'text/csv')?>">CSV</a></li>
+	            <li> <a class="dropdown-header" href="<?=rdf_link?><?= sprintf ('&output=%U', 'text/cxml')?>">CXML</a></li>
+            </ul>
+          </li>
+
+
+            <!-- Modal -->
+            <div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="infoModalLabel">About This Virtuoso Faceted Browser Instance</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                                <div class="gen-info">
+                                </div>
+                                Faceted Search &amp; Find service v<?vsp http(DB.DBA.VAD_CHECK_VERSION('fct')); ?> as of <?V fct_build_info () ?><br/><br/>
+
+                                <?vsp fct_virt_info (); ?><br />
+                                <?vsp
+                                    declare license_text varchar;
+                                    license_text := registry_get ('fct_license_text');
+
+                                    if (license_text) {
+                                        http(license_text);
+                                }
+
+                                    ?>
+                                    <br/>
+                                Data on this page belongs to its respective rights holders.<br/><br/>
+                                Virtuoso Faceted Browser Copyright &copy; 2009-<?V "LEFT" (datestring (now ()), 4)?> OpenLink Software
+                        </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+            <!-- End Modal -->
 
     </h2>
 
       <div class="ds_inf_info">
-	    An Entity of Type : <a href="<?V e_type ?>"><?V e_type_label ?></a>,
+	    A(n) <a href="<?V e_type ?>"><?V e_type_label ?></a>,
 	    within Data Space : <a href="http://<?V host ?>"><?V host ?></a> associated with source <a href="usage.vsp?g=<?U _S ?><?V ses_parms ?>">document(s)</a><br/>
 <?vsp
 
@@ -670,14 +759,14 @@ post_process_err_with_log4v:
               <option value="new_with_class">Start New Facet</option>
               <option value="set_class">Add To Current Facet</option>
             </select>
-            <button class="fct_sel_as_type" title="">Go</button>
+            <button class="fct_sel_as_type btn btn-light" title="">Go</button>
 <?vsp
           }
         else
           {
 ?>
             <input type="hidden" name="cmd" value="new_with_class"/>
-            <button class="fct_sel_as_type" title="">New Facet based on Instances of this Class</button>
+            <button class="fct_sel_as_type btn btn-light" title="">New Facet based on Instances of this Class</button>
 <?vsp
           }
 ?>
@@ -696,14 +785,20 @@ post_process_err_with_log4v:
 <?vsp } ?>
     </div>
   </div>
+  
 <?vsp
 if (_subject <> '') {
 ?>
+   <div class="break-col"></div>
   <p class="subj_desc"><?vsp http (sprintf ('%s', _subject)); ?></p>
+   <div class="break-col"></div>
+
 <?vsp
 } else {
 ?>
-  <p class="subj_delim"></p>
+   <div class="break-col"></div>
+  <p class="subj_desc">No Abstract</p>
+   <div class="break-col"></div>
 <?vsp
 }
 ?>
@@ -711,180 +806,185 @@ if (_subject <> '') {
                 <li><a href="/fct/facet.vsp?sid=<?V sid ?>&amp;cmd=open_property">Choose <?V ''?> as Property (p)</a></li>
                 <li><a href="">Choose <?V ''?> as Value (o)</a></li>-->
 <!-- proptable -->
-    <table class="description">
+    <div class="col-xs-12" id="desc-tbl">
+        <table class="description table table-borderless">
 
-<?vsp
+    <?vsp
 
-    --  gs_user_id := USER;
-    --  gs_user_id := coalesce ((select U_ID from DB.DBA.SYS_USERS where U_NAME=gs_user_id and not U_ACCOUNT_DISABLED), http_nobody_uid());
-      gs_user_id := get_user_id (1);
-      -- dbg_obj_princ ('user = ', USER, ', gs_user_id = ', gs_user_id);
-      gs_check_needed := b3s_gs_check_needed();
-      if (connection_get ('s_term') = 's')
-        http ('<tr><th class="property">Properties</th><th class="value">Objects</th></tr>');
-      else
-        http ('<tr><th class="property">Attributes</th><th class="value">Values</th></tr>');
-      all_lang := vector ('*', 1.0);
-      topof := sprintf (' TOP %d, %d  ', n_per_page * page, n_per_page);
-      _skip := n_per_page * page;
+        --  gs_user_id := USER;
+        --  gs_user_id := coalesce ((select U_ID from DB.DBA.SYS_USERS where U_NAME=gs_user_id and not U_ACCOUNT_DISABLED), http_nobody_uid());
+        gs_user_id := get_user_id (1);
+        -- dbg_obj_princ ('user = ', USER, ', gs_user_id = ', gs_user_id);
+        gs_check_needed := b3s_gs_check_needed();
+        if (connection_get ('s_term') = 's')
+            http ('<thead><tr><th class="property"><div>Properties</div></th><th class="value"><div>Objects</div></th></tr><thead>');
+        else
+            http ('<thead><tr><th class="property"><div>Attributes</div></th><th class="value"><div>Values</div></th></tr></thead>');
+        all_lang := vector ('*', 1.0);
+        topof := sprintf (' TOP %d, %d  ', n_per_page * page, n_per_page);
+        _skip := n_per_page * page;
 
-      if (length (_F) or 1 = sys_stat ('cl_run_local_only'))
-      {
-      dt1 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT any, 0 as FLAG int from (sparql %s define output:valmode "AUTO" %s select distinct ?p ?o %s where { <%s> ?p ?o }  order by 1) sp1', inf, val_perms_clause, _F, _S);
-      }
-      else
-      {
-        gs_check_cond := case gs_check_needed when 0 then '' else sprintf (' AND DB.DBA.RDF_GRAPH_USER_PERMS_ACK (G, %d, 1)', gs_user_id) end;
-      dt1 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT any, 0 as FLAG int from (SELECT DISTINCT p, o FROM DB.DBA.RDF_QUAD %s where s = __i2idn (\'%s\' , 1) %s ORDER BY 1 ASC OPTION (QUIETCAST%s%s)) sp1',
-        tbinf, _S, gs_check_cond, tbinf, tbsas);
-      }
-      dt2 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT any, 1 as FLAG int from (sparql %s define output:valmode "AUTO" %s select distinct ?p ?o %s where { ?o ?p <%s> } order by 1) sp2', inf, val_perms_clause, _F, _S);
-
-      --topof := '';
-      qry_str := sprintf ('select %s PRED, OBJECT, FLAG from (%s UNION ALL %s) un0', topof, dt1, dt2);
-      if (dist = 0)
-        qry_str := replace (qry_str, 'distinct', '');
-      if (_last = 0)
+        if (length (_F) or 1 = sys_stat ('cl_run_local_only'))
         {
-	  if (length (_F) or 1 = sys_stat ('cl_run_local_only'))
+        dt1 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT any, 0 as FLAG int from (sparql %s define output:valmode "AUTO" %s select distinct ?p ?o %s where { <%s> ?p ?o }  order by 1) sp1', inf, val_perms_clause, _F, _S);
+        }
+        else
+        {
+            gs_check_cond := case gs_check_needed when 0 then '' else sprintf (' AND DB.DBA.RDF_GRAPH_USER_PERMS_ACK (G, %d, 1)', gs_user_id) end;
+        dt1 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT any, 0 as FLAG int from (SELECT DISTINCT p, o FROM DB.DBA.RDF_QUAD %s where s = __i2idn (\'%s\' , 1) %s ORDER BY 1 ASC OPTION (QUIETCAST%s%s)) sp1',
+            tbinf, _S, gs_check_cond, tbinf, tbsas);
+        }
+        dt2 := sprintf ('select id_to_iri ("p") as PRED, __ro2sq ("o") as OBJECT any, 1 as FLAG int from (sparql %s define output:valmode "AUTO" %s select distinct ?p ?o %s where { ?o ?p <%s> } order by 1) sp2', inf, val_perms_clause, _F, _S);
+
+        --topof := '';
+        qry_str := sprintf ('select %s PRED, OBJECT, FLAG from (%s UNION ALL %s) un0', topof, dt1, dt2);
+        if (dist = 0)
+            qry_str := replace (qry_str, 'distinct', '');
+        if (_last = 0)
             {
-	      dt1 := sprintf ('select count(*) as cnt from (sparql %s define output:valmode "AUTO" %s select distinct ?p ?o %s where { <%s> ?p ?o }  order by 1) sp1', inf, val_perms_clause, _F, _S);
-	    }
-          else
-	    {
-              gs_check_cond := case gs_check_needed when 0 then '' else sprintf (' AND DB.DBA.RDF_GRAPH_USER_PERMS_ACK (G, %d, 1)', gs_user_id) end;
-              dt1 := sprintf ('select count(*) as cnt from (SELECT DISTINCT p, o FROM DB.DBA.RDF_QUAD %s where s = __i2idn (\'%s\' , 1) %s ORDER BY 1 ASC OPTION (QUIETCAST%s%s)) sp1',
-                tbinf, _S, gs_check_cond, tbinf, tbsas);
-	    }
-	  dt2 := sprintf ('select count(*) as cnt from (sparql %s define output:valmode "AUTO" %s select distinct ?p ?o %s where { ?o ?p <%s> } order by 1) sp2', inf, val_perms_clause, _F, _S);
+        if (length (_F) or 1 = sys_stat ('cl_run_local_only'))
+                {
+            dt1 := sprintf ('select count(*) as cnt from (sparql %s define output:valmode "AUTO" %s select distinct ?p ?o %s where { <%s> ?p ?o }  order by 1) sp1', inf, val_perms_clause, _F, _S);
+            }
+            else
+            {
+                gs_check_cond := case gs_check_needed when 0 then '' else sprintf (' AND DB.DBA.RDF_GRAPH_USER_PERMS_ACK (G, %d, 1)', gs_user_id) end;
+                dt1 := sprintf ('select count(*) as cnt from (SELECT DISTINCT p, o FROM DB.DBA.RDF_QUAD %s where s = __i2idn (\'%s\' , 1) %s ORDER BY 1 ASC OPTION (QUIETCAST%s%s)) sp1',
+                    tbinf, _S, gs_check_cond, tbinf, tbsas);
+            }
+        dt2 := sprintf ('select count(*) as cnt from (sparql %s define output:valmode "AUTO" %s select distinct ?p ?o %s where { ?o ?p <%s> } order by 1) sp2', inf, val_perms_clause, _F, _S);
 
-	  declare cnt1, cnt2 integer;
+        declare cnt1, cnt2 integer;
 
-	  count_str := dt1;
-          if (dist = 0)
-            count_str := replace (count_str, 'distinct', '');
-          count_str := replace (count_str, 'order by 1', '');
-	  exec (count_str, null, null, vector (), 0, meta, data);
-	  if (length (data) and length (data[0]))
-	    cnt1 := data[0][0]; -- sum is supposed to have always number
-	  else
-	    cnt1 := 0;
+        count_str := dt1;
+            if (dist = 0)
+                count_str := replace (count_str, 'distinct', '');
+            count_str := replace (count_str, 'order by 1', '');
+        exec (count_str, null, null, vector (), 0, meta, data);
+        if (length (data) and length (data[0]))
+            cnt1 := data[0][0]; -- sum is supposed to have always number
+        else
+            cnt1 := 0;
 
-	  count_str := dt2;
-          if (dist = 0)
-            count_str := replace (count_str, 'distinct', '');
-          count_str := replace (count_str, 'order by 1', '');
-	  exec (count_str, null, null, vector (), 0, meta, data);
-	  if (length (data) and length (data[0]))
-	    cnt2 := data[0][0]; -- sum is supposed to have always number
-	  else
-	    cnt2 := 0;
+        count_str := dt2;
+            if (dist = 0)
+                count_str := replace (count_str, 'distinct', '');
+            count_str := replace (count_str, 'order by 1', '');
+        exec (count_str, null, null, vector (), 0, meta, data);
+        if (length (data) and length (data[0]))
+            cnt2 := data[0][0]; -- sum is supposed to have always number
+        else
+            cnt2 := 0;
 
-          _last := cnt1 + cnt2;
-	  --if (_last = 0)
-	  --_last := n_per_page;
-	  _last := _last / n_per_page;
+            _last := cnt1 + cnt2;
+        --if (_last = 0)
+        --_last := n_per_page;
+        _last := _last / n_per_page;
+            }
+
+        -- dbg_obj_princ ('qry_str = ', qry_str);
+        exec (qry_str, null, null, vector (), 0, null, null, h1);
+        curr_pred := '';
+        inx := 0;
+        data := null;
+        while (0 = exec_next (h1, null, null, data))
+        {
+            declare PRED, OBJECT, FLAG any;
+        --if (inx <= _skip)
+        --  goto nxt1;
+            if (length (data) < 3)
+            goto skip;
+        pred := data[0];
+            object := data[1];
+            FLAG := data[2];
+        if (not length (PRED))
+            goto nxt1;
+
+        if (curr_pred <> pred)
+            {
+                if (curr_pred <> '') http ('</ul></td></tr>');
+            b3s_http_print_l (PRED, odd_position, flag, sid, langs);
+            curr_pred := pred;
+            }
+            vis := b3s_http_print_r (OBJECT, sid, PRED, langs, 1, all_langs, _from, FLAG);
+        nxt1:;
+        inx := inx + 1;
+        skip:;
+        }
+        exec_close (h1);
+        if (curr_pred <> '') http ('</ul></td></tr>');
+    --      dbg_obj_print (inx);
+        if (inx < n_per_page)
+            dis_next := 1;
+
+        if (odd_position = 0)
+        {
+        if (auto_sponge_on_empty_graph)
+        {
+        -- Sponging wasn't explicitly requested in the request URL.
+        -- The view dataset is empty.
+        -- Rather than display an empty result set, force automatic sponging.
+
+        declare spongeUrl varchar;
+        spongeUrl := sprintf ('%s://%s/describe/?url=%U&sponger:get=add&sr=clean', protocol, host, gr);
+
+        if (val_vad_present and not graph_perms_allow_sponge)
+        {
+            -- The current user is looking at a read-only view of an empty result set.
+            -- Logging in (or re-logging in as a different user) may permit sponging, so display a login dialog.
+            -- Force a re-sponge if authentication succeeds
+
+            declare auth_dlg_msg varchar;
+            auth_dlg_msg := 'No cached data is available. Authenticate to re-sponge.';
+
+            http_rewrite ();
+            connection_set ('__val_denied_service_id__', val_serviceId);
+            connection_set ('__val_req_res__', 'urn:virtuoso:access:sponger:describe');
+            connection_set ('__val_req_acl_scope__', 'urn:virtuoso:val:scopes:sponger:describe');
+            -- connection_set ('__val_req_res_label__', '/describe service');
+            connection_set ('__val_req_res_label__', 'Faceted Browsing Service');
+            connection_set ('__val_post_auth_action__','complete Extract, Transform, and Load operation using');
+            connection_set ('__val_returnto_url__', spongeUrl);
+
+            if (connection_get ('b3s_dbg'))
+            connection_set ('__val_err_msg__', auth_dlg_msg);
+
+            if (val_serviceId is null)
+            http_status_set(401);
+            else
+            http_status_set(403);
+
+            return 0;
+        }
+        else if (not sponge_request)
+        {
+            http_rewrite ();
+            http_status_set (303);
+            http_header (sprintf('Location: %s\r\n', spongeUrl));
+            return 0;
+        }
         }
 
-      -- dbg_obj_princ ('qry_str = ', qry_str);
-      exec (qry_str, null, null, vector (), 0, null, null, h1);
-      curr_pred := '';
-      inx := 0;
-      data := null;
-      while (0 = exec_next (h1, null, null, data))
-	{
-           declare PRED, OBJECT, FLAG any;
-	   --if (inx <= _skip)
-	   --  goto nxt1;
-           if (length (data) < 3)
-	     goto skip;
-	   pred := data[0];
-           object := data[1];
-           FLAG := data[2];
-	   if (not length (PRED))
-	     goto nxt1;
+        if (err is not null)
+        {
+        http_request_status ('HTTP/1.1 400 Bad Request');
+        http ('<tr><td colspan="2"><div id="err">');
+        http_value (err);
+        http ('</div></td></tr>');
+        }
+        else
+        {
+        http_request_status ('HTTP/1.1 404 Not Found');
+        http ('<tr><td colspan="2"><p>No further information is available.</p></td></tr>');
+        }
 
-	   if (curr_pred <> pred)
-	     {
-               if (curr_pred <> '') http ('</ul></td></tr>');
-	       b3s_http_print_l (PRED, odd_position, flag, sid, langs);
-	       curr_pred := pred;
-	     }
-           vis := b3s_http_print_r (OBJECT, sid, PRED, langs, 1, all_langs, _from, FLAG);
-	   nxt1:;
-	   inx := inx + 1;
-	   skip:;
-	}
-      exec_close (h1);
-      if (curr_pred <> '') http ('</ul></td></tr>');
---      dbg_obj_print (inx);
-      if (inx < n_per_page)
-        dis_next := 1;
+        }
+    ?>
+        </table>
+    </div>
+        
+      <div class="break-col"></div>
 
-      if (odd_position = 0)
-      {
-	if (auto_sponge_on_empty_graph)
-	{
-	  -- Sponging wasn't explicitly requested in the request URL.
-	  -- The view dataset is empty.
-	  -- Rather than display an empty result set, force automatic sponging.
-
-	  declare spongeUrl varchar;
-	  spongeUrl := sprintf ('%s://%s/describe/?url=%U&sponger:get=add&sr=clean', protocol, host, gr);
-
-	  if (val_vad_present and not graph_perms_allow_sponge)
-	  {
-	    -- The current user is looking at a read-only view of an empty result set.
-	    -- Logging in (or re-logging in as a different user) may permit sponging, so display a login dialog.
-	    -- Force a re-sponge if authentication succeeds
-
-	    declare auth_dlg_msg varchar;
-	    auth_dlg_msg := 'No cached data is available. Authenticate to re-sponge.';
-
-	    http_rewrite ();
-	    connection_set ('__val_denied_service_id__', val_serviceId);
-	    connection_set ('__val_req_res__', 'urn:virtuoso:access:sponger:describe');
-	    connection_set ('__val_req_acl_scope__', 'urn:virtuoso:val:scopes:sponger:describe');
-	    -- connection_set ('__val_req_res_label__', '/describe service');
-	    connection_set ('__val_req_res_label__', 'Faceted Browsing Service');
-	    connection_set ('__val_post_auth_action__','complete Extract, Transform, and Load operation using');
-	    connection_set ('__val_returnto_url__', spongeUrl);
-
-	    if (connection_get ('b3s_dbg'))
-	      connection_set ('__val_err_msg__', auth_dlg_msg);
-
-	    if (val_serviceId is null)
-	      http_status_set(401);
-	    else
-	      http_status_set(403);
-
-	    return 0;
-	  }
-	  else if (not sponge_request)
-	  {
-	    http_rewrite ();
-	    http_status_set (303);
-	    http_header (sprintf('Location: %s\r\n', spongeUrl));
-	    return 0;
-	  }
-	}
-
-	if (err is not null)
-	{
-	  http_request_status ('HTTP/1.1 400 Bad Request');
-	  http ('<tr><td colspan="2"><div id="err">');
-	  http_value (err);
-	  http ('</div></td></tr>');
-	}
-	else
-	{
-	  http_request_status ('HTTP/1.1 404 Not Found');
-	  http ('<tr><td colspan="2"><p>No further information is available.</p></td></tr>');
-	}
-
-      }
-?>
-      </table>
       <div id="nav">
 	  <form action="/describe/" method="get">
 	  <div>
@@ -912,19 +1012,19 @@ if (_subject <> '') {
 	      } } ?>
 	      <input type="hidden" name="lp" value="<?V _last ?>"/>
 	      <?vsp if (topof <> '' and _last > 0) {  if (1 or page > 0) { ?>
-	      <button type="submit" value="" name="first" <?vsp if (page <= 0) { http ('disabled="disabled"'); } ?>>&#9666;&#9666; First</button>
+	      <button class="btn btn-light" type="submit" value="" name="first" <?vsp if (page <= 0) { http ('disabled="disabled"'); } ?>>&#9666;&#9666; First</button>
 	      &nbsp;
 	      <input type="hidden" name="op" value="<?V page - 1 ?>"/>
-	      <button type="submit" value="" name="prev" <?vsp if (page <= 0) { http ('disabled="disabled"'); } ?>>&#9666; Prev</button>
+	      <button class="btn btn-light" type="submit" value="" name="prev" <?vsp if (page <= 0) { http ('disabled="disabled"'); } ?>>&#9666; Prev</button>
 	      &nbsp;&nbsp;&nbsp;
 	<?vsp } if (1 or not dis_next) { ?>
-	      <button type="submit" value="" name="next" <?vsp if (dis_next) { http ('disabled="disabled"'); } ?>>Next &#9656;</button>
+	      <button class="btn btn-light" type="submit" value="" name="next" <?vsp if (dis_next) { http ('disabled="disabled"'); } ?>>Next &#9656;</button>
 	       &nbsp;
-	      <button type="submit" value="" name="last" <?vsp if (dis_next) { http ('disabled="disabled"'); } ?>>Last &#9656;&#9656;</button>
+	      <button class="btn btn-light" type="submit" value="" name="last" <?vsp if (dis_next) { http ('disabled="disabled"'); } ?>>Last &#9656;&#9656;</button>
 	       &nbsp;&nbsp;&nbsp;
 	       Page <?V page + 1 ?> of <?V _last + 1 ?>  &nbsp;&nbsp;&nbsp;
 	       <input type="text" value="<?V page + 1 ?>" size="5" name="gp" <?vsp if (page <= 0 AND dis_next) { http('disabled="disabled"'); }?> /> &nbsp;
-	       <button type="submit" value="" name="go" <?vsp if (page <= 0 AND dis_next) { http('disabled="disabled"'); }?> >Go</button>
+	       <button class="btn btn-light" type="submit" value="" name="go" <?vsp if (page <= 0 AND dis_next) { http('disabled="disabled"'); }?> >Go</button>
 	<?vsp } } ?>
 	</div>
 	</form>
@@ -932,8 +1032,58 @@ if (_subject <> '') {
     </div> <!--  #MD -->
     <?vsp b3s_render_dbg_out (dbg_out); ?>
 <!-- footer -->
-    <div id="FT">
+    <div id="FT" class="footer">
+        <!-- Button trigger modal
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#infoModal">
+  Info
+</button>
+ -->
+
+<!-- Modal -->
+<!--
+<div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="infoModalLabel">About This Virtuoso Faceted Browser Instance</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        	<div class="gen-info">
+            </div>
+            Faceted Search &amp; Find service v<?vsp http(DB.DBA.VAD_CHECK_VERSION('fct')); ?> as of <?V fct_build_info () ?><br/><br/>
+
+            <?vsp fct_virt_info (); ?><br />
+            <?vsp
+                declare license_text varchar;
+                license_text := registry_get ('fct_license_text');
+
+                if (license_text) {
+                    http(license_text);
+            }
+
+                ?>
+                <br/>
+            Data on this page belongs to its respective rights holders.<br/>
+            Virtuoso Faceted Browser Copyright &copy; 2009-<?V "LEFT" (datestring (now ()), 4)?> OpenLink Software
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+</div>
+-->
+
+
+</div>
+
+<!--
+    <div class="gen-info">
 	Faceted Search &amp; Find service v<?vsp http(DB.DBA.VAD_CHECK_VERSION('fct')); ?> as of <?V fct_build_info () ?><br/><br/>
+    
+    </div>
+-->
+    
 <?vsp if (_addthis_key <> '0') { ?>
   <div id="FT_share">
     <!-- AddThis Button BEGIN -->
@@ -978,21 +1128,7 @@ if (_subject <> '') {
 	<?vsp } ?>
 	<a href="http://linkeddata.uriburner.com/ode/?uri=<?vsp http_url (page_resource_uri); ?>" title="Basic navigation and exploration" target="_blank">ODE</a>
 
-        &nbsp; &nbsp; Content Formats: &nbsp;
-	<a href="<?=rdf_link?><?= sprintf ('&output=%U', 'text/cxml')?>"><img src="/fct/images/cxml_doc.png" class="dicon"/></a>
-	<a href="<?=rdf_link?><?=sprintf ('&output=%U', 'text/csv')?>"><img src="/fct/images/csv_doc.png" class="dicon"/></a>
-	&nbsp; &nbsp; RDF &nbsp;
-	<a href="<?=rdf_link?><?=sprintf ('&output=%U', 'text/plain') ?>"><img src="/fct/images/ntriples_doc.png" class="dicon"/></a>
-	<a href="<?=rdf_link?><?=sprintf ('&output=%U', 'text/turtle') ?>"><img src="/fct/images/n3turtle_doc.png" class="dicon"/></a>
-	<a href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/ld+json')?>"><img src="/fct/images/jsonld_doc.png" class="dicon"/></a>
-	<a href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/rdf+json')?>"><img src="/fct/images/json_doc.png" class="dicon"/></a>
-	<a href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/rdf+xml') ?>"><img src="/fct/images/xml_doc.png" class="dicon"/></a>
-	&nbsp; &nbsp; ODATA &nbsp;
-	<a href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/atom+xml')?>"><img src="/fct/images/atom_doc.png" class="dicon"/></a>
-	<a href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/odata+json')?>"><img src="/fct/images/json_doc.png" class="dicon"/></a>
-	&nbsp; &nbsp; Microdata &nbsp;
-	<a href="<?=rdf_link?><?=sprintf ('&output=%U', 'application/microdata+json') ?>"><img src="/fct/images/json_doc.png" class="dicon"/></a>
-	<a href="<?=rdf_link?><?=sprintf ('&output=%U', 'text/html') ?>"><img src="/fct/images/html_doc.png" class="dicon"/></a>
+  
         &nbsp; &nbsp;<a href="/fct/facet_doc.html">About</a>&nbsp; &nbsp;
       </div> <!-- #ft_t -->
       <div id="ft_b">
@@ -1008,6 +1144,7 @@ if (_subject <> '') {
 	    alt="Valid XHTML + RDFa" height="27" /></a>
 	</span>
 	<br />
+    <!--
 	<?vsp fct_virt_info (); ?><br />
 	<?vsp
           declare license_text varchar;
@@ -1020,9 +1157,11 @@ if (_subject <> '') {
         ?>
 	Data on this page belongs to its respective rights holders.<br/>
 	Virtuoso Faceted Browser Copyright &copy; 2009-<?V "LEFT" (datestring (now ()), 4)?> OpenLink Software
+    -->
       </div> <!-- #ft_b -->
     </div> <!-- #FT -->
     </div> <!-- #PG -->
+
 <!--    <div id="fct_selector_tpl" style="display:none">
       <h3></h3>
       <p class="fct_sel_expln"></p>
