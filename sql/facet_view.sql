@@ -714,6 +714,7 @@ fct_nav (in tree any,
 	    		'<option value="dbp:birthplace">dbpedia:birthplace</option>'||
 	    		'<option value="dbp:placeOfDeath">dbpedia:placeOfDeath</option>'||
 	    		'<option value="dbp:deathPlace">dbpedia:deathPlace</option>'||
+	    		'<option value="schema:geo">schema:geo</option>'||
 			'</select></li>',
                  connection_get ('sid'), 'geo', lim, 'Geospatial Entities projected over Map overlays', 'Places'), txt);
     }
