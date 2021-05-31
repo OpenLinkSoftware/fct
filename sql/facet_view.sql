@@ -707,12 +707,19 @@ fct_nav (in tree any,
       gopt := '';
       if (length (glst) > 1)
         {
+          -- sort strings
+          for (i := 0; i < length (glst); i := i + 1)
+          {
+            glst [i] := fct_uri_curie (id_to_iri (glst [i]));
+          }
+          glst := __vector_sort (glst, 2, 0, 1);
+        }
           for (i := 1; i < length (glst); i := i + 1)
             {
-              gval := fct_uri_curie (id_to_iri (glst [i]));
-              gopt := gopt || sprintf ('<option value="%s">%s</option>', gval, gval);
+              gval := glst [i];
+              if (gval <> 'virtrdf:geo_cont')
+                gopt := gopt || sprintf ('<option value="%s">%s</option>', gval, gval);
             }
-        }
       http (sprintf ('<li><a id="map_link" href="/fct/facet.vsp?cmd=set_view&sid=%d&type=%s&limit=%d&offset=0" title="%V">%s</a>&nbsp;'||
 	    		'<select name="map_of" onchange="javascript:link_change(this.value)">'||
 	    		'<option value="any">Any location</option>'||
