@@ -20,12 +20,6 @@ FCT_FILES	= \
 	fontawesome/sprites/* \
 	fontawesome/svgs/* \
 	fontawesome/webfonts/* \
-
-
-
-
-
-
 	vad_version \
 	VirtTripleLoader/.classpath \
 	VirtTripleLoader/.project \
