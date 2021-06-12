@@ -41,6 +41,7 @@
       <v:variable persist="temp" name="v_terminology" type="varchar" />
       <v:variable persist="temp" name="v_timeout_min" type="varchar" />
       <v:variable persist="temp" name="v_timeout_max" type="varchar" />
+      <v:variable persist="temp" name="v_cctr" type="varchar" />
     </vm:variables>
     <vm:pagebody>
       <![CDATA[
@@ -77,6 +78,10 @@
           self.v_timeout_max := registry_get ('fct_timeout_max');
           if (self.v_timeout_max = 0)
             self.v_timeout_max := '20000';
+
+          self.v_cctr := registry_get ('fct_ctr');
+          if (self.v_cctr = 0)
+            self.v_cctr := 'max-age=3600';
         ]]>
       </v:on-init>
       <div class="main_tab_page">
@@ -182,6 +187,15 @@
 
           <div style="margin-top: 10px;"></div>
 
+
+          <h3 style="background-color: #f7f7f7; padding: 3px;">Caching HTTP request</h3>
+          <p>
+            The cache directives sent via HTTP header to the client
+          </p>
+          <span class="fm_label" style="padding: 2px 5px 0 0; width:245px">Cache Control settings</span>
+          <v:text xhtml_id="cctr" name="cctr" value="--self.v_cctr" xhtml_style="margin-right: 10px;"/>
+          <br/>
+
           <v:button action="simple" name="set" value="Set">
             <v:on-post>
               <![CDATA[
@@ -192,11 +206,11 @@
                 registry_set ('fct_default_terminology', self.terminology.ufl_value);
                 registry_set ('fct_timeout_min', self.timeoutMin.ufl_value);
                 registry_set ('fct_timeout_max', self.timeoutMax.ufl_value);
+                registry_set ('fct_cctr', self.cctr.ufl_value);
               ]]>
             </v:on-post>
           </v:button>
           <br />
-
           <hr />
           <v:button action="simple" name="back" value="Back to packages list">
             <v:on-post>
