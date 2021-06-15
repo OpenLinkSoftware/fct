@@ -68,24 +68,6 @@
       <xsl:call-template name="render-pager">
         <xsl:with-param name="pfx">pager_top</xsl:with-param>
       </xsl:call-template>
-      <xsl:if test="/facets/complete != 'yes'">
-        <span class="partial_res_expln">
-          <xsl:choose>
-            <xsl:when test="$rowcnt != 0">
-              <xsl:text>The query timed out with partial result:</xsl:text>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:text>The query timed out with no result:</xsl:text>
-            </xsl:otherwise>
-          </xsl:choose>
-        </span>
-        <a class="partial_res_help" href="/fct/facet_doc.html#timeout">What's this?</a>&#8194;
-        <button>
-          <xsl:attribute name="onclick">
-            javascript:fct_nav_to('/fct/facet.vsp?cmd=refresh&amp;sid=<xsl:value-of select="$sid"/>&amp;timeout=<xsl:value-of select="$timeout"/>')
-          </xsl:attribute>Retry with <xsl:value-of select="($timeout div 1000)"/> seconds timeout
-        </button>
-      </xsl:if>
     </div> <!-- btn_bar -->
     <xsl:choose>
       <xsl:when test="$noresult = 1">
@@ -104,7 +86,7 @@
           <xsl:when test="$view-type = 'properties'"><h3>Properties</h3></xsl:when>
           <xsl:when test="$view-type = 'properties-in'"><h3>Referencing Properties</h3></xsl:when-->
           <!--<xsl:when test="$view-type = 'list'"><h3 data-ltype="Select a value or condition">Select a value or condition</h3></xsl:when>-->
-          <xsl:when test="$view-type = 'entities-list'"><h3 id="elist">Entities</h3></xsl:when>
+         <!-- <xsl:when test="$view-type = 'entities-list'"><h3 id="elist">Entities</h3></xsl:when>-->
           <!--xsl:when test="$view-type = 'list-count'"><h3>Distinct values</h3></xsl:when>
           <xsl:when test="$view-type = 'geo'"><h3>Location</h3></xsl:when-->
         </xsl:choose>
@@ -345,8 +327,54 @@
 	  <xsl:attribute name="onclick">javascript:fct_pager_next('<xsl:value-of select="$pfx"/>');</xsl:attribute>
           &#9654;
 	</button>
+  <xsl:if test="/facets/complete != 'yes'">
+            <span class="partial_res_expln">
+              <a class="btn-sm btn-light" data-bs-toggle="tooltip" data-bs-placement="bottom">
+                <xsl:attribute name="onclick">
+                  javascript:fct_nav_to('/fct/facet.vsp?cmd=refresh&amp;sid=<xsl:value-of select="$sid"/>&amp;timeout=<xsl:value-of select="$timeout"/>')
+                </xsl:attribute>
+                <xsl:choose>
+                  <xsl:when test="$rowcnt != 0">
+                    <xsl:attribute name="title">
+                      The query timed out with partial result.
+                      Retry with
+                      <xsl:value-of select="($timeout div 1000)"/> seconds timeout
+                    </xsl:attribute>
+                  </xsl:when>
+                  <xsl:otherwise>
+                    <xsl:attribute name="title">
+                      The query timed out with no result
+                      Retry with
+                      <xsl:value-of select="($timeout div 1000)"/> seconds timeout
+                    </xsl:attribute>
+                  </xsl:otherwise>
+                </xsl:choose>
+                Retry <!--with <xsl:value-of select="($timeout div 1000)"/> seconds timeout-->
+
+              </a>
+              <!--
+              <xsl:choose>
+                <xsl:when test="$rowcnt != 0">
+                    <span>
+                    <i class="fa fa-info" title="The query timed out with partial result">    
+                    </i>
+                    </span>
+                </xsl:when>
+                <xsl:otherwise>
+                  <span>
+                      <i class="fa fa-info" title="The query timed out with no result">    
+                      </i>
+                  </span>
+                </xsl:otherwise>
+              </xsl:choose> 
+              -->
+            </span>
+            <!-- <a class="partial_res_help" href="/fct/facet_doc.html#timeout">What's this?</a>&#8194; -->
+              
+           </xsl:if>
     </form>
   </xsl:if>
+  
 </xsl:template> <!-- render-pager -->
 
 <xsl:template name="render-result">
@@ -355,7 +383,14 @@
 <table id="result_t">
   <xsl:attribute name="class">result table <xsl:value-of select="$view-type"/></xsl:attribute>
   <thead>
+  
     <xsl:choose>
+    <xsl:when test="$view-type = 'entities-list'">
+              <td>
+                <h3 id="elist">Entities
+                </h3>
+              </td>
+</xsl:when>
       <xsl:when test="$view-type = 'properties'">
 	  <tr><th>Include</th> 
       
@@ -444,6 +479,7 @@
         </xsl:if>
             
         <xsl:choose>
+
             <xsl:when test="not($view-type = 'list') and not($view-type = 'list-count') and not($view-type = 'properties-in')">
                 <td>
                     <xsl:if test="$view-type = 'properties' or $view-type = 'classes'">
@@ -669,13 +705,18 @@
                         <option value="MAX"><xsl:if test="$tree//query/@agg = 'MAX'"><xsl:attribute name="selected">1</xsl:attribute></xsl:if>Max</option>
                         </select>
                         <span id="agg_val"><xsl:value-of select="$agg_res"/></span>
+                        
                     </form>
+
+
                 </div> 
             </xsl:if>
          
           <xsl:call-template name="render-pager">
             <xsl:with-param name="pfx">pager_bottom</xsl:with-param>
           </xsl:call-template>
+
+           
         </div> <!-- btn_bar -->
 </div>
 
