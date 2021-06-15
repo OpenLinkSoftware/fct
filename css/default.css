@@ -222,7 +222,7 @@
  div.main_expln { float: left; clear: left; text-align: center; width: 100%;}
  
  #res {order:3; float: left; clear: left; margin: 0px 0px 0px 0px; padding: 0px 0px  100px 0px; max-width: 69% !important; flex-shrink: 1;}
- #res h3 { margin-top: 0; margin-left: 10%;}
+ #res h3 { margin-top: 0; /*margin-left: 10%;*/}
  
  /*#new_search_txt {border-radius: 20px !important;}*/
  
@@ -235,7 +235,7 @@
              background-repeat: no-repeat; 
              background-position: right;}
  
- table.result { display:block; height:380px; overflow-y: scroll; clear:left; width: 100%; margin: 3px; margin-left:10%; font-size: 14px;}
+ table.result { display:block; height:380px; overflow-y: scroll; clear:left; width: 100%; margin: 3px; margin-left:5%; font-size: 14px;}
  table.result td { /*width:75%;*/ overflow: hidden; font-size: 14px; word-break:break-word;}
  span.iri { font-weight: bold }
  span.value { font-weight: bold }
@@ -462,9 +462,9 @@
  
  #opts input[type="checkbox"] { margin-left: 120px; }
  
- #res .btn_bar { text-align: center; /*border-top: 1px solid #333;*/ margin-top: 15px; padding-top: 8px; width:inherit;}
+ #res .btn_bar { text-align: center; /*border-top: 1px solid #333;*/ margin-top: 15px; padding-top: 8px; width:inherit; margin-left:5%}
  
- #res .btn_bar_top { border-top: none; margin-top: 0; padding-top: 0; margin-bottom: 10px;}
+ #res .btn_bar_top { border-top: none; margin-top: 0; margin-left: 17%; padding-top: 0; margin-bottom: 10px;}
  
  #res .pager .stats {
    font-style: italic;
@@ -819,8 +819,8 @@
      margin-top: 10px;
  }
  
- #modifiers{float:left;}
- #modifiers form{display:inline;}
+ #modifiers{float:left; margin-top: 4px;}
+ #modifiers form{margin-top: 6px; display:inline;}
  
  /*
  ul[class*=qry_nfo_lvl_] li {
@@ -850,6 +850,10 @@ label[for="ft_q"], #map_link {
     padding-right: 10px;
 }
 
+#map_of{
+  width: 100px;
+}
+
 .n1 li form input[value=Set] {
     margin-left: 10px;
 }
@@ -870,3 +874,11 @@ div#\#md-options {
   margin-top: -19px;
   margin-right: -3px;
 }*/
+
+/*partial_res_help{
+  display: none;
+}*/
+
+span.partial_res_expln{
+  margin-left:3px
+}
