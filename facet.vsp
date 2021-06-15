@@ -315,6 +315,7 @@ footer:;
 </div>
 <?vsp } ?>
   
+<?vsp fct_cctr(); ?>
 
 </div><!-- #MD -->
 
