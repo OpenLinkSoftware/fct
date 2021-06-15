@@ -721,7 +721,7 @@ fct_nav (in tree any,
                 gopt := gopt || sprintf ('<option value="%s">%s</option>', gval, gval);
             }
       http (sprintf ('<li><a id="map_link" href="/fct/facet.vsp?cmd=set_view&sid=%d&type=%s&limit=%d&offset=0" title="%V">%s</a>&nbsp;'||
-	    		'<select name="map_of" onchange="javascript:link_change(this.value)">'||
+	    		'<select name="map_of" id="map_of" onchange="javascript:link_change(this.value)">'||
 	    		'<option value="any">Any location</option>'||
 	    		'<option value="">Shown items</option>'||
                         gopt ||
