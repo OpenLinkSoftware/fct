@@ -329,7 +329,7 @@
 	</button>
   <xsl:if test="/facets/complete != 'yes'">
             <span class="partial_res_expln">
-              <a class="btn-sm btn-light" data-bs-toggle="tooltip" data-bs-placement="bottom">
+              <a class="btn-sm btn-light" id="retry-btn" data-bs-toggle="tooltip" data-bs-placement="bottom">
                 <xsl:attribute name="onclick">
                   javascript:fct_nav_to('/fct/facet.vsp?cmd=refresh&amp;sid=<xsl:value-of select="$sid"/>&amp;timeout=<xsl:value-of select="$timeout"/>')
                 </xsl:attribute>
@@ -343,13 +343,12 @@
                   </xsl:when>
                   <xsl:otherwise>
                     <xsl:attribute name="title">
-                      The query timed out with no result
-                      Retry with
-                      <xsl:value-of select="($timeout div 1000)"/> seconds timeout
+                      Attempt to produce a complete solution with a 
+                      <xsl:value-of select="($timeout div 1000)"/> second retry timeout
                     </xsl:attribute>
                   </xsl:otherwise>
                 </xsl:choose>
-                Retry <!--with <xsl:value-of select="($timeout div 1000)"/> seconds timeout-->
+                Retry? <!--with <xsl:value-of select="($timeout div 1000)"/> seconds timeout-->
 
               </a>
               <!--
@@ -660,7 +659,7 @@
              <xsl:if test="/facets/result/@type='propval-list' or $view-type='list'">
                 <div id="modifiers">
 
-                    <form id="cond_form"> 
+                    <form id="txt_cond_form"> 
                         <input type="hidden" name="sid"><xsl:attribute name="value"><xsl:value-of select="$sid"/></xsl:attribute></input>
                         <input type="hidden" name="hi" id="out_hi"/>
                         <input type="hidden" name="lo" id="out_lo"/>
@@ -669,7 +668,7 @@
                         <input type="hidden" name="val" id="out_val"/>
                         <input type="hidden" name="cmd" value="cond" id="cmd"/>
                         <input type="hidden" name="cond_parms" id="cond_parms"/>
-                        Add Condition: 
+                        Condition 
                         <select id="cond_type" name="cond_t">
                         <option value="none">None</option>
                         <option value="eq">==</option>
@@ -696,7 +695,7 @@
                     <form id="agg_form">
                         <input type="hidden" name="sid"><xsl:attribute name="value"><xsl:value-of select="$sid"/></xsl:attribute></input>
                         <input type="hidden" name="cmd" value="set_agg" id="set_agg"/>
-                        Show an Aggregate: 
+                        Aggregate 
                         <select id="agg_type" name="agg">
                         <option value="">None</option>
                         <option value="SUM"><xsl:if test="$tree//query/@agg = 'SUM'"><xsl:attribute name="selected">1</xsl:attribute></xsl:if>Sum</option>
@@ -793,9 +792,9 @@
       </span>
       <span id="coord_ctr">
         <!--label for="ckb_neg" class="ckb">Negation:</label><input type="checkbox" name="neg" id="ckb_neg"/--> 
-        <label for="cond_lat">Lat:</label>
+        <label for="cond_lat">Lat</label>
         <input name="lat" id="cond_lat" type="text" size="9"/>
-        <label for="cond_lon">Lon:</label>
+        <label for="cond_lon">Lon</label>
         <input name="lon" id="cond_lon" type="text" size="9"/>
         <label for="cond_acc">Accuracy</label>
         <input id="cond_acc" type="text" size="6" disabled="true"/>
