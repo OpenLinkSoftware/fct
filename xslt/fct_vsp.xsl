@@ -273,7 +273,7 @@
 
 <xsl:template name="render-pager">
   <xsl:param name="pfx"/>
-  <xsl:if test="/facets/processed &gt; 0">
+  <xsl:if test="/facets/processed &gt;= 0">
     <form class="pager">
       <xsl:attribute name="id"><xsl:value-of select="$pfx"/></xsl:attribute>
       <input type="hidden" name="sid">
