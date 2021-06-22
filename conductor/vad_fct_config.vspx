@@ -160,7 +160,7 @@
             <v:item name="Apply to subjects only" value="SAME_AS_S" />
             <v:item name="Apply to objects only" value="SAME_AS_O" />
             <v:item name="Apply to both subjects and objects (recommended)" value="SAME_AS_S_O" />
-            <v:item name="Apply to subjects, objects and predicates (not recommended on big datasets)" value="SAME_AS" />
+            <v:item name="Apply to subjects, predicates, and objects (not recommended on big datasets)" value="SAME_AS" />
             <v:item name="Apply to predicates only (special use cases only)" value="SAME_AS_P" />
             <v:before-data-bind>
               <![CDATA[
@@ -188,7 +188,7 @@
           <div style="margin-top: 10px;"></div>
 
 
-          <h3 style="background-color: #f7f7f7; padding: 3px;">Caching HTTP request</h3>
+          <h3 style="background-color: #f7f7f7; padding: 3px;">Caching HTTP requests</h3>
           <p>
             The cache directives sent via HTTP header to the client
           </p>

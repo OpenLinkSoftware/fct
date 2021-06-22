@@ -48,9 +48,9 @@
 <?vsp
   fct_gen_opensearch_link();
 ?>
+<script type="text/javascript" src="/fct/js/popper.min.js"></script>
 <link href="css/bootstrap5.css" rel="stylesheet">
 <link href="css/fct-only.css" rel="stylesheet">
-
 <script type="text/javascript" >
     var featureList=["map", "combolist", "ajax", "tab", "json", "location"];
 </script>
@@ -62,6 +62,7 @@
 <link rel="stylesheet" type="text/css" href="/fct/css/jquery-ui-1.11.4.min.css" />
 <link rel="stylesheet" type="text/css" href="fontawesome/css/all.min.css">
 <script type="text/javascript" src="js/bootstrap5.min.js"></script>
+<script type="text/javascript" src="/fct/js/tooltip.js"></script>
 
 
 <?vsp 
@@ -352,6 +353,12 @@ footer:;
 	pageTracker._trackPageview();
 	} catch(err) {}</script>
     <?vsp } ?>
+    <script>
+      var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+      var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+      })
+    </script>
 </body>
 </html>
 <?vsp
