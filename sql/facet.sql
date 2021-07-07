@@ -903,7 +903,8 @@ fct_view (in tree any, in this_s int, in txt any, in pre any, in post any, in fu
     {
       declare exp any;
 
-      exp := cast (xpath_eval ('//text', tree) as varchar);
+      exp := cast (xpath_eval ('string (//text)', tree) as nvarchar);
+      exp := charset_recode (exp, '_WIDE_', 'UTF-8');
 
       http (sprintf ('select ?s%d as ?c1, (bif:search_excerpt (bif:vector (%s), ?o%d)) as ?c2, ?sc, ?rank, ?g where {{{ select ?s%d, (?sc * 3e-1) as ?sc, ?o%d, (sql:rnk_scale (<LONG::IRI_RANK> (?s%d))) as ?rank, ?g',
             this_s,
