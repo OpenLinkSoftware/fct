@@ -525,7 +525,7 @@ post_process_err_with_log4v:
 ?>
 <head>
     <base href="/fct/rdfdesc/" />
-    <title>About: <?vsp if (length (label)) http (label); else http (b3s_uri_percent_decode(b3s_uri_curie (page_resource_uri)));?></title>
+    <title>About: <?vsp if (length (label)) http_value (label); else http (b3s_uri_percent_decode(b3s_uri_curie (page_resource_uri)));?></title>
     <link href="../css/bootstrap5.css" rel="stylesheet">
     <script src="../js/bootstrap5.min.js"></script>
     <link rel="stylesheet" href="../fontawesome/css/all.css">
@@ -610,16 +610,24 @@ post_process_err_with_log4v:
 
     <h2>
       <?vsp
-      if(safetolink>0) {
-        http(sprintf('<a href="%s">%s</a>\n',
-          case when page_resource_uri like 'nodeID://%' then b3s_http_url (page_resource_uri) else page_resource_uri end,
-          case when (length(label)) then label else b3s_uri_percent_decode(b3s_uri_curie(page_resource_uri)) end));
-      } else {
+      if (safetolink > 0)
+        {
+          http(sprintf('<a href="%s">',
+	    case when page_resource_uri like 'nodeID://%' then b3s_http_url (page_resource_uri) else page_resource_uri end));
+
+	  if (length (label))
+	    http_value (label);
+	  else
+	    http (b3s_uri_percent_decode(b3s_uri_curie(page_resource_uri)));
+	  http ('</a>\n');
+        }
+      else
+        {
 	  if (length(label))
 	    http_value(label);
 	  else
 	    http (b3s_uri_curie(page_resource_uri));
-      }
+        }
       ?>
     <a href="">
     </a>
