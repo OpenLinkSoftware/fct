@@ -89,6 +89,9 @@ fct_uri_curie (in uri varchar)
   if (uri is null)
     return uri;
 
+  if (iswidestring (uri))
+    uri := charset_recode (uri, '_WIDE_', 'UTF-8');
+
   uriSearch := uri;
   nsPrefix := null;
 
@@ -146,14 +149,15 @@ fct_short_uri (in x any)
 create procedure
 fct_trunc_uri (in s varchar, in maxlen int := 40)
 {
-  declare _s varchar;
+  declare _s, ret varchar;
   declare _h int;
 
   _s := trim(s);
 
   if (length(_s) <= maxlen) return _s;
   _h := floor (maxlen / 2);
-  return sprintf ('%s...%s', "LEFT"(_s, _h), "RIGHT"(_s, _h-1));
+  ret := sprintf ('%s...%s', "LEFT"(_s, _h), "RIGHT"(_s, _h-1));
+  return ret;
 }
 ;
 
@@ -161,6 +165,10 @@ create procedure
 fct_short_form (in x any, in ltgt int := 0)
 {
   declare loc, pref, sh varchar;
+  declare ret nvarchar;
+
+  if (iswidestring (x))
+    x := charset_recode (x, '_WIDE_', 'UTF-8');
 
   if (not isstring (x))
     return null;
@@ -171,8 +179,11 @@ fct_short_form (in x any, in ltgt int := 0)
     return 'Blank' || x;
 
   if (sh is not null)
-    return (fct_trunc_uri(sh));
-  else return (case when ltgt then '&lt;' || fct_trunc_uri (x) || '&gt;' else fct_trunc_uri (x) end);
+    ret := fct_trunc_uri(sh);
+  else 
+    ret := (case when ltgt then '&lt;' || fct_trunc_uri (x) || '&gt;' else fct_trunc_uri (x) end);
+  ret := charset_recode (ret, 'UTF-8', '_WIDE_');
+  return ret;
 }
 ;
 
@@ -187,7 +198,7 @@ fct_long_uri (in x any)
     return x;
  sh := __xml_get_ns_uri (subseq (pref, 0, length (pref) - 1), 2);
   if (sh is not null)
-    return sh || loc;
+    x := sh || loc;
   return x;
 }
 ;
@@ -307,6 +318,14 @@ FCT_LABEL_NP (in x any, in g_id iri_id_8, in ctx varchar, in lng varchar := 'en'
   declare label_iri iri_id_8;
   declare q, best_q, str_lang, lang_id any;
 
+  if (is_rdf_box (x))
+    {
+      if (not rdf_box_is_complete (x))
+	__rdf_box_make_complete (x);
+      best_str := x;
+      goto endproc;
+    }
+
   if (not isiri_id (x))
     return null;
   if (__proc_exists ('rdf_resolve_labels_s') is not null)
@@ -341,6 +360,8 @@ FCT_LABEL_NP (in x any, in g_id iri_id_8, in ctx varchar, in lng varchar := 'en'
 	    }
 	}
     }
+  endproc:
+  best_str := charset_recode (best_str, 'UTF-8', '_WIDE_');
   return best_str;
 }
 ;
@@ -374,8 +395,17 @@ FCT_LABEL_S (in x any, in g_id iri_id_8, in ctx varchar, in lng varchar)
     {
       if (is_rdf_box (o))
 	{
+	  if (not rdf_box_is_complete (o))
+	    __rdf_box_make_complete (o);
           lng_pref := rdf_box_lang (o);
-	  str_lang := (select RL_ID from RDF_LANGUAGE where RL_TWOBYTE = lng_pref);
+	  if (lng_pref <> 257)
+	    {
+	      str_lang := rdf_cache_id_to_name ('l', lng_pref);
+	      if (0 = str_lang) 
+		str_lang := (select RL_ID from RDF_LANGUAGE where RL_TWOBYTE = lng_pref);
+	    }
+	  else
+	    str_lang := 'en';
 	}
       else
         str_lang := 'en';	
@@ -389,26 +419,12 @@ FCT_LABEL_S (in x any, in g_id iri_id_8, in ctx varchar, in lng varchar)
 	      best_q := q;
 	    }
 	}
-
-      if (0)
-	{
-	  if (is_rdf_box (o) and not rdf_box_is_complete (o))
-	    l := 20;
-	  else
-	    l := length (o);
-	  if (l > best_l)
-	    {
-	      best_str := o;
-	      best_l := l;
-	    }
-	}
     }
   if (is_rdf_box (best_str) and not rdf_box_is_complete (best_str))
     {
-      set isolation = 'committed';
-      return (select case (isnull (RO_LONG)) when 0 then blob_to_string (RO_LONG) else RO_VAL end
-		   from DB.DBA.RDF_OBJ table option (no cluster) where RO_ID = rdf_box_ro_id (best_str));
+      __rdf_box_make_complete (best_str);
     }
+  best_str := charset_recode (best_str, 'UTF-8', '_WIDE_');
   return best_str;
 }
 ;
@@ -845,8 +861,11 @@ fct_view (in tree any, in this_s int, in txt any, in pre any, in post any, in fu
 
   if ('list' = mode or 'propval-list' = mode)
     {
+      declare langs varchar;
+      langs := connection_get ('langs');
       http (sprintf ('select ?s%d as ?c1 ', this_s), pre);
-      http (sprintf (' group by (?s%d) order by desc (<LONG::IRI_RANK> (?s%d)) ', this_s, this_s), post);
+      http (sprintf (' group by (?s%d) order by desc (<LONG::IRI_RANK> (?s%d)) desc (bif:langmatches_pct_http (coalesce (lang(?s%d), \'\'), \'%s\'))',
+	   this_s, this_s, this_s, langs), post);
     }
 
   if ('list-count' = mode)
