@@ -943,9 +943,9 @@ cursor: pointer;
 /*Fix QR Code display*/
 
 .ui-dialog.ui-widget.ui-widget-content.ui-corner-all.ui-front.ui-draggable.ui-resizable {
-  margin-top: 100px;
+  /*margin-top: 100px;*/
   position: absolute; 
   height: 180.016px; 
   width: 160px; 
-  inset: 701.969px auto auto 1627px;
+  inset: 30% auto auto 50%;
 }
