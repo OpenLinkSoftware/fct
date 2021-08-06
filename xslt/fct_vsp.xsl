@@ -596,17 +596,12 @@
         </td>
 	  </xsl:when>
           <xsl:otherwise> <!-- text matches view -->
-            <td class="rnk">
+           <td class="rnk">
               <xsl:for-each select="column[@datatype='trank' or @datatype='erank']">
                 <img class="rnk">
-                <!--
                   <xsl:attribute name="src">
                     <xsl:text>images/r_</xsl:text><xsl:value-of select="min (floor(.), 10)"/><xsl:text>.png</xsl:text>
                   </xsl:attribute>
-                -->
-                  <xsl:attribute name="src">
-                    <xsl:text>images/r_10.png</xsl:text>
-                  </xsl:attribute>              
                   <xsl:attribute name="alt">
                     <xsl:choose>
                       <xsl:when test="./@datatype='trank'">Text Rank:</xsl:when>
@@ -621,16 +616,9 @@
                     </xsl:choose>
                     <xsl:value-of select="."/>
                   </xsl:attribute>
-                  <xsl:attribute name="style">
-                    <xsl:choose>
-                      <xsl:when test="./@datatype='trank'">width:<xsl:value-of select="."/>em</xsl:when>
-                      <xsl:when test="./@datatype='erank'"><xsl:value-of select="."/>em</xsl:when> 
-                    </xsl:choose>
-                    
-                  </xsl:attribute>
                 </img>
               </xsl:for-each>
-	    </td>
+	          </td>
 	    <xsl:for-each select="column">
 	      <td data-tdtype="column-res">
                 <xsl:choose>
