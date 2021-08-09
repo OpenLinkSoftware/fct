@@ -1277,6 +1277,9 @@ create procedure fct_make_curie (in url varchar, in lines any)
   declare curie, chost, dhost varchar;
   declare len integer;
 
+  if (__proc_exists ('WS.CURI.curi_make_curi') is null)
+    return url;
+
   curie := WS.CURI.curi_make_curi (url);
   dhost := registry_get ('URIQADefaultHost');
   chost := http_request_header(lines, 'Host', null, dhost);
