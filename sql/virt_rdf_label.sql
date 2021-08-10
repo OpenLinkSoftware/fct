@@ -774,6 +774,11 @@ oplbase:contained_in_thread rdfs:subPropertyOf sioc:has_container .
 oplbase:container_of_post rdfs:subPropertyOf sioc:container_of .
 oplbase:container_of_thread rdfs:subPropertyOf sioc:container_of .
 
+#
+# Abstracts rules
+#
+schema:description rdfs:subPropertyOf rdfs:comment .
+
 ', '', 'virtrdf-label');
 
 rdfs_rule_set ('virtrdf-label', 'virtrdf-label');
