@@ -139,10 +139,10 @@ create procedure rnk_get_stat (in s_first int)
 }
 ;
 
-create procedure rnk_count_refs_srv ()
+create procedure RNK_COUNT_REFS_SRV ()
 {
   -- use psog (pk) instead of sp
-  declare cr cursor for select s, p from rdf_quad table option (no cluster, index primary key) where isiri_id (o);
+  declare cr cursor for select S, P from RDF_QUAD table option (no cluster, index PRIMARY KEY) where isiri_id (o);
   declare s_first, s_prev, nth, sn, cnt, fill int;
   declare s, p iri_id;
   declare str varchar;
@@ -259,7 +259,7 @@ create procedure DB.DBA.IRI_STAT (in iri iri_id_8)
 }
 ;
 
-create procedure rnk_inc (in rnk int, in nth_iter int)
+create procedure RNK_INC (in rnk int, in nth_iter int)
 {
   /* the score increment is 1 / n_outgoing * (score_now - score_before) */
   declare n_out, sc, prev_sc, inc double precision;
@@ -294,18 +294,38 @@ create procedure rnk_get_ranks (in s_first int)
 }
 ;
 
-create procedure RNK_SCORE (in nth_iter int)
+create procedure RNK_SCORE_AQ (in nth_iter int, in limit int)
+{
+  declare inx, slice, n_slices, chunk_sz, start_id, end_id int;
+  declare aq any;
+  
+  n_slices := 4;
+  chunk_sz := (((limit + 256) / 256) * 256) / n_slices;
+  aq := async_queue (n_slices, 4);
+  for (inx := 0; inx < n_slices; inx := inx + 1)
+    {
+      start_id := inx * chunk_sz;
+      end_id := start_id + chunk_sz + 1;
+      -- dbg_obj_print ('inx:', inx, ' start:', start_id, ' end: ', end_id);
+      aq_request (aq, 'DB.DBA.RNK_SCORE', vector (nth_iter, start_id, end_id));
+    } 
+  aq_wait_all (aq);
+  return;
+}
+;
+
+create procedure RNK_SCORE (in nth_iter int, in start_id int, in end_id int)
 {
   -- use the POGS instead of OP index and check for lower value
-  declare cr cursor for select o, p, IRI_STAT (s)
-  	from rdf_quad table option (no cluster, index rdf_quad_pogs)
-  	where o > #i0 and o < iri_id_from_num (0hexffffffffffffff00);
+  declare cr cursor for select O, P, IRI_STAT (S)
+  	from RDF_QUAD table option (no cluster, index RDF_QUAD_POGS)
+  	where O > iri_id_from_num (start_id) and O < iri_id_from_num (end_id) and isiri_id (O);
   declare s_first, s_prev, nth, sn, rnk, ssc, fill, n_iters int;
   declare sc double precision;
   declare s, p iri_id;
   declare str varchar;
   set isolation = 'committed';
-  log_enable (2);
+  log_enable (2, 1);
   whenever not found goto last;
   s_first := null;
   s_prev := null;
@@ -328,7 +348,7 @@ create procedure RNK_SCORE (in nth_iter int)
       if (sn = s_prev) -- same S
 	{
 	  -- calculate new score
-	  sc := sc + rnk_inc (rnk, nth_iter);
+	  sc := sc + RNK_INC (rnk, nth_iter);
 	}
       else
 	{
@@ -345,7 +365,7 @@ create procedure RNK_SCORE (in nth_iter int)
 	  -- increment string fill
 	  fill := nth + 2;
 	  -- increment score ?
-	  sc := rnk_inc (rnk, nth_iter);
+	  sc := RNK_INC (rnk, nth_iter);
 	  s_prev := sn;
 	  dst := sn - s_first;
 	  if (dst > 255 or dst < 0)
@@ -377,12 +397,12 @@ create procedure RNK_SCORE_SRV (in nth int)
 {
   declare aq any;
   aq := async_queue (1);
-  aq_request (aq, 'DB.DBA.RNK_SCORE', vector (nth));
+  aq_request (aq, 'DB.DBA.RNK_SCORE', vector (nth, 0, 0hexffffffffffffff00));
   aq_wait_all (aq);
 }
 ;
 
-create procedure rnk_next_cycle ()
+create procedure RNK_NEXT_CYCLE ()
 {
   /* copy rank to stat and set previous rank in stat to last rank */
   declare stat, rank varchar;
@@ -421,22 +441,38 @@ done:
 }
 ;
 
-create procedure s_rank ()
+create procedure S_RANK ()
 {
   if (0 = sys_stat ('cl_run_local_only'))
     {
       if (cl_this_host () = 1)
 	cl_exec('__dbf_set(''cl_max_keep_alives_missed'',3000)');
     }
-  log_enable (2);
+  log_enable (2, 1);
   delete from RDF_IRI_STAT;
   delete from RDF_IRI_RANK;
-  log_enable (1);
-  cl_exec ('rnk_count_refs_srv ()');
-  cl_exec ('rnk_score_srv (1)');
-  cl_exec ('rnk_next_cycle ()');
-  cl_exec ('rnk_score_srv (2)');
-  cl_exec ('rnk_next_cycle ()');
-  cl_exec ('rnk_score_srv (3)');
+  if (0 = sys_stat ('cl_run_local_only'))
+    {
+      cl_exec ('RNK_COUNT_REFS_SRV ()');
+      cl_exec ('RNK_SCORE_SRV (1)');
+      cl_exec ('RNK_NEXT_CYCLE ()');
+      cl_exec ('RNK_SCORE_SRV (2)');
+      cl_exec ('RNK_NEXT_CYCLE ()');
+      cl_exec ('RNK_SCORE_SRV (3)');
+    }
+  else
+    {
+      declare limit int;
+      limit := (select max (O) from RDF_QUAD table option (index RDF_QUAD_POGS) 
+                where O > #i0 and O < iri_id_from_num (0hexffffffffffffff00) and is_named_iri_id (O));
+      limit := iri_id_num (limit);
+      RNK_COUNT_REFS_SRV ();
+      RNK_SCORE_AQ (1, limit);
+      RNK_NEXT_CYCLE ();
+      RNK_SCORE_AQ (2, limit);
+      RNK_NEXT_CYCLE ();
+      RNK_SCORE_AQ (3, limit);
+    }
+  log_enable (1, 1);
 }
 ;
