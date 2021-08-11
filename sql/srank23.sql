@@ -25,12 +25,12 @@
 
 
 
-EXEC_STMT ('create table RDF_IRI_RANK (rnk_iri iri_id_8 primary key, rnk_string varchar no compress)',0);
-EXEC_STMT ('alter index RDF_IRI_RANK on RDF_IRI_RANK partition (rnk_iri int (0hexffff00))',0);
+EXEC_STMT ('create table RDF_IRI_RANK (RNK_IRI iri_id_8 primary key, RNK_STRING varchar no compress)',0);
+EXEC_STMT ('alter index RDF_IRI_RANK on RDF_IRI_RANK partition (RNK_IRI int (0hexffff00))',0);
 
 
-EXEC_STMT ('create table RDF_IRI_STAT (rst_iri iri_id_8 primary key, rst_string varchar no compress)',0);
-EXEC_STMT ('alter index RDF_IRI_STAT on RDF_IRI_STAT partition (rst_iri int (0hexffff00))',0);
+EXEC_STMT ('create table RDF_IRI_STAT (RST_IRI iri_id_8 primary key, RST_STRING varchar no compress)',0);
+EXEC_STMT ('alter index RDF_IRI_STAT on RDF_IRI_STAT partition (RST_IRI int (0hexffff00))',0);
 
 
 -- calculate int scaled from double/float
@@ -84,7 +84,7 @@ create procedure DB.DBA.IR_SRV (in iri iri_id_8)
   ni := iri_id_num (iri);
   n := bit_and (0hexffffffffffffff00, ni);
  nth := 2 * bit_and (ni, 0hexff);
- str := (select rnk_string from rdf_iri_rank table option (no cluster) where rnk_iri = iri_id_from_num (n));
+ str := (select RNK_STRING from RDF_IRI_RANK table option (no cluster) where RNK_IRI = iri_id_from_num (n));
   if (nth >= length (str))
     return vector (0, 1);
   return vector (str[nth] * 256 + str[nth + 1], 1);
@@ -105,7 +105,7 @@ create procedure DB.DBA.IRI_RANK (in iri iri_id_8)
   ni := iri_id_num (iri);
   n := bit_and (0hexffffffffffffff00, ni);
   nth := 2 * bit_and (ni, 0hexff);
-  str := (select rnk_string from rdf_iri_rank where rnk_iri = iri_id_from_num (n));
+  str := (select RNK_STRING from RDF_IRI_RANK where RNK_IRI = iri_id_from_num (n));
   if (nth >= length (str))
     return 0;
   return str[nth] * 256 + str[nth + 1];
@@ -122,7 +122,7 @@ create procedure rnk_store_w (inout first int, inout str varchar, inout fill int
 {
   if (fill < 1000)
     str := subseq (str, 0, fill);
-  insert replacing rdf_iri_stat option (no cluster)  values (iri_id_from_num (first), str);
+  insert replacing RDF_IRI_STAT option (no cluster)  values (iri_id_from_num (first), str);
   commit  work;
 }
 ;
@@ -130,7 +130,7 @@ create procedure rnk_store_w (inout first int, inout str varchar, inout fill int
 create procedure rnk_get_stat (in s_first int)
 {
   declare  str varchar;
-  str := (select rst_string  from rdf_iri_stat where rst_iri = iri_id_from_num (s_first));
+  str := (select RST_STRING  from RDF_IRI_STAT where RST_IRI = iri_id_from_num (s_first));
   if (str is null)
     return make_string (1536);
   if (length (str) < 1536)
@@ -213,7 +213,7 @@ create procedure DB.DBA.IST_SRV (in iri iri_id_8)
   ni := iri_id_num (iri);
   n := bit_and (0hexffffffffffffff00, ni);
   nth := 6 * bit_and (ni, 0hexff);
-  str := (select rst_string from rdf_iri_stat table option (no cluster) where rst_iri = iri_id_from_num (n));
+  str := (select RST_STRING from RDF_IRI_STAT table option (no cluster) where RST_IRI = iri_id_from_num (n));
   if (str is null)
     return vector (0, 1);
   if (nth > length (str) - 6)
@@ -244,7 +244,7 @@ create procedure DB.DBA.IRI_STAT (in iri iri_id_8)
   n := bit_and (0hexffffffffffffff00, ni);
   -- block position inside string
   nth := 6 * bit_and (ni, 0hexff);
-  str := (select rst_string from rdf_iri_stat where rst_iri = iri_id_from_num (n));
+  str := (select RST_STRING from RDF_IRI_STAT where RST_IRI = iri_id_from_num (n));
   if (str is null)
     return 0;
   if (nth > length (str) - 6)
@@ -277,7 +277,7 @@ create procedure rnk_inc (in rnk int, in nth_iter int)
 
 create procedure rnk_store_sc (inout first int, inout str varchar, inout fill int)
 {
-  insert replacing rdf_iri_rank option (no cluster)  values (iri_id_from_num (first), str);
+  insert replacing RDF_IRI_RANK option (no cluster)  values (iri_id_from_num (first), str);
   commit  work;
 }
 ;
@@ -285,7 +285,7 @@ create procedure rnk_store_sc (inout first int, inout str varchar, inout fill in
 create procedure rnk_get_ranks (in s_first int)
 {
   declare  str varchar;
-  str := (select rnk_string  from rdf_iri_rank where rnk_iri = iri_id_from_num (s_first));
+  str := (select RNK_STRING  from RDF_IRI_RANK where RNK_IRI = iri_id_from_num (s_first));
   if (str is null)
     return make_string (512);
   if (length (str) < 512)
@@ -388,13 +388,13 @@ create procedure rnk_next_cycle ()
   declare stat, rank varchar;
   declare iri iri_id;
   declare n_done int;
-  declare cr cursor for select rst_iri, rst_string from rdf_iri_stat table option (no cluster);
+  declare cr cursor for select RST_IRI, RST_STRING from RDF_IRI_STAT table option (no cluster);
   whenever not found goto done;
   open cr;
   for (;;)
     {
       fetch cr into iri, stat;
-      rank := (select rnk_string from rdf_iri_rank where rnk_iri = iri);
+      rank := (select RNK_STRING from RDF_IRI_RANK where RNK_IRI = iri);
       if (isstring (rank) and isstring (stat))
 	{
 	  declare nr, ns, inx, rnth, snth int;
@@ -412,7 +412,7 @@ create procedure rnk_next_cycle ()
 	      stat[snth + 4] := stat[snth + 2];
 	      stat[snth + 5] := stat[snth + 3];
 	    }
-	  update rdf_iri_stat set rst_string = stat where current of cr option (no cluster);
+	  update RDF_IRI_STAT set RST_STRING = stat where current of cr option (no cluster);
 	  commit work;
 	}
     }
@@ -429,8 +429,8 @@ create procedure s_rank ()
 	cl_exec('__dbf_set(''cl_max_keep_alives_missed'',3000)');
     }
   log_enable (2);
-  delete from rdf_iri_stat;
-  delete from rdf_iri_rank;
+  delete from RDF_IRI_STAT;
+  delete from RDF_IRI_RANK;
   log_enable (1);
   cl_exec ('rnk_count_refs_srv ()');
   cl_exec ('rnk_score_srv (1)');
