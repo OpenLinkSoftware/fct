@@ -100,7 +100,7 @@ create procedure DB.DBA.IRI_RANK (in iri iri_id_8)
 {
   declare str varchar;
   declare n, nth, ni int;
-  if (__tag (iri) <> 243 and __tag (iri) <> 244)
+  if (__tag (iri) <> __tag of IRI_ID and __tag (iri) <> __tag of IRI_ID_8)
     return 0;
   ni := iri_id_num (iri);
   n := bit_and (0hexffffffffffffff00, ni);
@@ -118,7 +118,7 @@ grant execute on DB.DBA.IR_SRV to "SPARQL";
 grant execute on IR_SRV to "SPARQL";
 grant execute on IRI_RANK to "SPARQL";
 
-create procedure rnk_store_w (inout first int, inout str varchar, inout fill int)
+create procedure RNK_STORE_W (inout first int, inout str varchar, inout fill int)
 {
   if (fill < 1000)
     str := subseq (str, 0, fill);
@@ -127,7 +127,7 @@ create procedure rnk_store_w (inout first int, inout str varchar, inout fill int
 }
 ;
 
-create procedure rnk_get_stat (in s_first int)
+create procedure RNK_GET_STAT (in s_first int)
 {
   declare  str varchar;
   str := (select RST_STRING  from RDF_IRI_STAT where RST_IRI = iri_id_from_num (s_first));
@@ -142,9 +142,9 @@ create procedure rnk_get_stat (in s_first int)
 create procedure RNK_COUNT_REFS_SRV ()
 {
   -- use psog (pk) instead of sp
-  declare cr cursor for select S, P from RDF_QUAD table option (no cluster, index PRIMARY KEY) where isiri_id (o);
+  declare cr cursor for select S from RDF_QUAD table option (no cluster, index PRIMARY KEY) where isiri_id (o);
   declare s_first, s_prev, nth, sn, cnt, fill int;
-  declare s, p iri_id;
+  declare s iri_id;
   declare str varchar;
   whenever not found goto last;
   -- ranges of 255 iris
@@ -153,7 +153,7 @@ create procedure RNK_COUNT_REFS_SRV ()
   open cr;
   for (;;)
     {
-      fetch cr into s, p;
+      fetch cr into s;
       sn := iri_id_num (s);
       if (s_first is null)
 	{
@@ -185,9 +185,9 @@ create procedure RNK_COUNT_REFS_SRV ()
 	  -- thus take back rst_string and go ahead
 	  if (sn - s_first > 255 or s_first > sn)
 	    {
-	      rnk_store_w (s_first, str, fill);
+	      RNK_STORE_W (s_first, str, fill);
 	      s_first := bit_and (sn, 0hexffffffffffffff00);
-	      str := rnk_get_stat (s_first);
+	      str := RNK_GET_STAT (s_first);
 	      fill := 0;
 	    }
 	}
@@ -200,7 +200,7 @@ create procedure RNK_COUNT_REFS_SRV ()
   str[nth] := bit_shift (cnt, -8);
   str[nth + 1] := cnt;
   fill := nth + 6;
-  rnk_store_w (s_first, str, fill);
+  RNK_STORE_W (s_first, str, fill);
 }
 ;
 
@@ -317,12 +317,12 @@ create procedure RNK_SCORE_AQ (in nth_iter int, in limit int)
 create procedure RNK_SCORE (in nth_iter int, in start_id int, in end_id int)
 {
   -- use the POGS instead of OP index and check for lower value
-  declare cr cursor for select O, P, IRI_STAT (S)
+  declare cr cursor for select O, IRI_STAT (S)
   	from RDF_QUAD table option (no cluster, index RDF_QUAD_POGS)
   	where O > iri_id_from_num (start_id) and O < iri_id_from_num (end_id) and isiri_id (O);
   declare s_first, s_prev, nth, sn, rnk, ssc, fill, n_iters int;
   declare sc double precision;
-  declare s, p iri_id;
+  declare s iri_id;
   declare str varchar;
   set isolation = 'committed';
   log_enable (2, 1);
@@ -333,7 +333,7 @@ create procedure RNK_SCORE (in nth_iter int, in start_id int, in end_id int)
   for (;;)
     {
       -- go on O = S and take rank, order is POSG, take care about it
-      fetch cr into s, p, rnk;
+      fetch cr into s, rnk;
       sn := iri_id_num (s);
       if (s_first is null)
 	{
