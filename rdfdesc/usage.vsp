@@ -188,6 +188,7 @@
     <link href="../css/bootstrap5.css" rel="stylesheet">
     <script src="../js/bootstrap5.min.js"></script>
     <link rel="stylesheet" href="../fontawesome/css/all.css">
+    <meta name="robots" content="noindex,nofollow" />
 </head>
 <body class="usage_page">
   <div id="navbar" class ="navbar navbar-default navbar-fixed-top">
