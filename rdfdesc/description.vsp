@@ -640,7 +640,7 @@ post_process_err_with_log4v:
         ));
       }
     ?> -->
-    <a id="permalink" class="desc_permalink" href="<?vsp http(fct_make_curie (sprintf ('%s&distinct=%d', plink_href, dist), lines)); ?>" onclick="myFunction()"><sup><span><i class="fas fa-copy"></i></span></sup>
+    <a id="permalink" class="desc_permalink" href="<?vsp http(fct_make_curie (sprintf ('%s&amp;distinct=%d', plink_href, dist), lines)); ?>" onclick="myFunction()"><sup><span><i class="fas fa-copy"></i></span></sup>
     </a>
     <a id="share" onclick="myFunction()" style="display:none">Share<span><textarea id="purl"></textarea></span></a>
     <a class="desc_sponge_link" href="/describe/?url=<?U page_resource_uri ?><?= case when sid is
@@ -659,7 +659,7 @@ post_process_err_with_log4v:
 
                 </li>
                 <li>
-                    <a class="desc_permalink" href="<?vsp http (fct_make_curie (sprintf ('%s&distinct=%d',  plink_href, equ (dist, 0)), lines)); ?>" title="This link enables you toggle between normalized and un-normalized views of data using by applying or note applying a DISTINCT operator">
+                    <a class="desc_permalink" href="<?vsp http (fct_make_curie (sprintf ('%s&amp;distinct=%d',  plink_href, equ (dist, 0)), lines)); ?>" title="This link enables you toggle between normalized and un-normalized views of data using by applying or note applying a DISTINCT operator">
                     <?vsp if (dist) http ('Not'); ?>Distinct
                     </a>
                     &nbsp;
