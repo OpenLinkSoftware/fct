@@ -323,7 +323,7 @@ fct_query_info (in tree any,
                          charset_recode (xpath_eval ('string (.)', tree), '_WIDE_', 'UTF-8')), 
                 txt);
       else if (vt = 'properties')
-        fct_li (sprintf (' %s is the %s of <a class="qry_info_cmd" href="/fct/facet.vsp?sid=%d&cmd=set_view&type=text-properties&limit=%d&offset=0&cno=%d">any %s</a> where the %s is associated with <span class="value">"%s"</span> <a href="/fct/facet.vsp?sid=%d&cmd=drop_text">Drop</a>. ',
+        fct_li (sprintf (' %s is the %s of <a class="qry_info_cmd" href="/fct/facet.vsp?sid=%d&cmd=set_view&type=text-properties&limit=%d&offset=0&cno=%d">any %s</a> where the %s is associated with <span class="value">"%V"</span> <a href="/fct/facet.vsp?sid=%d&cmd=drop_text">Drop</a>. ',
                          fct_var_tag (this_s, ctx), 
 			 fct_s_term (),
                          connection_get ('sid'), 
@@ -335,7 +335,7 @@ fct_query_info (in tree any,
                          connection_get ('sid')), 
                  txt);
       else if (vt = 'properties-in') 
-        fct_li (sprintf (' %s is the %s of <a class="qry_info_cmd" href="/fct/facet.vsp?sid=%d&cmd=set_view&type=text-properties&limit=%d&offset=0&cno=%d">any %s</a> where the %s is associated with <span class="value">"%s"</span> <a href="/fct/facet.vsp?sid=%d&cmd=drop_text">Drop</a>. ',
+        fct_li (sprintf (' %s is the %s of <a class="qry_info_cmd" href="/fct/facet.vsp?sid=%d&cmd=set_view&type=text-properties&limit=%d&offset=0&cno=%d">any %s</a> where the %s is associated with <span class="value">"%V"</span> <a href="/fct/facet.vsp?sid=%d&cmd=drop_text">Drop</a>. ',
                          fct_var_tag (this_s, ctx), 
 			 fct_o_term (),
                          connection_get ('sid'), 
@@ -347,7 +347,7 @@ fct_query_info (in tree any,
                          connection_get ('sid')), 
                  txt);
       else
-        fct_li (sprintf (' %s has <a class="qry_info_cmd" href="/fct/facet.vsp?sid=%d&cmd=set_view&type=text-properties&limit=%d&offset=0&cno=%d">any %s</a> with %s <span class="value">"%s"</span> <a href="/fct/facet.vsp?sid=%d&cmd=drop_text">Drop</a>. ',
+        fct_li (sprintf (' %s has <a class="qry_info_cmd" href="/fct/facet.vsp?sid=%d&cmd=set_view&type=text-properties&limit=%d&offset=0&cno=%d">any %s</a> with %s <span class="value">"%V"</span> <a href="/fct/facet.vsp?sid=%d&cmd=drop_text">Drop</a>. ',
                          fct_var_tag (this_s, ctx), 
                          connection_get ('sid'), 
 			 lim,
@@ -2733,13 +2733,25 @@ exec:;
 
 create procedure fct_virt_info ()
 {
-  http ('<a href="http://www.openlinksw.com/virtuoso/">OpenLink Virtuoso</a> version '); 
+  declare rss any;
+
+  rss := getrusage();
+
+  http ('<a href="http://www.openlinksw.com/virtuoso/">OpenLink Virtuoso</a> version ');
   http (sprintf ('%s as of %s', sys_stat ('st_dbms_ver'), sys_stat('st_build_date')));
   http (', on ');
-  http (sys_stat ('st_build_opsys_id')); http (sprintf (' (%s), ', host_id ())); 
-  http (case when sys_stat ('cl_run_local_only') = 1 then 'Single-Server' else 'Cluster' end); http (' Edition ');
-  http (case when sys_stat ('cl_run_local_only') = 0 then sprintf ('(%d server processes, %s total memory)', sys_stat ('cl_n_hosts'), mem_hum_size (mem_info_cl ())) 
-      else sprintf ('(%s total memory)', mem_hum_size (mem_info_cl ())) end); 
+  http (sys_stat ('st_build_opsys_id')); http (sprintf (' (%s), ', host_id ()));
+  if (0 = sys_stat ('cl_run_local_only'))
+    {
+      http (sprintf ('Cluster Edition (%d server processes, %s total memory)', sys_stat('cl_n_hosts'), mem_hum_size (mem_info_cl())));
+    }
+  else
+    {
+      http (sprintf ('Single-Server Edition (%s total memory', mem_hum_size (mem_info_cl ())));
+      if (rss <> 0)
+        http (sprintf (', %s memory in use', mem_hum_size (rss[2] * 1024)));
+      http (')');
+    }
 }
 ;
 
