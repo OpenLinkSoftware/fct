@@ -23,6 +23,7 @@
 var $j = jQuery.noConflict();
 
 function init() {
+        LoadExternalImages();
 	init_long_list ();
 	init_long_literals();
 }
@@ -144,6 +145,22 @@ function sponge_cb ()
 
     parms['should-sponge'] = $v('should-sponge');
     window.location = href+uri_parms_string(parms);
+}
+
+function LoadExternalImages()
+{
+  const collection = document.getElementsByClassName("external");
+  for (let i = 0; i < collection.length; i++) {
+    const image = collection[i];
+    var url = image.alt;
+    var isLoaded = image.complete && image.naturalHeight !== 0;
+    if (!isLoaded && image.alt == image.src)
+      {
+        fetch (url , { referrerPolicy: "no-referrer", mode: "no-cors"} )
+          .then (x => x.blob())
+          .then (y => image.src = URL.createObjectURL(y));
+      }
+  }
 }
 
 $j(document).ready(function() {
