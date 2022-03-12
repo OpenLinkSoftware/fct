@@ -1955,9 +1955,10 @@ create procedure FCT.DBA.check_auth_and_acls (
     dbg_printf ('%s: composite permissions: %d', current_proc_name(), permissions);
   }
 
-  if (bit_and (permissions, 1) = 0  -- No read permission on graph (/sparql and /describe perms already checked above)
+  if (sys_stat ('enable_g_in_sec') = 0 and 
+      (bit_and (permissions, 1) = 0  -- No read permission on graph (/sparql and /describe perms already checked above)
       or
-      sponge_request and (bit_and (permissions, 4) = 0))  -- No sponge permission on graph (/sparql and /describe perms already checked above)
+      sponge_request and (bit_and (permissions, 4) = 0)))  -- No sponge permission on graph (/sparql and /describe perms already checked above)
   {
     http_rewrite ();
 
