@@ -164,7 +164,7 @@ fct_trunc_uri (in s varchar, in maxlen int := 40)
 create procedure
 fct_short_form (in x any, in ltgt int := 0)
 {
-  declare loc, pref, sh varchar;
+  declare loc, pref, sh0, sh1 varchar;
   declare ret nvarchar;
 
   if (iswidestring (x))
@@ -173,16 +173,26 @@ fct_short_form (in x any, in ltgt int := 0)
   if (not isstring (x))
     return null;
 
-  sh := fct_uri_curie(x);
+  sh0 := fct_uri_curie(x);
 
   if (x like 'NodeID%')
     return 'Blank' || x;
 
-  if (sh is not null)
-    ret := fct_trunc_uri(sh);
+  if (sh0 is not null)
+    sh1 := fct_trunc_uri(sh0);
   else 
-    ret := (case when ltgt then '&lt;' || fct_trunc_uri (x) || '&gt;' else fct_trunc_uri (x) end);
-  ret := charset_recode (ret, 'UTF-8', '_WIDE_');
+    sh1 := (case when ltgt then '&lt;' || fct_trunc_uri (x) || '&gt;' else fct_trunc_uri (x) end);
+  ret := charset_recode (sh1, 'UTF-8', '_WIDE_');
+  if (not iswidestring (ret))
+    {
+      if (sh0 is not null)
+        ret := charset_recode (sh0, 'UTF-8', '_WIDE_');
+      else
+        {
+          sh1 := (case when ltgt then '&lt;' || x || '&gt;' else x end);
+          ret := charset_recode (sh1, 'UTF-8', '_WIDE_');
+        }
+    }
   return ret;
 }
 ;
