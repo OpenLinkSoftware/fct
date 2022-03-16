@@ -1043,7 +1043,10 @@ again:
                 goto usual_iri;
            }
 	 }
-       else if (http_mime_type (_url) like 'image/%' or http_mime_type (_url) = 'application/x-openlink-photo' or b3s_o_is_img (prop))
+       else if (http_mime_type (_url) like 'image/%' or
+            http_mime_type (_url) = 'application/x-openlink-photo' or
+            b3s_o_is_img (prop) or
+            _url like 'data:image/%')
 	 {
 	   declare u any;
 	   if (b3s_o_is_out (prop))
@@ -1096,7 +1099,7 @@ again:
    else if (__tag (_object) = 182)
      {
        declare vlbl any;
-       if (b3s_o_is_img (prop))
+       if (b3s_o_is_img (prop) or _object like 'data:image/%')
 	 {
 	   __box_flags_set (_object, 1);
 	   goto again;
