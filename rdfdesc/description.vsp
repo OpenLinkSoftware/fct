@@ -534,7 +534,20 @@ post_process_err_with_log4v:
 	declare main_ss varchar;
         main_ss := registry_get ('fct_main_ss');
         if (not isstring (main_ss)) main_ss := '/fct/css/default.css';
+
+        declare favicon, favicon_path varchar;
+        -- If a favicon is configured for /sponger, use the same favicon for /describe
+        favicon_path := registry_get ('_sponger_fp_SkinPrefix');
+        favicon := registry_get ('_sponger_fp_Favicon');
+        if (favicon_path <> 0 and favicon <> 0) {
+          favicon_path := favicon_path || '/i/' || favicon; -- /sponger setup
+        }
+        else {
+          favicon_path := '/fct/images/rdf-icon.gif'; -- /describe default
+        }
     ?>
+
+    <link rel="shortcut icon" href="<?=favicon_path?>" />
     <link rel="stylesheet" type="text/css" href="<?=main_ss?>"  charset="utf-8" />
 
     <link rel="stylesheet" type="text/css" href="/fct/css/highlighter.css" charset="utf-8" />
