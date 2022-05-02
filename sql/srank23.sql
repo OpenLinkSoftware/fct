@@ -25,12 +25,12 @@
 
 
 
-EXEC_STMT ('create table RDF_IRI_RANK (rnk_iri iri_id_8 primary key, rnk_string varchar no compress)',0);
-EXEC_STMT ('alter index RDF_IRI_RANK on RDF_IRI_RANK partition (rnk_iri int (0hexffff00))',0);
+EXEC_STMT ('create table RDF_IRI_RANK (RNK_IRI iri_id_8 primary key, RNK_STRING varchar no compress)',0);
+EXEC_STMT ('alter index RDF_IRI_RANK on RDF_IRI_RANK partition (RNK_IRI int (0hexffff00))',0);
 
 
-EXEC_STMT ('create table RDF_IRI_STAT (rst_iri iri_id_8 primary key, rst_string varchar no compress)',0);
-EXEC_STMT ('alter index RDF_IRI_STAT on RDF_IRI_STAT partition (rst_iri int (0hexffff00))',0);
+EXEC_STMT ('create table RDF_IRI_STAT (RST_IRI iri_id_8 primary key, RST_STRING varchar no compress)',0);
+EXEC_STMT ('alter index RDF_IRI_STAT on RDF_IRI_STAT partition (RST_IRI int (0hexffff00))',0);
 
 
 -- calculate int scaled from double/float
@@ -84,7 +84,7 @@ create procedure DB.DBA.IR_SRV (in iri iri_id_8)
   ni := iri_id_num (iri);
   n := bit_and (0hexffffffffffffff00, ni);
  nth := 2 * bit_and (ni, 0hexff);
- str := (select rnk_string from rdf_iri_rank table option (no cluster) where rnk_iri = iri_id_from_num (n));
+ str := (select RNK_STRING from RDF_IRI_RANK table option (no cluster) where RNK_IRI = iri_id_from_num (n));
   if (nth >= length (str))
     return vector (0, 1);
   return vector (str[nth] * 256 + str[nth + 1], 1);
@@ -100,12 +100,12 @@ create procedure DB.DBA.IRI_RANK (in iri iri_id_8)
 {
   declare str varchar;
   declare n, nth, ni int;
-  if (__tag (iri) <> 243 and __tag (iri) <> 244)
+  if (__tag (iri) <> __tag of IRI_ID and __tag (iri) <> __tag of IRI_ID_8)
     return 0;
   ni := iri_id_num (iri);
   n := bit_and (0hexffffffffffffff00, ni);
   nth := 2 * bit_and (ni, 0hexff);
-  str := (select rnk_string from rdf_iri_rank where rnk_iri = iri_id_from_num (n));
+  str := (select RNK_STRING from RDF_IRI_RANK where RNK_IRI = iri_id_from_num (n));
   if (nth >= length (str))
     return 0;
   return str[nth] * 256 + str[nth + 1];
@@ -118,19 +118,19 @@ grant execute on DB.DBA.IR_SRV to "SPARQL";
 grant execute on IR_SRV to "SPARQL";
 grant execute on IRI_RANK to "SPARQL";
 
-create procedure rnk_store_w (inout first int, inout str varchar, inout fill int)
+create procedure RNK_STORE_W (inout first int, inout str varchar, inout fill int)
 {
   if (fill < 1000)
     str := subseq (str, 0, fill);
-  insert replacing rdf_iri_stat option (no cluster)  values (iri_id_from_num (first), str);
+  insert replacing RDF_IRI_STAT option (no cluster)  values (iri_id_from_num (first), str);
   commit  work;
 }
 ;
 
-create procedure rnk_get_stat (in s_first int)
+create procedure RNK_GET_STAT (in s_first int)
 {
   declare  str varchar;
-  str := (select rst_string  from rdf_iri_stat where rst_iri = iri_id_from_num (s_first));
+  str := (select RST_STRING  from RDF_IRI_STAT where RST_IRI = iri_id_from_num (s_first));
   if (str is null)
     return make_string (1536);
   if (length (str) < 1536)
@@ -139,12 +139,12 @@ create procedure rnk_get_stat (in s_first int)
 }
 ;
 
-create procedure rnk_count_refs_srv ()
+create procedure RNK_COUNT_REFS_SRV ()
 {
   -- use psog (pk) instead of sp
-  declare cr cursor for select s, p from rdf_quad table option (no cluster, index primary key) where isiri_id (o);
+  declare cr cursor for select S from RDF_QUAD table option (no cluster, index PRIMARY KEY) where isiri_id (o);
   declare s_first, s_prev, nth, sn, cnt, fill int;
-  declare s, p iri_id;
+  declare s iri_id;
   declare str varchar;
   whenever not found goto last;
   -- ranges of 255 iris
@@ -153,7 +153,7 @@ create procedure rnk_count_refs_srv ()
   open cr;
   for (;;)
     {
-      fetch cr into s, p;
+      fetch cr into s;
       sn := iri_id_num (s);
       if (s_first is null)
 	{
@@ -185,9 +185,9 @@ create procedure rnk_count_refs_srv ()
 	  -- thus take back rst_string and go ahead
 	  if (sn - s_first > 255 or s_first > sn)
 	    {
-	      rnk_store_w (s_first, str, fill);
+	      RNK_STORE_W (s_first, str, fill);
 	      s_first := bit_and (sn, 0hexffffffffffffff00);
-	      str := rnk_get_stat (s_first);
+	      str := RNK_GET_STAT (s_first);
 	      fill := 0;
 	    }
 	}
@@ -200,7 +200,7 @@ create procedure rnk_count_refs_srv ()
   str[nth] := bit_shift (cnt, -8);
   str[nth + 1] := cnt;
   fill := nth + 6;
-  rnk_store_w (s_first, str, fill);
+  RNK_STORE_W (s_first, str, fill);
 }
 ;
 
@@ -213,7 +213,7 @@ create procedure DB.DBA.IST_SRV (in iri iri_id_8)
   ni := iri_id_num (iri);
   n := bit_and (0hexffffffffffffff00, ni);
   nth := 6 * bit_and (ni, 0hexff);
-  str := (select rst_string from rdf_iri_stat table option (no cluster) where rst_iri = iri_id_from_num (n));
+  str := (select RST_STRING from RDF_IRI_STAT table option (no cluster) where RST_IRI = iri_id_from_num (n));
   if (str is null)
     return vector (0, 1);
   if (nth > length (str) - 6)
@@ -244,7 +244,7 @@ create procedure DB.DBA.IRI_STAT (in iri iri_id_8)
   n := bit_and (0hexffffffffffffff00, ni);
   -- block position inside string
   nth := 6 * bit_and (ni, 0hexff);
-  str := (select rst_string from rdf_iri_stat where rst_iri = iri_id_from_num (n));
+  str := (select RST_STRING from RDF_IRI_STAT where RST_IRI = iri_id_from_num (n));
   if (str is null)
     return 0;
   if (nth > length (str) - 6)
@@ -259,7 +259,7 @@ create procedure DB.DBA.IRI_STAT (in iri iri_id_8)
 }
 ;
 
-create procedure rnk_inc (in rnk int, in nth_iter int)
+create procedure RNK_INC (in rnk int, in nth_iter int)
 {
   /* the score increment is 1 / n_outgoing * (score_now - score_before) */
   declare n_out, sc, prev_sc, inc double precision;
@@ -277,7 +277,7 @@ create procedure rnk_inc (in rnk int, in nth_iter int)
 
 create procedure rnk_store_sc (inout first int, inout str varchar, inout fill int)
 {
-  insert replacing rdf_iri_rank option (no cluster)  values (iri_id_from_num (first), str);
+  insert replacing RDF_IRI_RANK option (no cluster)  values (iri_id_from_num (first), str);
   commit  work;
 }
 ;
@@ -285,7 +285,7 @@ create procedure rnk_store_sc (inout first int, inout str varchar, inout fill in
 create procedure rnk_get_ranks (in s_first int)
 {
   declare  str varchar;
-  str := (select rnk_string  from rdf_iri_rank where rnk_iri = iri_id_from_num (s_first));
+  str := (select RNK_STRING  from RDF_IRI_RANK where RNK_IRI = iri_id_from_num (s_first));
   if (str is null)
     return make_string (512);
   if (length (str) < 512)
@@ -294,18 +294,38 @@ create procedure rnk_get_ranks (in s_first int)
 }
 ;
 
-create procedure RNK_SCORE (in nth_iter int)
+create procedure RNK_SCORE_AQ (in nth_iter int, in limit int)
+{
+  declare inx, slice, n_slices, chunk_sz, start_id, end_id int;
+  declare aq any;
+  
+  n_slices := 4;
+  chunk_sz := (((limit + 256) / 256) * 256) / n_slices;
+  aq := async_queue (n_slices, 4);
+  for (inx := 0; inx < n_slices; inx := inx + 1)
+    {
+      start_id := inx * chunk_sz;
+      end_id := start_id + chunk_sz + 1;
+      -- dbg_obj_print ('inx:', inx, ' start:', start_id, ' end: ', end_id);
+      aq_request (aq, 'DB.DBA.RNK_SCORE', vector (nth_iter, start_id, end_id));
+    } 
+  aq_wait_all (aq);
+  return;
+}
+;
+
+create procedure RNK_SCORE (in nth_iter int, in start_id int, in end_id int)
 {
   -- use the POGS instead of OP index and check for lower value
-  declare cr cursor for select o, p, IRI_STAT (s)
-  	from rdf_quad table option (no cluster, index rdf_quad_pogs)
-  	where o > #i0 and o < iri_id_from_num (0hexffffffffffffff00);
+  declare cr cursor for select O, IRI_STAT (S)
+  	from RDF_QUAD table option (no cluster, index RDF_QUAD_POGS)
+  	where O > iri_id_from_num (start_id) and O < iri_id_from_num (end_id) and isiri_id (O);
   declare s_first, s_prev, nth, sn, rnk, ssc, fill, n_iters int;
   declare sc double precision;
-  declare s, p iri_id;
+  declare s iri_id;
   declare str varchar;
   set isolation = 'committed';
-  log_enable (2);
+  log_enable (2, 1);
   whenever not found goto last;
   s_first := null;
   s_prev := null;
@@ -313,7 +333,7 @@ create procedure RNK_SCORE (in nth_iter int)
   for (;;)
     {
       -- go on O = S and take rank, order is POSG, take care about it
-      fetch cr into s, p, rnk;
+      fetch cr into s, rnk;
       sn := iri_id_num (s);
       if (s_first is null)
 	{
@@ -328,7 +348,7 @@ create procedure RNK_SCORE (in nth_iter int)
       if (sn = s_prev) -- same S
 	{
 	  -- calculate new score
-	  sc := sc + rnk_inc (rnk, nth_iter);
+	  sc := sc + RNK_INC (rnk, nth_iter);
 	}
       else
 	{
@@ -345,7 +365,7 @@ create procedure RNK_SCORE (in nth_iter int)
 	  -- increment string fill
 	  fill := nth + 2;
 	  -- increment score ?
-	  sc := rnk_inc (rnk, nth_iter);
+	  sc := RNK_INC (rnk, nth_iter);
 	  s_prev := sn;
 	  dst := sn - s_first;
 	  if (dst > 255 or dst < 0)
@@ -377,24 +397,24 @@ create procedure RNK_SCORE_SRV (in nth int)
 {
   declare aq any;
   aq := async_queue (1);
-  aq_request (aq, 'DB.DBA.RNK_SCORE', vector (nth));
+  aq_request (aq, 'DB.DBA.RNK_SCORE', vector (nth, 0, 0hexffffffffffffff00));
   aq_wait_all (aq);
 }
 ;
 
-create procedure rnk_next_cycle ()
+create procedure RNK_NEXT_CYCLE ()
 {
   /* copy rank to stat and set previous rank in stat to last rank */
   declare stat, rank varchar;
   declare iri iri_id;
   declare n_done int;
-  declare cr cursor for select rst_iri, rst_string from rdf_iri_stat table option (no cluster);
+  declare cr cursor for select RST_IRI, RST_STRING from RDF_IRI_STAT table option (no cluster);
   whenever not found goto done;
   open cr;
   for (;;)
     {
       fetch cr into iri, stat;
-      rank := (select rnk_string from rdf_iri_rank where rnk_iri = iri);
+      rank := (select RNK_STRING from RDF_IRI_RANK where RNK_IRI = iri);
       if (isstring (rank) and isstring (stat))
 	{
 	  declare nr, ns, inx, rnth, snth int;
@@ -412,7 +432,7 @@ create procedure rnk_next_cycle ()
 	      stat[snth + 4] := stat[snth + 2];
 	      stat[snth + 5] := stat[snth + 3];
 	    }
-	  update rdf_iri_stat set rst_string = stat where current of cr option (no cluster);
+	  update RDF_IRI_STAT set RST_STRING = stat where current of cr option (no cluster);
 	  commit work;
 	}
     }
@@ -421,22 +441,38 @@ done:
 }
 ;
 
-create procedure s_rank ()
+create procedure S_RANK ()
 {
   if (0 = sys_stat ('cl_run_local_only'))
     {
       if (cl_this_host () = 1)
 	cl_exec('__dbf_set(''cl_max_keep_alives_missed'',3000)');
     }
-  log_enable (2);
-  delete from rdf_iri_stat;
-  delete from rdf_iri_rank;
-  log_enable (1);
-  cl_exec ('rnk_count_refs_srv ()');
-  cl_exec ('rnk_score_srv (1)');
-  cl_exec ('rnk_next_cycle ()');
-  cl_exec ('rnk_score_srv (2)');
-  cl_exec ('rnk_next_cycle ()');
-  cl_exec ('rnk_score_srv (3)');
+  log_enable (2, 1);
+  delete from RDF_IRI_STAT;
+  delete from RDF_IRI_RANK;
+  if (0 = sys_stat ('cl_run_local_only'))
+    {
+      cl_exec ('RNK_COUNT_REFS_SRV ()');
+      cl_exec ('RNK_SCORE_SRV (1)');
+      cl_exec ('RNK_NEXT_CYCLE ()');
+      cl_exec ('RNK_SCORE_SRV (2)');
+      cl_exec ('RNK_NEXT_CYCLE ()');
+      cl_exec ('RNK_SCORE_SRV (3)');
+    }
+  else
+    {
+      declare limit int;
+      limit := (select max (O) from RDF_QUAD table option (index RDF_QUAD_POGS) 
+                where O > #i0 and O < iri_id_from_num (0hexffffffffffffff00) and is_named_iri_id (O));
+      limit := iri_id_num (limit);
+      RNK_COUNT_REFS_SRV ();
+      RNK_SCORE_AQ (1, limit);
+      RNK_NEXT_CYCLE ();
+      RNK_SCORE_AQ (2, limit);
+      RNK_NEXT_CYCLE ();
+      RNK_SCORE_AQ (3, limit);
+    }
+  log_enable (1, 1);
 }
 ;

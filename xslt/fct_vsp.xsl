@@ -600,7 +600,7 @@
               <xsl:for-each select="column[@datatype='trank' or @datatype='erank']">
                 <img class="rnk">
                   <xsl:attribute name="src">
-                    <xsl:text>images/r_</xsl:text><xsl:value-of select="min (floor(.), 10)"/><xsl:text>.png</xsl:text>
+                    <xsl:text>images/r_</xsl:text><xsl:value-of select="min (round(.), 10)"/><xsl:text>.png</xsl:text>
                   </xsl:attribute>
                   <xsl:attribute name="alt">
                     <xsl:choose>
