@@ -338,7 +338,7 @@
                     <xsl:attribute name="title">
                       The query timed out with partial result.
                       Retry with
-                      <xsl:value-of select="($timeout div 1000)"/> seconds timeout
+                      <xsl:value-of select="($timeout div 1000)"/> seconds timeout?
                     </xsl:attribute>
                   </xsl:when>
                   <xsl:otherwise>
