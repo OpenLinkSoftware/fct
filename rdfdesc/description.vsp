@@ -184,7 +184,7 @@ again:
       all_langs := vector (lang_parm, 1.0);
       langs := lang_parm;
     }
-  gr := get_keyword ('g', params, '');
+  gr := get_keyword ('g', params, 'unknown');
   gr := replace (gr, ' ', '%20');
 
   _F := ''; _from := null;
@@ -419,7 +419,7 @@ post_process_err_with_log4v:
   e_type := e_type_a[0];
   e_type_label := e_type_a[1];
 
-  qry_str := sprintf ('sparql %s %s prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> prefix dc: <http://purl.org/dc/elements/1.1/> select ?o (lang(?o)) %s where { <%s> rdfs:comment ?o }', inf, val_perms_clause, _F, _S);
+  qry_str := sprintf ('sparql DEFINE input:inference "virtrdf-label" %s prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> prefix dc: <http://purl.org/dc/elements/1.1/> select ?o (lang(?o)) %s where { <%s> rdfs:comment ?o }', val_perms_clause, _F, _S);
 
 --    dbg_obj_print (qry_str);
 
@@ -525,7 +525,7 @@ post_process_err_with_log4v:
 ?>
 <head>
     <base href="/fct/rdfdesc/" />
-    <title>About: <?vsp if (length (label)) http (label); else http (b3s_uri_percent_decode(b3s_uri_curie (page_resource_uri)));?></title>
+    <title>About: <?vsp if (length (label)) http_value (label); else http (b3s_uri_percent_decode(b3s_uri_curie (page_resource_uri)));?></title>
     <link href="../css/bootstrap5.css" rel="stylesheet">
     <script src="../js/bootstrap5.min.js"></script>
     <link rel="stylesheet" href="../fontawesome/css/all.css">
@@ -573,11 +573,11 @@ post_process_err_with_log4v:
                 <?vsp } else { ?>
                 <li><a href="/fct/">Facets (new session)</a></li>
                 <?vsp } ?>
-                <li id="mnu_descr" class="sel"><a href="/describe/?uri=<?U b3s_u2w(_S) ?><?V ses_parms ?>" class="sel">Description</a></li>
+                <li id="mnu_descr" class="sel"><a href="/describe/?uri=<?U b3s_u2w(_S) ?><?V ses_parms ?>" class="sel" rel="nofollow">Description</a></li>
                 <li id="mnu_usage">
-                    <a href="usage.vsp?g=<?U _S ?><?V ses_parms ?>">Metadata</a>
+                    <a href="usage.vsp?g=<?U _S ?><?V ses_parms ?>" rel="nofollow">Metadata</a>
                 </li>
-                <li id="mnu_settings"><a href="settings.vsp?g=<?U b3s_u2w(_S) ?><?V ses_parms ?>">Settings</a>
+                <li id="mnu_settings"><a href="settings.vsp?g=<?U b3s_u2w(_S) ?><?V ses_parms ?>" rel="nofollow">Settings</a>
                     <div id="settings_popup" style="display: none">
                     <ul>
                         <li>
@@ -610,16 +610,24 @@ post_process_err_with_log4v:
 
     <h2>
       <?vsp
-      if(safetolink>0) {
-        http(sprintf('<a href="%s">%s</a>\n',
-          case when page_resource_uri like 'nodeID://%' then b3s_http_url (page_resource_uri) else page_resource_uri end,
-          case when (length(label)) then label else b3s_uri_percent_decode(b3s_uri_curie(page_resource_uri)) end));
-      } else {
+      if (safetolink > 0)
+        {
+          http(sprintf('<a href="%s">',
+	    case when page_resource_uri like 'nodeID://%' then b3s_http_url (page_resource_uri) else page_resource_uri end));
+
+	  if (length (label))
+	    http_value (label);
+	  else
+	    http (b3s_uri_percent_decode(b3s_uri_curie(page_resource_uri)));
+	  http ('</a>\n');
+        }
+      else
+        {
 	  if (length(label))
 	    http_value(label);
 	  else
 	    http (b3s_uri_curie(page_resource_uri));
-      }
+        }
       ?>
     <a href="">
     </a>
@@ -627,12 +635,12 @@ post_process_err_with_log4v:
      &nbsp;&nbsp;
     <?vsp
       if(safetolink>0) {
-        http(sprintf('<a class="desc_permalink" href="%s">Goto</a>\n',
+        http(sprintf('<a class="desc_permalink" href="%s" rel="nofollow">Goto</a>\n',
           case when page_resource_uri like 'nodeID://%' then b3s_http_url (page_resource_uri) else page_resource_uri end
         ));
       }
     ?> -->
-    <a id="permalink" class="desc_permalink" href="<?vsp http(fct_make_curie (sprintf ('%s&distinct=%d', plink_href, dist), lines)); ?>" onclick="myFunction()"><sup><span><i class="fas fa-copy"></i></span></sup>
+    <a id="permalink" class="desc_permalink" href="<?vsp http(fct_make_curie (sprintf ('%s&amp;distinct=%d', plink_href, dist), lines)); ?>" onclick="myFunction()"><sup><span><i class="fas fa-copy"></i></span></sup>
     </a>
     <a id="share" onclick="myFunction()" style="display:none">Share<span><textarea id="purl"></textarea></span></a>
     <a class="desc_sponge_link" href="/describe/?url=<?U page_resource_uri ?><?= case when sid is
@@ -651,7 +659,7 @@ post_process_err_with_log4v:
 
                 </li>
                 <li>
-                    <a class="desc_permalink" href="<?vsp http (fct_make_curie (sprintf ('%s&distinct=%d',  plink_href, equ (dist, 0)), lines)); ?>" title="This link enables you toggle between normalized and un-normalized views of data using by applying or note applying a DISTINCT operator">
+                    <a class="desc_permalink" href="<?vsp http (fct_make_curie (sprintf ('%s&amp;distinct=%d',  plink_href, equ (dist, 0)), lines)); ?>" title="This link enables you toggle between normalized and un-normalized views of data using by applying or note applying a DISTINCT operator">
                     <?vsp if (dist) http ('Not'); ?>Distinct
                     </a>
                     &nbsp;

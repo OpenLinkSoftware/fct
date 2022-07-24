@@ -84,6 +84,10 @@
     -- Copy fct VAD's configuration page resources to Conductor UI's folder
     DB.DBA.fct_vad_configure ('fct', 'fct/conductor', 'vad_fct_config.vspx');
     DB.DBA.fct_vad_configure ('fct', 'fct/conductor', 'vad_fct_config.js');
+
+    -- Check if automated label fill is enabled
+    if (virtuoso_ini_item_value ('SPARQL', 'LabelInferenceName') = 'facets')
+      registry_set ('urilbl_ac_init_status', '2');
     ]]>
   </sql>
   <sql purpose='pre-uninstall'>

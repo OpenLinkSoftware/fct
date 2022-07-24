@@ -23,8 +23,6 @@
 --
 --
 
-delete from RDF_QUAD where G = iri_to_id ('virtrdf-label');
-
 TTLP (
 '@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix dc: <http://purl.org/dc/elements/1.1/> .
@@ -773,6 +771,11 @@ oplbase:contained_in_forum rdfs:subPropertyOf sioc:has_container .
 oplbase:contained_in_thread rdfs:subPropertyOf sioc:has_container .
 oplbase:container_of_post rdfs:subPropertyOf sioc:container_of .
 oplbase:container_of_thread rdfs:subPropertyOf sioc:container_of .
+
+#
+# Abstracts rules
+#
+schema:description rdfs:subPropertyOf rdfs:comment .
 
 ', '', 'virtrdf-label');
 
