@@ -184,7 +184,14 @@ again:
       all_langs := vector (lang_parm, 1.0);
       langs := lang_parm;
     }
-  gr := get_keyword ('g', params, 'unknown');
+
+  -- all possible inputs for IRI to be desribed  
+  gr := get_keyword ('g', params);
+  if (gr is null)
+    gr := get_keyword ('url', params);
+  if (gr is null)
+    gr := get_keyword ('uri', params);
+
   if (not length (gr))
     {
       gr := 'unknown';
@@ -370,9 +377,13 @@ post_process_err_with_log4v:
         }
       else
         {
+          declare exit handler for sqlstate '42000' {
+             rollback work;
+             err := 'No permissions to sponge.';
+             goto errend;
+          };
 	  DB.DBA.EXEC_AS (sprintf ('sparql define get:error-recovery "signal" define input:storage "" define get:refresh "%d" define get:soft "%s" %s SELECT * from <%s> where { ?x ?y ?z . }', refr, sp_mode, sp_accept, _G), 'SPARQL', 1);
         }
-      DB.DBA.VT_INC_INDEX_DB_DBA_RDF_OBJ ();
       sp_done := 1;
     }
     errend:;

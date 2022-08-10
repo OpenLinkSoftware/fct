@@ -19,9 +19,9 @@
   
   if (not is_describe_page)
   {
-    declare cmd varchar;
-    declare s_for varchar;
-    declare xml_d varchar;
+    declare cmd any;
+    declare s_for any;
+    declare xml_d any;
 
     cmd := http_param ('cmd');
     s_for := http_param ('q');
