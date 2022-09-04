@@ -20,132 +20,87 @@
 --  51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 --
 
--- URI completion 
+-- URI completion
 
-create procedure 
-num_str (in n int)
+create procedure
+rpid64_str (in n int)
 {
   declare s varchar;
-
-  s := '1234';
-
-  s[0] := bit_shift (n, -24);
-  s[1] := bit_shift (n, -16);
-  s[2] := bit_shift (n, -8);
-  s[3] := n;
-
+  s := '\0\0\0\0\0\0\0\0';
+  s := long_set (s, 0,  bit_or (bit_shift (n, -32), 0hex80000000));
+  s := long_set (s, 1, bit_and (n, 0hexffffffff));
   return s;
 }
 ;
 
-create procedure 
+create procedure
 str_inc (in str varchar, in pref int := 0)
 {
   -- increment by one for range cmp
   declare len int;
   len := length (str);
- carry:
+carry:
   if (pref = len)
-    return subseq (str, 0, pref) || '\377\377\377\377';
+    return subseq (str, 0, pref) || '\377\377\377\377\377\377\377\377';
   str [len - 1] := str[len - 1] + 1;
-    if (str[len - 1] = 0)
-      {
+  if (str[len - 1] = 0)
+    {
       len := len - 1;
-	goto carry;
-      }
-    return str;
+      goto carry;
+    }
+  return str;
 }
 ;
 
---create procedure split (in str varchar)
---{
---  declare pref, name varchar;
---  result_names (pref, name);
---  pref := iri_split (str, name, 1);
---  result (pref, subseq (name, 4));
---}
-
-
-create procedure 
+create procedure
 cmp_find_iri (in str varchar, in no_name int := 0)
 {
   /* We look for iris, assuming the full ns is in the name  */
-
-  declare pref, name varchar;
+  declare pref, name, next, local, ext varchar;
+  declare rp64 varbinary;
   declare id, inx int;
   declare iris any;
 
   if (no_name)
     {
       pref := str;
-      name := '1111';
+      ext := '';
     }
-  else 
-    pref := iri_split (str, name, 1);
+  else
+    {
+      pref := iri_split (str, local, 1);
+      ext := subseq (local, 8);
+    }
 
-  id := (select rp_id 
-           from rdf_prefix 
-           where rp_name = pref);
-
+  id := (select rp_id from rdf_prefix where rp_name = pref);
   if (id is null)
     return null;
 
-  name[0] := bit_shift (id, -24);
-  name[1] := bit_shift (id, -16);
-  name[2] := bit_shift (id, -8);
-  name[3] := id;
-
-
+  name := concat (rpid64_str (id), ext);
   if (no_name)
-    {
-      iris :=  (select vector_agg (ri_name) 
-                from (select top 20 ri_name 
-                        from rdf_iri 
-                        where ri_name >= name and 
-                              ri_name < num_str (id + 1)) ir);
+    next := rpid64_str (id + 1);
+  else
+    next := str_inc (name, 8);
 
-      if (length (iris) < 20 and length (iris) > 1)
-        iris := (select vector_agg (ri_name) 
-                 from (select ri_name 
-                         from rdf_iri 
-                         where ri_name >= name and 
-                               ri_name < num_str (id + 1)
-                         order by iri_rank (ri_id) desc) ir);
-    }
-  else 
-    {
-      iris :=  (select vector_agg (ri_name) 
-                  from (select top 20 ri_name 
-                          from rdf_iri 
-                          where ri_name >= name and 
-                                ri_name < str_inc (name, 4)) ir);
-
-      if (length (iris) < 20 and length (iris) > 1)
-        iris := (select vector_agg (ri_name) 
-                 from (select ri_name 
-                         from rdf_iri 
-                         where ri_name >= name and 
-                               ri_name < str_inc (name, 4) 
-                         order by iri_rank (ri_id) desc) ir);
-    }
-
+  iris := (select vector_agg (ri_name) from (select top 20 ri_name from rdf_iri where ri_name >= name and ri_name < next) ir);
+  if (length (iris) < 20 and length (iris) > 1) -- XXX: is next code needed at all?
+    iris := (select vector_agg (ri_name) from (select ri_name from rdf_iri where ri_name >= name and ri_name < next order by iri_rank (ri_id) desc) ir);
   for (inx := 0; inx < length (iris); inx := inx + 1)
     {
-      iris[inx] := pref || subseq (iris[inx], 4);
+      iris[inx] := concat (pref, subseq (iris[inx], 8));
     }
-
   return iris;
 }
 ;
 
-create procedure 
+create procedure
 cmp_find_ns (in str varchar)
 {
   declare nss any;
-  nss := (select vector_agg (rp_name) 
-            from (select top 20 rp_name 
-                    from rdf_prefix 
-                    where rp_name >= str and 
+  nss := (select vector_agg (rp_name)
+            from (select top 20 rp_name
+                    from rdf_prefix
+                    where rp_name >= str and
                           rp_name < str_inc (str)) ns);
 
   return nss;
@@ -153,7 +108,7 @@ cmp_find_ns (in str varchar)
 ;
 
 
-create procedure 
+create procedure
 cmp_with_ns (in str varchar)
 {
   declare pref_str varchar;
@@ -164,8 +119,8 @@ cmp_with_ns (in str varchar)
   if (col = 0)
     return null;
 
-  pref_str := (select ns_url 
-                 from SYS_XML_PERSISTENT_NS_DECL 
+  pref_str := (select ns_url
+                 from SYS_XML_PERSISTENT_NS_DECL
                  where ns_prefix = subseq (str, 0, col - 1));
   if (pref_str is null)
     return null;
@@ -176,7 +131,7 @@ cmp_with_ns (in str varchar)
 ;
 
 
-create procedure 
+create procedure
 cmp_uri (in str varchar)
 {
   declare with_ns varchar;
@@ -217,7 +172,7 @@ cmp_uri (in str varchar)
 }
 ;
 
-create procedure 
+create procedure
 urilbl_ac_ruin_label (in lbl varchar)
 {
   declare tmp any;
@@ -230,7 +185,7 @@ urilbl_ac_ruin_label (in lbl varchar)
 }
 ;
 
-create procedure 
+create procedure
 urilbl_ac_init_log (in msg varchar)
 {
 --  dbg_printf(msg);
@@ -268,7 +223,7 @@ urilbl_ac_init_state(in info integer := 1)
 ;
 
 
-create procedure 
+create procedure
 cmp_fill_lang_by_q (in accept varchar)
 {
   declare itm varchar;
