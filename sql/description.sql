@@ -1078,7 +1078,7 @@ again:
      }
    else if (__tag (_object) = 189)
      {
-       http (sprintf ('<span %s>%d</span>', rdfa, _object));
+       http (sprintf ('<span %s>%ld</span>', rdfa, _object));
        lang := b3s_xsd_link (rdfs_type);
      }
    else if (__tag (_object) = 190)
@@ -1088,7 +1088,7 @@ again:
      }
    else if (__tag (_object) = 191)
      {
-       http (sprintf ('<span %s>%d</span>', rdfa, _object));
+       http (sprintf ('<span %s>%f</span>', rdfa, _object));
        lang := b3s_xsd_link (rdfs_type);
      }
    else if (__tag (_object) = 219)
