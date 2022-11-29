@@ -1281,7 +1281,9 @@ create procedure fct_make_curie (in url varchar, in lines any)
   declare curie, chost, dhost varchar;
   declare len integer;
 
-  if (__proc_exists ('WS.CURI.curi_make_curi') is null)
+  len := cast (registry_get('c_uri_min_url_len') as integer);
+  if (len = 0) len := 255;
+  if (__proc_exists ('WS.CURI.curi_make_curi') is null OR length(url) < len)
     return url;
 
   curie := WS.CURI.curi_make_curi (url);
