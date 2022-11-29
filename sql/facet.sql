@@ -164,7 +164,7 @@ fct_trunc_uri (in s varchar, in maxlen int := 40)
 create procedure
 fct_short_form (in x any, in ltgt int := 0)
 {
-  declare loc, pref, sh varchar;
+  declare loc, pref, sh0, sh1 varchar;
   declare ret nvarchar;
 
   if (iswidestring (x))
@@ -173,16 +173,26 @@ fct_short_form (in x any, in ltgt int := 0)
   if (not isstring (x))
     return null;
 
-  sh := fct_uri_curie(x);
+  sh0 := fct_uri_curie(x);
 
   if (x like 'NodeID%')
     return 'Blank' || x;
 
-  if (sh is not null)
-    ret := fct_trunc_uri(sh);
+  if (sh0 is not null)
+    sh1 := fct_trunc_uri(sh0);
   else 
-    ret := (case when ltgt then '&lt;' || fct_trunc_uri (x) || '&gt;' else fct_trunc_uri (x) end);
-  ret := charset_recode (ret, 'UTF-8', '_WIDE_');
+    sh1 := (case when ltgt then '&lt;' || fct_trunc_uri (x) || '&gt;' else fct_trunc_uri (x) end);
+  ret := charset_recode (sh1, 'UTF-8', '_WIDE_');
+  if (not iswidestring (ret))
+    {
+      if (sh0 is not null)
+        ret := charset_recode (sh0, 'UTF-8', '_WIDE_');
+      else
+        {
+          sh1 := (case when ltgt then '&lt;' || x || '&gt;' else x end);
+          ret := charset_recode (sh1, 'UTF-8', '_WIDE_');
+        }
+    }
   return ret;
 }
 ;
@@ -260,6 +270,7 @@ FCT_LABEL_DP_L (in x any, in g_id iri_id_8, in ctx varchar, in lng varchar)
   declare best_l, l int;
   declare label_iri iri_id_8;
   declare q, best_q, str_lang, lng_pref any;
+  declare lang_vec any;
 
   if (not isiri_id (x))
     return vector (null, 1);
@@ -268,6 +279,7 @@ FCT_LABEL_DP_L (in x any, in g_id iri_id_8, in ctx varchar, in lng varchar)
   best_str := null;
   best_l := 0;
   best_q := 0;
+  lang_vec := cmp_fill_lang_by_q (lng);
   for select o, p
         from rdf_quad table option (no cluster, index rdf_quad)
         where s = x and p in (rdf_super_sub_list (ctx, label_iri, 3)) do
@@ -279,8 +291,7 @@ FCT_LABEL_DP_L (in x any, in g_id iri_id_8, in ctx varchar, in lng varchar)
 	}
       else
         str_lang := 'en';	
-      q := cmp_get_lang_by_q (lng, str_lang);
-
+      q := get_keyword_ucase (str_lang, lang_vec, 0.001);
       if (is_rdf_box (o) or isstring (o))
 	{
 	  if (q > best_q)
@@ -317,6 +328,7 @@ FCT_LABEL_NP (in x any, in g_id iri_id_8, in ctx varchar, in lng varchar := 'en'
   declare best_l, l int;
   declare label_iri iri_id_8;
   declare q, best_q, str_lang, lang_id any;
+  declare lang_vec any;
 
   if (is_rdf_box (x))
     {
@@ -340,6 +352,7 @@ FCT_LABEL_NP (in x any, in g_id iri_id_8, in ctx varchar, in lng varchar := 'en'
   best_str := '';
   best_l := 0;
   best_q := 0;
+  lang_vec := cmp_fill_lang_by_q (lng);
   for select o
         from rdf_quad table option (index rdf_quad)
         where s = x and p in (rdf_super_sub_list (ctx, label_iri, 3)) order by cast (b3s_lbl_order (P) as int) option (same_as) do
@@ -350,7 +363,7 @@ FCT_LABEL_NP (in x any, in g_id iri_id_8, in ctx varchar, in lng varchar := 'en'
 	str_lang := (select RL_ID from RDF_LANGUAGE where RL_TWOBYTE = lang_id);
       else
         str_lang := 'en';	
-      q := cmp_get_lang_by_q (lng, str_lang);
+      q := get_keyword_ucase (str_lang, lang_vec, 0.001);
       if (is_rdf_box (o) or isstring (o))
 	{
 	  if (q > best_q)
@@ -361,7 +374,8 @@ FCT_LABEL_NP (in x any, in g_id iri_id_8, in ctx varchar, in lng varchar := 'en'
 	}
     }
   endproc:
-  best_str := charset_recode (best_str, 'UTF-8', '_WIDE_');
+  if (__tag(best_str) = __tag of varchar)
+    best_str := charset_recode (best_str, 'UTF-8', '_WIDE_');
   return best_str;
 }
 ;
@@ -374,6 +388,7 @@ FCT_LABEL_S (in x any, in g_id iri_id_8, in ctx varchar, in lng varchar)
   declare best_l, l int;
   declare label_iri iri_id_8;
   declare q, best_q, str_lang, lng_pref any;
+  declare lang_vec any;
 
   if (not isiri_id (x))
     return null;
@@ -389,6 +404,7 @@ FCT_LABEL_S (in x any, in g_id iri_id_8, in ctx varchar, in lng varchar)
   best_str := null;
   best_l := 0;
   best_q := 0;
+  lang_vec := cmp_fill_lang_by_q (lng);
   for select o, p
         from rdf_quad table option (no cluster, index rdf_quad)
         where s = x and p in (rdf_super_sub_list (ctx, label_iri, 3)) do
@@ -409,8 +425,7 @@ FCT_LABEL_S (in x any, in g_id iri_id_8, in ctx varchar, in lng varchar)
 	}
       else
         str_lang := 'en';	
-      q := cmp_get_lang_by_q (lng, str_lang);
-
+      q := get_keyword_ucase (str_lang, lang_vec, 0.001);
       if (is_rdf_box (o) or isstring (o))
 	{
 	  if (q > best_q)
@@ -967,11 +982,11 @@ fct_view (in tree any, in this_s int, in txt any, in pre any, in post any, in fu
 	loc := '?anyloc';
       if (length (loc) > 1)	
 	{
-	  http (sprintf ('define input:inference "facets" select distinct ?s%d as ?c1 ?lat%d as ?c2 ?lng%d as ?c3 ', 
+	  http (sprintf ('define input:inference "facets" select distinct ?s%d as ?c1 (round (xsd:float(?lat%d) * 10000) /10000) as ?c2 (round (xsd:float(?lng%d) * 10000) /10000) as ?c3 ',
                          this_s, this_s, this_s, this_s), pre);
 	}
       else
-        http (sprintf ('select distinct ?s%d as ?c1 ?lat%d as ?c2 ?lng%d as ?c3 ', 
+        http (sprintf ('select distinct ?s%d as ?c1 (round (xsd:float(?lat%d) * 10000) /10000) as ?c2 (round (xsd:float(?lng%d) * 10000) /10000) as ?c3 ',
                        this_s, this_s, this_s), pre);
 
       if (length (loc) < 2)

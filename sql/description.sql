@@ -1043,14 +1043,18 @@ again:
                 goto usual_iri;
            }
 	 }
-       else if (http_mime_type (_url) like 'image/%' or http_mime_type (_url) = 'application/x-openlink-photo' or b3s_o_is_img (prop))
+       else if (http_mime_type (_url) like 'image/%' or
+            http_mime_type (_url) = 'application/x-openlink-photo' or
+            b3s_o_is_img (prop) or
+            _url like 'data:image/%')
 	 {
 	   declare u any;
 	   if (b3s_o_is_out (prop))
 	     u := _url;
 	   else
 	     u := b3s_http_url (_url, sid, _from);
-	   http (sprintf ('<a class="uri" %s href="%s"><img src="%s" height="160" style="border-width:0" alt="External Image" /></a>', rdfa, u, _url));
+	   http (sprintf ('<a class="uri" %s href="%s"><img src="%s" class="external" height="160" style="border-width:0" alt="%s" /></a>', 
+                 rdfa, u, _url, _url));
 	 }
        else
 	 {
@@ -1074,7 +1078,7 @@ again:
      }
    else if (__tag (_object) = 189)
      {
-       http (sprintf ('<span %s>%d</span>', rdfa, _object));
+       http (sprintf ('<span %s>%ld</span>', rdfa, _object));
        lang := b3s_xsd_link (rdfs_type);
      }
    else if (__tag (_object) = 190)
@@ -1084,7 +1088,7 @@ again:
      }
    else if (__tag (_object) = 191)
      {
-       http (sprintf ('<span %s>%d</span>', rdfa, _object));
+       http (sprintf ('<span %s>%f</span>', rdfa, _object));
        lang := b3s_xsd_link (rdfs_type);
      }
    else if (__tag (_object) = 219)
@@ -1095,7 +1099,7 @@ again:
    else if (__tag (_object) = 182)
      {
        declare vlbl any;
-       if (b3s_o_is_img (prop))
+       if (b3s_o_is_img (prop) or _object like 'data:image/%')
 	 {
 	   __box_flags_set (_object, 1);
 	   goto again;
@@ -1134,7 +1138,7 @@ again:
    else if (__tag (_object) = 225)
      {
        http (sprintf ('<span %s>', rdfa));
-       http (charset_recode (_object, '_WIDE_', 'UTF-8'));
+       http (__box_flags_tweak (charset_recode (_object, '_WIDE_', 'UTF-8'), 2));
        http ('</span>');
      }
    else if (__tag (_object) = 238)
@@ -1277,7 +1281,9 @@ create procedure fct_make_curie (in url varchar, in lines any)
   declare curie, chost, dhost varchar;
   declare len integer;
 
-  if (__proc_exists ('WS.CURI.curi_make_curi') is null)
+  len := cast (registry_get('c_uri_min_url_len') as integer);
+  if (len = 0) len := 255;
+  if (__proc_exists ('WS.CURI.curi_make_curi') is null OR length(url) < len)
     return url;
 
   curie := WS.CURI.curi_make_curi (url);
@@ -1355,8 +1361,6 @@ create procedure DB.DBA.SPARQL_DESC_DICT_LOD (in subj_dict any, in consts any, i
 }
 ;
 
-grant execute on DB.DBA.SPARQL_DESC_DICT_LOD_PHYSICAL to "SPARQL_SELECT";
-grant execute on DB.DBA.SPARQL_DESC_DICT_LOD to "SPARQL_SELECT";
 
 create procedure b3s_lbl_order (in p any, in lbl_order_pref_id int := 0)
 {
@@ -1716,7 +1720,6 @@ create procedure b3s_uri_percent_decode (in uri any)
 }
 ;
 
-grant execute on b3s_gs_check_needed to public;
 
 create procedure fct_set_graphs (in sid any, in graphs any)
 {
@@ -1954,9 +1957,10 @@ create procedure FCT.DBA.check_auth_and_acls (
     dbg_printf ('%s: composite permissions: %d', current_proc_name(), permissions);
   }
 
-  if (bit_and (permissions, 1) = 0  -- No read permission on graph (/sparql and /describe perms already checked above)
+  if (sys_stat ('enable_g_in_sec') = 0 and 
+      (bit_and (permissions, 1) = 0  -- No read permission on graph (/sparql and /describe perms already checked above)
       or
-      sponge_request and (bit_and (permissions, 4) = 0))  -- No sponge permission on graph (/sparql and /describe perms already checked above)
+      sponge_request and (bit_and (permissions, 4) = 0)))  -- No sponge permission on graph (/sparql and /describe perms already checked above)
   {
     http_rewrite ();
 
