@@ -15,7 +15,7 @@ To install and run the package, you will need a recent version of one
 of the following:
 
 * Virtuoso Commercial Edition 7.x or 8.x
-* Virtuoso Open Source Edition (VOS 7.x
+* Virtuoso Open Source Edition (VOS) 7.x
 
 ## How do I set up my local version of this repository? 
 
