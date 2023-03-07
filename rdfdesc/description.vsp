@@ -185,7 +185,7 @@ again:
       langs := lang_parm;
     }
 
-  -- all possible inputs for IRI to be desribed  
+  -- all possible inputs for IRI to be described  
   gr := get_keyword ('g', params);
   if (gr is null)
     gr := get_keyword ('url', params);
@@ -195,7 +195,7 @@ again:
   if (not length (gr))
     {
       gr := 'unknown';
-      err := 'An empty or invalid IRI requested.';
+      err := 'An empty or invalid IRI was requested.';
     }
   gr := replace (gr, ' ', '%20');
 
