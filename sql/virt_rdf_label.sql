@@ -54,6 +54,7 @@ TTLP (
 @prefix mo: <http://purl.org/ontology/mo/> .
 @prefix oplbase: <http://www.openlinksw.com/schemas/oplbase#> . 
 @prefix schema: <http://schema.org/> .
+@prefix as: <https://www.w3.org/ns/activitystreams#> .
 
 foaf:primarytopic rdfs:subPropertyOf sioc:container_of .
 
@@ -61,6 +62,7 @@ dc:title rdfs:subPropertyOf virtrdf:label .
 rdfs:label rdfs:subPropertyOf virtrdf:label .
 fbase:name rdfs:subPropertyOf virtrdf:label .
 foaf:name rdfs:subPropertyOf virtrdf:label .
+as:name rdfs:subPropertyOf virtrdf:label .
 <http://s.opencalais.com/1/pred/name> rdfs:subPropertyOf virtrdf:label .
 foaf:nick rdfs:subPropertyOf virtrdf:label .
 <http://www.w3.org/2004/02/skos/core#prefLabel> rdfs:subPropertyOf virtrdf:label .
