@@ -570,11 +570,11 @@ post_process_err_with_log4v:
     <script type="text/javascript" >
       var featureList=["tab","ajax"];
     </script>
-    <script type="text/javascript" src="/fct/js/jquery-1.12.3.min.js"></script>
+    <script type="text/javascript" src="/fct/js/jquery-3.6.3.min.js"></script>
     <script type="text/javascript" src="/fct/oat/toolkit/loader.js"></script>
     <script type="text/javascript" src="/fct/js/description.js"></script>
-    <script type="text/javascript" src="/fct/js/jquery-ui-1.11.4.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="/fct/css/jquery-ui-1.11.4.min.css" />
+    <script type="text/javascript" src="/fct/js/jquery-ui-1.13.2.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/fct/css/jquery-ui-1.13.2.min.css" />
 <?vsp fct_links_mup (_S, rdf_link); ?>
 </head>
 <body about="<?V page_resource_uri ?>">
