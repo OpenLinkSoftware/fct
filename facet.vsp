@@ -54,12 +54,12 @@
 <script type="text/javascript" >
     var featureList=["map", "combolist", "ajax", "tab", "json", "location"];
 </script>
-<!--<script type="text/javascript" src="/fct/js/jquery-1.12.3.min.js"></script>-->
+<!--<script type="text/javascript" src="/fct/js/jquery-3.6.3.min.js"></script>-->
 <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
 <script type="text/javascript" src="/fct/oat/toolkit/loader.js"></script>
 <script type="text/javascript" src="/fct/js/facet.js"></script>
-<script type="text/javascript" src="/fct/js/jquery-ui-1.11.4.min.js"></script>
-<link rel="stylesheet" type="text/css" href="/fct/css/jquery-ui-1.11.4.min.css" />
+<script type="text/javascript" src="/fct/js/jquery-ui-1.13.2.min.js"></script>
+<link rel="stylesheet" type="text/css" href="/fct/css/jquery-ui-1.13.2.min.css" />
 <link rel="stylesheet" type="text/css" href="fontawesome/css/all.min.css">
 <script type="text/javascript" src="js/bootstrap5.min.js"></script>
 <script type="text/javascript" src="/fct/js/tooltip.js"></script>
